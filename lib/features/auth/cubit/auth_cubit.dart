@@ -37,4 +37,36 @@ class AuthCubit extends Cubit<AuthState> {
       emit(AuthFailure("An error occurred: $e"));
     }
   }
+
+  Future sendPasswordResetCode(String email) async {
+    emit(AuthOTPLoading());
+    try {
+      var res = await _authRepository.sendPasswordResetCode(email);
+      res.fold(
+        (failureMessage) => emit(AuthOTPFailure(failureMessage)),
+        (response) {
+          emit(AuthOTPSuccess());
+        },
+      );
+    } catch (e) {
+      emit(AuthFailure("An error occurred: $e"));
+    }
+  }
+
+  Future verifyResetPasswordOTP(
+      String email, String otp, String password, String confirmPassword) async {
+    emit(AuthOTPLoading());
+    try {
+      var res = await _authRepository.verifyResetPasswordOTP(
+          email, otp, password, confirmPassword);
+      res.fold(
+        (failureMessage) => emit(AuthOTPFailure(failureMessage)),
+        (response) {
+          emit(AuthOTPSuccess());
+        },
+      );
+    } catch (e) {
+      emit(AuthFailure("An error occurred: $e"));
+    }
+  }
 }

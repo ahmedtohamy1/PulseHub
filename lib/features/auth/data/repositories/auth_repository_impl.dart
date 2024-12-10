@@ -75,4 +75,62 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left('Exception occurred: $error');
     }
   }
+
+  @override
+  Future sendPasswordResetCode(String email) async {
+    try {
+      final response = await myApiService.get(
+        EndPoints.sendPasswordResetCode,
+        queryParameters: {
+          'email': email,
+        },
+      );
+
+      if (response.statusCode == StatusCode.created ||
+          response.statusCode == StatusCode.ok) {
+        final json = response.data;
+        if (json['password_reset_code_success'] == true) {
+          return const Right(unit);
+        } else {
+          return const Left(
+              'Failed to send code: Server responded with failure');
+        }
+      } else {
+        return Left('Failed to log out: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
+  Future verifyResetPasswordOTP(
+      String email, String otp, String password, String confirmPassword) async {
+    try {
+      final response = await myApiService.post(
+        EndPoints.sendPasswordResetCode,
+        data: {
+          'email': email,
+          'password_reset_code': otp,
+          'new_password': password,
+          'confirm_new_password': confirmPassword,
+        },
+      );
+
+      if (response.statusCode == StatusCode.created ||
+          response.statusCode == StatusCode.ok) {
+        final json = response.data;
+        if (json['success'] == true) {
+          return const Right(unit);
+        } else {
+          return const Left(
+              'Failed to send code: Server responded with failure');
+        }
+      } else {
+        return Left('Failed to log out: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
 }

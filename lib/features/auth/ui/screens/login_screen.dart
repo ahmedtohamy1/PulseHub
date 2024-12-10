@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:pinput/pinput.dart';
+import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/core/theming/app_styles.dart';
 import 'package:pulsehub/features/auth/cubit/auth_cubit.dart';
 import 'package:pulsehub/features/auth/cubit/auth_state.dart';
+import 'package:pulsehub/features/auth/ui/widgets/save_button.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class LoginScreen extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
@@ -51,7 +56,7 @@ class LoginScreen extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
-                    // Handle forgot password
+                    _showForgotPasswordModal(context);
                   },
                   child: const Text(
                     "Forgot your password?",
@@ -69,58 +74,231 @@ class LoginScreen extends StatelessWidget {
       ),
     );
   }
-}
 
-class SaveButton extends StatelessWidget {
-  const SaveButton({
-    super.key,
-    required this.emailController,
-    required this.passwordController,
-  });
+  void _showForgotPasswordModal(BuildContext context) {
+    final emailController = TextEditingController();
+    final otpController = TextEditingController();
+    final passwordController = TextEditingController(); // New password field
+    final confirmPasswordController =
+        TextEditingController(); // New confirm password field
 
-  final TextEditingController emailController;
-  final TextEditingController passwordController;
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocConsumer<AuthCubit, AuthState>(
-      listener: (context, state) {
-        if (state is AuthSuccess) {
-          // Navigate to the home page
-          Navigator.pushReplacementNamed(context, '/home');
-        } else if (state is AuthOTP) {
-          // Show OTP message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
-        } else if (state is AuthFailure) {
-          // Show error message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
-        }
-      },
-      builder: (context, state) {
-        if (state is AuthLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        return ElevatedButton(
-          onPressed: () {
-            final email = emailController.text;
-            final password = passwordController.text;
-            context.read<AuthCubit>().login(email, password);
-          },
-          style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.white,
-            backgroundColor: Colors.green,
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-          ),
-          child: const Text("Sign in"),
+    WoltModalSheet.show(
+      modalDecorator: (child) {
+        return BlocProvider(
+          create: (context) => sl<AuthCubit>(),
+          child: child,
         );
       },
+      context: context,
+      pageListBuilder: (modalSheetContext) => [
+        // Page 1: Email Input
+        WoltModalSheetPage(
+          useSafeArea: true,
+          pageTitle: const Center(
+              child: Text("Forgot Password",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Divider(
+                  color: Colors.grey[400],
+                  thickness: 1,
+                  endIndent: 60,
+                  indent: 60,
+                ),
+                TextField(
+                  controller: emailController,
+                  decoration: customInputDecoration("Email", Icons.email, true),
+                ),
+                const SizedBox(height: 16),
+                BlocConsumer<AuthCubit, AuthState>(
+                  listener: (context, state) {
+                    if (state is AuthOTPSuccess) {
+                      WoltModalSheet.of(modalSheetContext).showNext();
+                    } else if (state is AuthOTPFailure) {
+                      Fluttertoast.showToast(
+                        msg: state.message,
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.BOTTOM,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.red,
+                        textColor: Colors.white,
+                        fontSize: 16.0,
+                      );
+                    }
+                  },
+                  builder: (context, state) {
+                    return state is AuthOTPLoading
+                        ? const CircularProgressIndicator()
+                        : SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                context.read<AuthCubit>().sendPasswordResetCode(
+                                    emailController.text);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.green,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                              ),
+                              child: const Text("Send OTP"),
+                            ),
+                          );
+                  },
+                )
+              ],
+            ),
+          ),
+        ),
+
+        // Page 2: OTP Input + New Password
+        WoltModalSheetPage(
+          useSafeArea: true,
+          pageTitle: const Center(
+            child: Text(
+              "Enter OTP and Reset Password",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Divider(
+                  color: Colors.grey[400],
+                  thickness: 1,
+                  endIndent: 60,
+                  indent: 60,
+                ),
+                Pinput(
+                  focusedPinTheme: PinTheme(
+                    width: 60,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: const Color.fromRGBO(232, 235, 241, 0.37),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ).copyWith(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color.fromRGBO(0, 0, 0, 0.05999999865889549),
+                          offset: Offset(0, 3),
+                          blurRadius: 16,
+                        ),
+                      ],
+                    ),
+                  ),
+                  separatorBuilder: (index) => const SizedBox(width: 16),
+                  defaultPinTheme: PinTheme(
+                    width: 60,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: const Color.fromRGBO(232, 235, 241, 0.37),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                  cursor: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      width: 21,
+                      height: 1,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: const Color.fromRGBO(137, 146, 160, 1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                  controller: otpController,
+                  length: 6,
+                  validator: (pin) => pin!.length == 6 ? null : 'Invalid OTP',
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: customInputDecoration(
+                      "New Password", Icons.lock_outline, true),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: confirmPasswordController,
+                  obscureText: true,
+                  decoration: customInputDecoration(
+                      "Confirm Password", Icons.lock_outline, true),
+                ),
+                const SizedBox(height: 16),
+                BlocConsumer<AuthCubit, AuthState>(
+                  listener: (context, state) {
+                    if (state is AuthOTPSuccess) {
+                      Fluttertoast.showToast(
+                        msg: "Password reset successful!",
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.BOTTOM,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.green,
+                        textColor: Colors.white,
+                        fontSize: 16.0,
+                      );
+                      Navigator.pop(context);
+                    } else if (state is AuthOTPFailure) {
+                      Fluttertoast.showToast(
+                        msg: "Password reset Failed, try again later.",
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.BOTTOM,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.red,
+                        textColor: Colors.white,
+                        fontSize: 16.0,
+                      );
+                    }
+                  },
+                  builder: (context, state) {
+                    return state is AuthOTPLoading
+                        ? const CircularProgressIndicator()
+                        : SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                // Implement your logic to verify OTP and reset password
+                                context
+                                    .read<AuthCubit>()
+                                    .verifyResetPasswordOTP(
+                                      emailController.text,
+                                      otpController.text,
+                                      passwordController.text,
+                                      confirmPasswordController.text,
+                                    );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.green,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                              ),
+                              child:
+                                  const Text("Verify OTP and Reset Password"),
+                            ),
+                          );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

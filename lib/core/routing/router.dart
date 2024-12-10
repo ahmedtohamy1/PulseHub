@@ -6,7 +6,6 @@ import 'package:pulsehub/core/routing/404.dart';
 import 'package:pulsehub/core/routing/main_layout.dart';
 import 'package:pulsehub/core/routing/routes.dart';
 import 'package:pulsehub/features/auth/cubit/auth_cubit.dart';
-import 'package:pulsehub/features/auth/ui/screens/forgot_password_screen.dart';
 import 'package:pulsehub/features/auth/ui/screens/login_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -20,13 +19,6 @@ final router = GoRouter(
       builder: (context, state) => BlocProvider(
         create: (context) => sl<AuthCubit>(),
         child: LoginScreen(),
-      ),
-    ),
-    GoRoute(
-      path: Routes.forgotPasswordScreen,
-      builder: (context, state) => BlocProvider(
-        create: (context) => sl<AuthCubit>(),
-        child: ForgotPasswordScreen(),
       ),
     ),
     StatefulShellRoute.indexedStack(

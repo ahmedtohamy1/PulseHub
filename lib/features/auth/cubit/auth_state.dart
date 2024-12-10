@@ -33,3 +33,16 @@ class AuthFailure extends AuthState {
   @override
   List<Object?> get props => [message];
 }
+
+class AuthOTPSuccess extends AuthState {}
+
+class AuthOTPFailure extends AuthState {
+  final String message;
+
+  AuthOTPFailure(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class AuthOTPLoading extends AuthState {}

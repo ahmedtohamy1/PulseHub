@@ -6,6 +6,7 @@ class EndPoints {
   // Auth
   static const String login = "/user/login/";
   static const String logout = "/user/logout/";
+  static const String sendPasswordResetCode = "/user/forget-password/";
 
   // imgs
   static String imageUrl(String path) => '$baseUrl$path';
