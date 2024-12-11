@@ -71,4 +71,29 @@ class MyApi {
       throw Exception('DioError: Failed to make GET request: ${e.message}');
     }
   }
+
+  // DELETE Request Method
+  Future<Response> delete(String endpoint,
+      {Map<String, dynamic>? queryParameters, String? token}) async {
+    try {
+      // Create the headers for the request
+      final headers = <String, String>{
+        'Content-Type': 'application/json', // Always application/json
+      };
+      if (token != null) {
+        headers['Authorization'] = 'Bearer $token'; // Add token if available
+      }
+
+      // Perform the DELETE request
+      var response = await dio.delete(
+        endpoint,
+        queryParameters: queryParameters,
+        options: Options(headers: headers),
+      );
+
+      return response;
+    } on DioException catch (e) {
+      throw Exception('DioError: Failed to make DELETE request: ${e.message}');
+    }
+  }
 }

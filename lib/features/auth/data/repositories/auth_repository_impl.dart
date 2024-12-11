@@ -3,9 +3,12 @@ import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/networking/end_points.dart';
 import 'package:pulsehub/core/networking/my_api.dart';
 import 'package:pulsehub/core/networking/status_code.dart';
+import 'package:pulsehub/core/utils/shared_pref_helper.dart';
+import 'package:pulsehub/core/utils/shared_pref_keys.dart';
 import 'package:pulsehub/core/utils/user_manager.dart';
 import 'package:pulsehub/features/auth/data/models/login_response_model.dart';
 import 'package:pulsehub/features/auth/data/models/otp_login_response.dart';
+import 'package:pulsehub/features/auth/data/models/otp_verify.dart';
 import 'package:pulsehub/features/auth/data/repositories/auth_repository.dart';
 
 @LazySingleton(as: AuthRepository)
@@ -33,6 +36,9 @@ class AuthRepositoryImpl implements AuthRepository {
         if (json['otp_verified'] == true && json.containsKey('access')) {
           // Handle normal login response
           UserManager().setUser(User.fromJson(json['user']));
+          await SharedPrefHelper.setSecuredString(
+              SharedPrefKeys.token, json['access']);
+
           return Right(LoginResponseModel.fromJson(json));
         } else if (json['otp_verified'] == false &&
             json.containsKey('otp_success')) {
@@ -128,6 +134,38 @@ class AuthRepositoryImpl implements AuthRepository {
         }
       } else {
         return Left('Failed to log out: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
+  Future<Either<String, OtpVerify>> verifyLoginOTP(
+      String otp, String otpAccess, bool remeberMe) async {
+    try {
+      final response = await myApiService.post(
+        EndPoints.verifyLoginOTP,
+        data: {
+          "otp": otp,
+          "otp_access": otpAccess,
+          "remember_me": remeberMe,
+        },
+      );
+
+      if (response.statusCode == StatusCode.created ||
+          response.statusCode == StatusCode.ok) {
+        final json = response.data;
+        if (json['success'] == true) {
+          await SharedPrefHelper.setSecuredString(
+              SharedPrefKeys.token, json['access']);
+          return Right(OtpVerify.fromJson(json));
+        } else {
+          return const Left(
+              'Failed to verify code: Server responded with failure');
+        }
+      } else {
+        return Left('Failed to verify code: ${response.statusCode}');
       }
     } catch (error) {
       return Left('Exception occurred: $error');

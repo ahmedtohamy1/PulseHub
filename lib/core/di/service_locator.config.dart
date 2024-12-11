@@ -16,6 +16,9 @@ import '../../features/auth/cubit/auth_cubit.dart' as _i698;
 import '../../features/auth/data/repositories/auth_repository.dart' as _i573;
 import '../../features/auth/data/repositories/auth_repository_impl.dart'
     as _i153;
+import '../../features/settings/cubit/settings_cubit.dart' as _i960;
+import '../../features/settings/data/repos/settings_repo.dart' as _i878;
+import '../../features/settings/data/repos/settings_repo_impl.dart' as _i181;
 import '../networking/dio_module.dart' as _i444;
 import '../networking/my_api.dart' as _i713;
 
@@ -35,6 +38,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i713.MyApi>(() => _i713.MyApi(gh<_i361.Dio>()));
     gh.lazySingleton<_i573.AuthRepository>(
         () => _i153.AuthRepositoryImpl(gh<_i713.MyApi>()));
+    gh.lazySingleton<_i878.SettingsRepository>(
+        () => _i181.SettingsRepoImpl(gh<_i713.MyApi>()));
+    gh.factory<_i960.SettingsCubit>(
+        () => _i960.SettingsCubit(gh<_i878.SettingsRepository>()));
     gh.factory<_i698.AuthCubit>(
         () => _i698.AuthCubit(gh<_i573.AuthRepository>()));
     return this;

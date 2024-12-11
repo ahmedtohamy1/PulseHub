@@ -5,20 +5,34 @@ import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/core/routing/404.dart';
 import 'package:pulsehub/core/routing/main_layout.dart';
 import 'package:pulsehub/core/routing/routes.dart';
+import 'package:pulsehub/core/utils/user_manager.dart';
 import 'package:pulsehub/features/auth/cubit/auth_cubit.dart';
 import 'package:pulsehub/features/auth/ui/screens/login_screen.dart';
+import 'package:pulsehub/features/auth/ui/screens/otp_screen.dart';
+import 'package:pulsehub/features/home/ui/home_screen.dart';
+import 'package:pulsehub/features/settings/cubit/settings_cubit.dart';
+import 'package:pulsehub/features/settings/ui/profile_screen.dart';
+import 'package:pulsehub/features/settings/ui/settings_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: Routes.loginScreen,
+  initialLocation:
+      UserManager().user?.userId != null ? Routes.homePage : Routes.loginScreen,
   routes: [
     GoRoute(
       path: Routes.loginScreen,
       builder: (context, state) => BlocProvider(
         create: (context) => sl<AuthCubit>(),
         child: LoginScreen(),
+      ),
+    ),
+    GoRoute(
+      path: Routes.otpScreen,
+      builder: (context, state) => BlocProvider(
+        create: (context) => sl<AuthCubit>(),
+        child: VerifyOtpScreen(),
       ),
     ),
     StatefulShellRoute.indexedStack(
@@ -30,7 +44,7 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: Routes.homePage,
-              builder: (context, state) => const NotFoundScreen(),
+              builder: (context, state) => const HomeScreen(),
             ),
           ],
         ),
@@ -46,11 +60,15 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: Routes.settingsPage,
-              builder: (context, state) => const NotFoundScreen(),
+              builder: (context, state) => const SettingsScreen(),
               routes: [
                 GoRoute(
-                    path: Routes.profilePage,
-                    builder: (context, state) => const NotFoundScreen()),
+                  path: 'profile', // Use relative path for nested routes
+                  builder: (context, state) => BlocProvider(
+                    create: (context) => sl<SettingsCubit>()..getSessions(),
+                    child: const ProfileScreen(),
+                  ),
+                ),
               ],
             ),
           ],

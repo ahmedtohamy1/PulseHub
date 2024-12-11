@@ -8,7 +8,7 @@ class Destination {
 }
 
 const destinations = [
-  Destination(label: 'Home', icon: Icons.home_outlined),
-  Destination(label: 'Explore', icon: Icons.search),
-  Destination(label: 'Settings', icon: Icons.settings_outlined),
+  Destination(label: 'Home', icon: Icons.home),
+  Destination(label: 'Cloud Mate', icon: Icons.cloud),
+  Destination(label: 'Settings', icon: Icons.settings),
 ];

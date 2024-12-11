@@ -12,7 +12,7 @@ class MainLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        body: navigationShell,
+        body: SafeArea(child: navigationShell),
         bottomNavigationBar: NavigationBar(
           selectedIndex: navigationShell.currentIndex,
           onDestinationSelected: navigationShell.goBranch,

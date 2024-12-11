@@ -20,6 +20,7 @@ class UserManager {
   /// Initializes the UserManager by reading the stored User from secure storage.
   Future<void> init() async {
     String? userJson = await _secureStorage.read(key: _userKey);
+
     if (userJson != null) {
       _user = User.fromJson(jsonDecode(userJson));
     }

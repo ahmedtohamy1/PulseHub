@@ -7,6 +7,10 @@ class EndPoints {
   static const String login = "/user/login/";
   static const String logout = "/user/logout/";
   static const String sendPasswordResetCode = "/user/forget-password/";
+  static const String verifyLoginOTP = "/user/verify-otp/";
+
+  // User
+  static const String activeSessions = "/user/active-sessions/";
 
   // imgs
   static String imageUrl(String path) => '$baseUrl$path';
