@@ -65,7 +65,7 @@ final router = GoRouter(
                 GoRoute(
                   path: 'profile', // Use relative path for nested routes
                   builder: (context, state) => BlocProvider(
-                    create: (context) => sl<SettingsCubit>()..getSessions(),
+                    create: (context) => sl<SettingsCubit>(),
                     child: const ProfileScreen(),
                   ),
                 ),

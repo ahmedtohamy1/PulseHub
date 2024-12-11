@@ -144,8 +144,9 @@ class TextStyles {
 }
 
 InputDecoration customInputDecoration(String labelText, IconData icon,
-    [bool isApp = false]) {
+    [bool isApp = false, bool labelx = false]) {
   return InputDecoration(
+    label: labelx ? Text(labelText) : null,
     filled: true,
     fillColor: isApp
         ? const Color(0xFFE0E0E0).withOpacity(0.2)

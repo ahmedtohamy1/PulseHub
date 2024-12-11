@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pulsehub/core/helpers/auth_helper.dart';
 import 'package:pulsehub/core/routing/routes.dart';
 import 'package:pulsehub/features/auth/cubit/auth_cubit.dart';
 import 'package:pulsehub/features/auth/cubit/auth_state.dart';
@@ -20,9 +21,11 @@ class SaveButton extends StatelessWidget {
     return BlocConsumer<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Login successful")),
-          );
+          authenticate().then((authenticated) {
+            if (authenticated) {
+              context.go(Routes.homePage);
+            }
+          });
         } else if (state is AuthOTP) {
           // Show OTP message
           context.push(Routes.otpScreen);

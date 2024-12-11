@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pinput/pinput.dart';
+import 'package:pulsehub/core/helpers/auth_helper.dart';
 import 'package:pulsehub/core/routing/routes.dart';
 import 'package:pulsehub/features/auth/cubit/auth_cubit.dart';
 import 'package:pulsehub/features/auth/cubit/auth_state.dart';
@@ -92,7 +93,11 @@ class VerifyOtpScreen extends StatelessWidget {
             BlocConsumer<AuthCubit, AuthState>(
               listener: (context, state) {
                 if (state is AuthSuccess) {
-                  context.go(Routes.homePage);
+                  authenticate().then((authenticated) {
+                    if (authenticated) {
+                      context.go(Routes.homePage);
+                    }
+                  });
                 }
                 if (state is AuthOTPSuccess) {
                   Fluttertoast.showToast(

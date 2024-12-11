@@ -18,3 +18,37 @@ final class SessionsError extends SettingsState {
   final String message;
   const SessionsError(this.message);
 }
+
+final class DeleteSessionSuccess extends SettingsState {
+  final String message;
+  const DeleteSessionSuccess(this.message);
+}
+
+final class DeleteSessionError extends SettingsState {
+  final String message;
+  const DeleteSessionError(this.message);
+}
+
+final class UpdateProfileLoading extends SettingsState {}
+
+final class UpdateProfileSuccess extends SettingsState {
+  final String message;
+  const UpdateProfileSuccess(this.message);
+}
+
+final class UpdateProfileError extends SettingsState {
+  final String message;
+  const UpdateProfileError(this.message);
+}
+
+final class UserDetailsSuccess extends SettingsState {
+  final UserDetails userDetails;
+  const UserDetailsSuccess(this.userDetails);
+}
+
+final class UserDetailsError extends SettingsState {
+  final String message;
+  const UserDetailsError(this.message);
+}
+
+final class UserDetailsLoading extends SettingsState {}
