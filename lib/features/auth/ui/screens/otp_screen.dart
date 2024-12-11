@@ -95,7 +95,7 @@ class VerifyOtpScreen extends StatelessWidget {
                 if (state is AuthSuccess) {
                   authenticate().then((authenticated) {
                     if (authenticated) {
-                      context.go(Routes.homePage);
+                      context.go(Routes.dicScreen);
                     }
                   });
                 }

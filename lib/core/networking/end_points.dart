@@ -12,6 +12,7 @@ class EndPoints {
   // User
   static const String activeSessions = "/user/active-sessions/";
   static const String userDetails = "/user/details/";
+  static const String getDics = "/user/dic-services/";
 
   // imgs
   static String imageUrl(String path) => '$baseUrl$path';

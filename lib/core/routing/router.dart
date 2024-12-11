@@ -9,6 +9,8 @@ import 'package:pulsehub/core/utils/user_manager.dart';
 import 'package:pulsehub/features/auth/cubit/auth_cubit.dart';
 import 'package:pulsehub/features/auth/ui/screens/login_screen.dart';
 import 'package:pulsehub/features/auth/ui/screens/otp_screen.dart';
+import 'package:pulsehub/features/home/cubit/dic_cubit.dart';
+import 'package:pulsehub/features/home/ui/dic_screen.dart';
 import 'package:pulsehub/features/home/ui/home_screen.dart';
 import 'package:pulsehub/features/settings/cubit/settings_cubit.dart';
 import 'package:pulsehub/features/settings/ui/profile_screen.dart';
@@ -18,8 +20,9 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation:
-      UserManager().user?.userId != null ? Routes.homePage : Routes.loginScreen,
+  initialLocation: UserManager().user?.userId != null
+      ? Routes.dicScreen
+      : Routes.loginScreen,
   routes: [
     GoRoute(
       path: Routes.loginScreen,
@@ -33,6 +36,13 @@ final router = GoRouter(
       builder: (context, state) => BlocProvider(
         create: (context) => sl<AuthCubit>(),
         child: VerifyOtpScreen(),
+      ),
+    ),
+    GoRoute(
+      path: Routes.dicScreen,
+      builder: (context, state) => BlocProvider(
+        create: (context) => sl<DicCubit>(),
+        child: const DicScreen(),
       ),
     ),
     StatefulShellRoute.indexedStack(

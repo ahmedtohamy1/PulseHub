@@ -6,6 +6,7 @@ class Routes {
   Routes._();
   static const String loginScreen = '/login';
   static const String forgotPasswordScreen = '/forgot-password';
+  static const String dicScreen = '/dic';
   static const String otpScreen = '/otp';
   static const String homePage = '/home';
   static const String settingsPage = '/settings';
