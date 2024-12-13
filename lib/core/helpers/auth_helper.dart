@@ -8,8 +8,6 @@ Future<bool> authenticate() async {
     authenticated = await localAuth.authenticate(
       localizedReason: 'Scan your fingerprint to access',
     );
-  } catch (e) {
-    print(e);
-  }
+  } catch (e) {}
   return authenticated;
 }

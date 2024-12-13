@@ -9,10 +9,10 @@ class DicScreen extends StatefulWidget {
   const DicScreen({super.key});
 
   @override
-  _DicScreenState createState() => _DicScreenState();
+  DicScreenState createState() => DicScreenState();
 }
 
-class _DicScreenState extends State<DicScreen> {
+class DicScreenState extends State<DicScreen> {
   @override
   void initState() {
     super.initState();
