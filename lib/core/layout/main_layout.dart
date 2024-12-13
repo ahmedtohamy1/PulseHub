@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pulsehub/core/routing/destinations.dart';
+import 'package:pulsehub/core/layout/destinations.dart';
 
 class MainLayout extends StatelessWidget {
   const MainLayout({
