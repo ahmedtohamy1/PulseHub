@@ -70,14 +70,14 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: Routes.settingsPage,
-              builder: (context, state) => const SettingsScreen(),
+              builder: (context, state) => BlocProvider(
+                create: (context) => sl<SettingsCubit>(),
+                child: const SettingsScreen(),
+              ),
               routes: [
                 GoRoute(
                   path: 'profile', // Use relative path for nested routes
-                  builder: (context, state) => BlocProvider(
-                    create: (context) => sl<SettingsCubit>(),
-                    child: const ProfileScreen(),
-                  ),
+                  builder: (context, state) => const ProfileScreen(),
                 ),
               ],
             ),
