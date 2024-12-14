@@ -20,19 +20,18 @@ class AppIntercepters extends Interceptor {
             .join(', ')
         : options.data;
 
-    debugPrint('${cyan}REQUEST:$blue [${options.method}] ${options.path} '
-        '${yellow}Query:$reset ${options.queryParameters} '
-        '${magenta}Headers:$reset ${options.headers} '
-        '${green}Body:$reset $requestBody');
+    debugPrint(
+        '${cyan}REQUEST $blue[[${options.method}] , ${options.path}]: ${green}BODY:$reset $requestBody\n'
+        '${yellow}QueryParams:$reset ${options.queryParameters}\n'
+        '${magenta}Headers:$reset ${options.headers}\n ');
     super.onRequest(options, handler);
   }
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     debugPrint(
-        '${green}RESPONSE:$magenta [${response.statusCode}] ${response.requestOptions.path} '
-        '${cyan}Headers:$reset ${response.headers.map} '
-        '${yellow}Data:$reset ${response.data}');
+        '${green}RESPONSE $magenta [${response.statusCode} , ${response.requestOptions.path} ]:${yellow}BODY:$reset ${response.data} '
+        '${cyan}Headers:$reset ${response.headers.map} ');
     super.onResponse(response, handler);
   }
 
