@@ -48,28 +48,27 @@ class SettingsCubit extends Cubit<SettingsState> {
     );
   }
 
-  Future<void> updateProfile(
-    String email,
-    String firstName,
-    String lastName,
-    String title,
-    String picture,
-    String mode,
-  ) async {
+  Future<void> updateProfile(String email, String firstName, String lastName,
+      String title, String picture, String mode) async {
     emit(UpdateProfileLoading());
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
     final res = await _repository.updateUserDetails(
-      token,
-      email,
-      firstName,
-      lastName,
-      title,
-      picture,
-      mode,
-    );
+        token, email, firstName, lastName, title, picture, mode);
     res.fold(
       (failure) => emit(UpdateProfileError(failure)),
       (message) => emit(UpdateProfileSuccess(message)),
+    );
+  }
+
+  logout() async {
+    emit(LogoutLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final refreshToken =
+        await SharedPrefHelper.getSecuredString(SharedPrefKeys.refreshToken);
+    final res = await _repository.logout(refreshToken, token);
+    res.fold(
+      (failure) => emit(LogoutError(failure)),
+      (message) => emit(LogoutSuccess()),
     );
   }
 }

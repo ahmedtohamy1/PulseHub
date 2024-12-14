@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/networking/end_points.dart';
 import 'package:pulsehub/core/networking/my_api.dart';
 import 'package:pulsehub/core/networking/status_code.dart';
+import 'package:pulsehub/core/utils/user_manager.dart';
 import 'package:pulsehub/features/settings/data/models/manage_session_response.dart';
 import 'package:pulsehub/features/settings/data/models/user_details.dart';
 import 'package:pulsehub/features/settings/data/repos/settings_repo.dart';
@@ -87,14 +88,13 @@ class SettingsRepoImpl extends SettingsRepository {
 
   @override
   Future<Either<String, String>> updateUserDetails(
-    String token,
-    String email,
-    String firstName,
-    String lastName,
-    String title,
-    String picture,
-    String mode,
-  ) async {
+      String token,
+      String email,
+      String firstName,
+      String lastName,
+      String title,
+      String picture,
+      String mode) async {
     try {
       final response = await myApiService.post(
         EndPoints.userDetails,
@@ -116,6 +116,34 @@ class SettingsRepoImpl extends SettingsRepository {
         return Right(json['message']);
       } else {
         return Left('Failed to get sessions: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
+  Future<Either<String, Unit>> logout(String refreshToken, String token) async {
+    try {
+      final response = await myApiService.post(
+        EndPoints.logout,
+        token: token,
+        data: {
+          'refresh': refreshToken,
+        },
+      );
+
+      if (response.statusCode == StatusCode.created ||
+          response.statusCode == StatusCode.ok) {
+        final json = response.data;
+        if (json['success'] == true) {
+          UserManager().clearUser();
+          return const Right(unit);
+        } else {
+          return const Left('Failed to log out: Server responded with failure');
+        }
+      } else {
+        return Left('Failed to log out: ${response.statusCode}');
       }
     } catch (error) {
       return Left('Exception occurred: $error');

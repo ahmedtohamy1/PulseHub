@@ -52,3 +52,12 @@ final class UserDetailsError extends SettingsState {
 }
 
 final class UserDetailsLoading extends SettingsState {}
+
+final class LogoutLoading extends SettingsState {}
+
+final class LogoutSuccess extends SettingsState {}
+
+final class LogoutError extends SettingsState {
+  final String message;
+  const LogoutError(this.message);
+}

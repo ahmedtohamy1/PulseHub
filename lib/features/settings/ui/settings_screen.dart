@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pulsehub/core/routing/routes.dart';
 import 'package:pulsehub/core/utils/user_manager.dart';
+import 'package:pulsehub/features/settings/cubit/settings_cubit.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -96,6 +99,46 @@ class SettingsScreen extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 150),
+          BlocConsumer<SettingsCubit, SettingsState>(
+            listener: (context, state) {
+              if (state is LogoutSuccess) {
+                context.go(Routes.loginScreen);
+              }
+              if (state is LogoutError) {
+                Fluttertoast.showToast(
+                    msg: 'Failed to logout, try again later.',
+                    toastLength: Toast.LENGTH_SHORT,
+                    gravity: ToastGravity.BOTTOM,
+                    timeInSecForIosWeb: 1,
+                    backgroundColor: Colors.red,
+                    textColor: Colors.white,
+                    fontSize: 16.0);
+              }
+            },
+            builder: (context, state) {
+              return state is LogoutLoading
+                  ? const CircularProgressIndicator()
+                  : SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            // Add logout button
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.red,
+                            padding: const EdgeInsets.symmetric(vertical: 16.0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
+                          onPressed: () {
+                            context.read<SettingsCubit>().logout();
+                          },
+                          icon: const Icon(Icons.logout),
+                          label: const Text('Logout')),
+                    );
+            },
+          )
         ],
       ),
     );

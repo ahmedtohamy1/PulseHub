@@ -22,6 +22,7 @@ class ProfileScreenState extends State<ProfileScreen> {
   TextEditingController _lastNameController = TextEditingController();
   TextEditingController _titleController = TextEditingController();
   TextEditingController _emailController = TextEditingController();
+  TextEditingController _dateJoinedController = TextEditingController();
 
   XFile? _selectedImage;
 
@@ -37,6 +38,7 @@ class ProfileScreenState extends State<ProfileScreen> {
     _firstNameController.dispose();
     _titleController.dispose();
     _lastNameController.dispose();
+    _dateJoinedController.dispose();
     super.dispose();
   }
 
@@ -82,6 +84,8 @@ class ProfileScreenState extends State<ProfileScreen> {
               TextEditingController(text: state.userDetails.lastName);
           _emailController =
               TextEditingController(text: state.userDetails.email);
+          _dateJoinedController = TextEditingController(
+              text: state.userDetails.dateJoined.toString().split(' ')[0]);
         }
       },
       builder: (context, state) {
@@ -132,6 +136,13 @@ class ProfileScreenState extends State<ProfileScreen> {
                       controller: _titleController,
                       decoration:
                           customInputDecoration("Title", Icons.title, true),
+                    ),
+                    const SizedBox(height: 16.0),
+                    TextField(
+                      controller: _dateJoinedController,
+                      enabled: false,
+                      decoration: customInputDecoration(
+                          "Date Joined", Icons.date_range, true),
                     ),
                     const SizedBox(height: 28.0),
                     SizedBox(
