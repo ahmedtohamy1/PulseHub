@@ -34,5 +34,37 @@ void getProjects() async {
     emit(ProjectsError('Unexpected error occurred: $e'));
   }
 }
+void flagOrUnflagProject({
+  required int userId,
+  required int projectId,
+  required bool isFlag,
+}) async {
+  try {
+    // Emit a loading state while the API call is being processed
+    emit(ProjectsLoading());
+
+    // Get the user's token from shared preferences
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+
+    // Call the repository to flag/unflag the project
+    final response = await _repository.flagOrUnflagProject(
+      token: token,
+      userId: userId,
+      projectId: projectId,
+      isFlag: isFlag,
+    );
+
+    // Handle success or error
+    response.fold(
+      (failure) => emit(ProjectsError('Error: $failure')),
+      (_) async {
+        // After flagging/unflagging, reload projects to reflect the change
+         getProjects();
+      },
+    );
+  } catch (e) {
+    emit(ProjectsError('Unexpected error occurred: $e'));
+  }
+}
 
 }
