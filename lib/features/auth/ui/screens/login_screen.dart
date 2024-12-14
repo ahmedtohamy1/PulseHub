@@ -239,6 +239,17 @@ class LoginScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 BlocConsumer<AuthCubit, AuthState>(
                   listener: (context, state) {
+                    if (state is AuthFailure) {
+                      Fluttertoast.showToast(
+                        msg: 'Failed to reset password, try again later.',
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.BOTTOM,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.red,
+                        textColor: Colors.white,
+                        fontSize: 16.0,
+                      );
+                    }
                     if (state is AuthOTPSuccess) {
                       Fluttertoast.showToast(
                         msg: "Password reset successful!",
