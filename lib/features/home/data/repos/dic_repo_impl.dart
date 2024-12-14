@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/networking/end_points.dart';
@@ -22,17 +23,34 @@ class DicRepoImpl implements DicRepository {
           'user_id': int.parse(userId),
         },
       );
-      if ((response.statusCode == StatusCode.created ||
-          response.statusCode == StatusCode.ok &&
-              response.data['success'] == true)) {
-        final json = response.data;
 
+      if ((response.statusCode == StatusCode.created ||
+          (response.statusCode == StatusCode.ok &&
+              response.data['success'] == true))) {
+        final json = response.data;
         return Right(DicServicesResponse.fromJson(json));
       } else {
-        return Left('Failed to get sessions: ${response.statusCode}');
+        final detail = response.data['detail']?.toString() ?? '';
+        if (detail.contains('Given token not valid for any token type')) {
+          return const Left('Token expired');
+        } else {
+          return Left('Failed to get sessions: ${response.statusCode}');
+        }
       }
+    } on DioException catch (dioError) {
+      final response = dioError.response;
+      if (response != null) {
+        final detail = response.data['detail']?.toString() ?? '';
+        if (detail.contains('Given token not valid for any token type')) {
+          return const Left('Token expired');
+        } else {
+          return Left(
+              'Failed with status code: ${response.statusCode}, message: ${response.data}');
+        }
+      }
+      return Left('Network error occurred: ${dioError.message}');
     } catch (error) {
-      return Left('Exception occurred: $error');
+      return Left('Unexpected exception occurred: $error');
     }
   }
 }

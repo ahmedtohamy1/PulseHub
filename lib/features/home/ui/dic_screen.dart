@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pulsehub/core/routing/routes.dart';
+import 'package:pulsehub/core/utils/user_manager.dart';
 import 'package:pulsehub/features/home/cubit/dic_cubit.dart';
 import 'package:pulsehub/features/home/data/dic_services_model.dart';
 
@@ -16,8 +17,8 @@ class DicScreenState extends State<DicScreen> {
   @override
   void initState() {
     super.initState();
-    // Trigger the getDic function in the Cubit
-    context.read<DicCubit>().getDic(); // Pass the valid user ID here
+
+    context.read<DicCubit>().getDic();
   }
 
   @override
@@ -36,7 +37,8 @@ class DicScreenState extends State<DicScreen> {
           if (state is DicLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is DicError) {
-            return Center(child: Text('Error: ${state.message}'));
+            UserManager().clearUser();
+            context.go(Routes.loginScreen);
           } else if (state is DicSuccess) {
             return _buildDicServicesList(state.dic.dicServicesList.first);
           }

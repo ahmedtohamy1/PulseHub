@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pulsehub/core/helpers/auth_helper.dart';
 import 'package:pulsehub/core/routing/routes.dart';
@@ -20,6 +21,17 @@ class SaveButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocConsumer<AuthCubit, AuthState>(
       listener: (context, state) {
+        if (state is AuthFailure) {
+          Fluttertoast.showToast(
+            msg: 'Failed to Login, try again later.',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0,
+          );
+        }
         if (state is AuthSuccess) {
           authenticate().then((authenticated) {
             if (authenticated) {
@@ -29,11 +41,6 @@ class SaveButton extends StatelessWidget {
         } else if (state is AuthOTP) {
           // Show OTP message
           context.push(Routes.otpScreen);
-        } else if (state is AuthFailure) {
-          // Show error message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
         }
       },
       builder: (context, state) {
