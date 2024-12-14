@@ -4,8 +4,8 @@ import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/networking/end_points.dart';
 import 'package:pulsehub/core/networking/my_api.dart';
 import 'package:pulsehub/core/networking/status_code.dart';
-import 'package:pulsehub/features/home/data/dic_services_model.dart';
-import 'package:pulsehub/features/home/data/repos/dic_repo.dart';
+import 'package:pulsehub/features/dics/data/models/dic_services_model.dart';
+import 'package:pulsehub/features/dics/data/repos/dic_repo.dart';
 
 @LazySingleton(as: DicRepository)
 class DicRepoImpl implements DicRepository {

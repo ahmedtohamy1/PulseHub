@@ -9,9 +9,10 @@ import 'package:pulsehub/core/utils/user_manager.dart';
 import 'package:pulsehub/features/auth/cubit/auth_cubit.dart';
 import 'package:pulsehub/features/auth/ui/screens/login_screen.dart';
 import 'package:pulsehub/features/auth/ui/screens/otp_screen.dart';
-import 'package:pulsehub/features/home/cubit/dic_cubit.dart';
-import 'package:pulsehub/features/home/ui/dic_screen.dart';
-import 'package:pulsehub/features/home/ui/home_screen.dart';
+import 'package:pulsehub/features/dics/cubit/dic_cubit.dart';
+import 'package:pulsehub/features/dics/ui/dic_screen.dart';
+import 'package:pulsehub/features/projects/ui/home_screen.dart';
+
 import 'package:pulsehub/features/settings/cubit/settings_cubit.dart';
 import 'package:pulsehub/features/settings/ui/profile_screen.dart';
 import 'package:pulsehub/features/settings/ui/settings_screen.dart';

@@ -16,9 +16,9 @@ import '../../features/auth/cubit/auth_cubit.dart' as _i698;
 import '../../features/auth/data/repositories/auth_repository.dart' as _i573;
 import '../../features/auth/data/repositories/auth_repository_impl.dart'
     as _i153;
-import '../../features/home/cubit/dic_cubit.dart' as _i447;
-import '../../features/home/data/repos/dic_repo.dart' as _i874;
-import '../../features/home/data/repos/dic_repo_impl.dart' as _i496;
+import '../../features/dics/cubit/dic_cubit.dart' as _i447;
+import '../../features/dics/data/repos/dic_repo.dart' as _i874;
+import '../../features/dics/data/repos/dic_repo_impl.dart' as _i496;
 import '../../features/settings/cubit/settings_cubit.dart' as _i960;
 import '../../features/settings/data/repos/settings_repo.dart' as _i878;
 import '../../features/settings/data/repos/settings_repo_impl.dart' as _i181;

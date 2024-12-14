@@ -4,8 +4,8 @@ import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/utils/shared_pref_helper.dart';
 import 'package:pulsehub/core/utils/shared_pref_keys.dart';
 import 'package:pulsehub/core/utils/user_manager.dart';
-import 'package:pulsehub/features/home/data/dic_services_model.dart';
-import 'package:pulsehub/features/home/data/repos/dic_repo.dart';
+import 'package:pulsehub/features/dics/data/models/dic_services_model.dart';
+import 'package:pulsehub/features/dics/data/repos/dic_repo.dart';
 
 part 'dic_state.dart';
 

@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pulsehub/core/routing/routes.dart';
 import 'package:pulsehub/core/utils/user_manager.dart';
-import 'package:pulsehub/features/home/cubit/dic_cubit.dart';
-import 'package:pulsehub/features/home/data/dic_services_model.dart';
+import 'package:pulsehub/features/dics/cubit/dic_cubit.dart';
+import 'package:pulsehub/features/dics/data/models/dic_services_model.dart';
 
 class DicScreen extends StatefulWidget {
   const DicScreen({super.key});
