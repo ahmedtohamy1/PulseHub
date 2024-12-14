@@ -16,9 +16,12 @@ import '../../features/auth/cubit/auth_cubit.dart' as _i698;
 import '../../features/auth/data/repositories/auth_repository.dart' as _i573;
 import '../../features/auth/data/repositories/auth_repository_impl.dart'
     as _i153;
-import '../../features/dics/cubit/dic_cubit.dart' as _i447;
-import '../../features/dics/data/repos/dic_repo.dart' as _i874;
-import '../../features/dics/data/repos/dic_repo_impl.dart' as _i496;
+import '../../features/dics/cubit/dic_cubit.dart' as _i819;
+import '../../features/dics/data/repos/dic_repo.dart' as _i90;
+import '../../features/dics/data/repos/dic_repo_impl.dart' as _i1046;
+import '../../features/projects/cubit/cubit/projects_cubit.dart' as _i616;
+import '../../features/projects/data/repos/proects_repo_impl.dart' as _i12;
+import '../../features/projects/data/repos/projects_repo.dart' as _i234;
 import '../../features/settings/cubit/settings_cubit.dart' as _i960;
 import '../../features/settings/data/repos/settings_repo.dart' as _i878;
 import '../../features/settings/data/repos/settings_repo_impl.dart' as _i181;
@@ -39,17 +42,21 @@ extension GetItInjectableX on _i174.GetIt {
     final dioModule = _$DioModule();
     gh.lazySingleton<_i361.Dio>(() => dioModule.provideDio());
     gh.lazySingleton<_i713.MyApi>(() => _i713.MyApi(gh<_i361.Dio>()));
-    gh.lazySingleton<_i874.DicRepository>(
-        () => _i496.DicRepoImpl(gh<_i713.MyApi>()));
+    gh.lazySingleton<_i90.DicRepository>(
+        () => _i1046.DicRepoImpl(gh<_i713.MyApi>()));
     gh.lazySingleton<_i573.AuthRepository>(
         () => _i153.AuthRepositoryImpl(gh<_i713.MyApi>()));
-    gh.factory<_i447.DicCubit>(() => _i447.DicCubit(gh<_i874.DicRepository>()));
+    gh.lazySingleton<_i234.ProjectsRepository>(
+        () => _i12.ProjectsRepoImpl(gh<_i713.MyApi>()));
     gh.lazySingleton<_i878.SettingsRepository>(
         () => _i181.SettingsRepoImpl(gh<_i713.MyApi>()));
     gh.factory<_i960.SettingsCubit>(
         () => _i960.SettingsCubit(gh<_i878.SettingsRepository>()));
+    gh.factory<_i819.DicCubit>(() => _i819.DicCubit(gh<_i90.DicRepository>()));
     gh.factory<_i698.AuthCubit>(
         () => _i698.AuthCubit(gh<_i573.AuthRepository>()));
+    gh.factory<_i616.ProjectsCubit>(
+        () => _i616.ProjectsCubit(gh<_i234.ProjectsRepository>()));
     return this;
   }
 }

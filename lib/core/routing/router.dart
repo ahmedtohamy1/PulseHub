@@ -11,6 +11,7 @@ import 'package:pulsehub/features/auth/ui/screens/login_screen.dart';
 import 'package:pulsehub/features/auth/ui/screens/otp_screen.dart';
 import 'package:pulsehub/features/dics/cubit/dic_cubit.dart';
 import 'package:pulsehub/features/dics/ui/dic_screen.dart';
+import 'package:pulsehub/features/projects/cubit/cubit/projects_cubit.dart';
 import 'package:pulsehub/features/projects/ui/home_screen.dart';
 
 import 'package:pulsehub/features/settings/cubit/settings_cubit.dart';
@@ -55,7 +56,10 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: Routes.homePage,
-              builder: (context, state) => const HomeScreen(),
+              builder: (context, state) => BlocProvider(
+                create: (context) => sl<ProjectsCubit>()..getProjects(),
+                child: const HomeScreen(),
+              ),
             ),
           ],
         ),

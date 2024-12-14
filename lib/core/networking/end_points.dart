@@ -15,6 +15,9 @@ class EndPoints {
   static const String getDics = "/user/dic-services/";
   static const String resetPassword = "/user/password-reset/";
 
+  // Projects
+  static const String getProjects = "/project/fetch-projects/";
+
   // imgs
   static String imageUrl(String path) => '$baseUrl$path';
 }

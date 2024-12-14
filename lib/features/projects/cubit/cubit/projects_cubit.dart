@@ -1,0 +1,38 @@
+import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injectable/injectable.dart';
+import 'package:pulsehub/core/utils/shared_pref_helper.dart';
+import 'package:pulsehub/core/utils/shared_pref_keys.dart';
+import 'package:pulsehub/features/projects/data/models/get_projects_response.dart';
+import 'package:pulsehub/features/projects/data/repos/projects_repo.dart';
+
+part 'projects_state.dart';
+@injectable
+class ProjectsCubit extends Cubit<ProjectsState> {
+  final ProjectsRepository _repository;
+
+  ProjectsCubit(this._repository) : super(ProjectsInitial());
+void getProjects() async {
+  emit(ProjectsLoading());
+  try {
+    final token =
+        await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res = await _repository.getProjects(token);
+
+    res.fold(
+      (failure) => emit(ProjectsError('Error: $failure')),
+      (response) {
+        // Check for missing or empty projects
+        if (response.projects.isEmpty) {
+          emit(ProjectsError('No projects found.'));
+        } else {
+          emit(ProjectsLoaded(response));
+        }
+      },
+    );
+  } catch (e) {
+    emit(ProjectsError('Unexpected error occurred: $e'));
+  }
+}
+
+}

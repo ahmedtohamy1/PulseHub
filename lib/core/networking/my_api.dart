@@ -17,14 +17,19 @@ class MyApi {
   }
 
   // POST Request Method
-  Future<Response> post(String endpoint,
-      {required dynamic data, // Accept either FormData or Map
-      String? token,
-      Map<String, dynamic>? queryParameters}) async {
+  Future<Response> post(
+    String endpoint, {
+    dynamic data, // Accept either FormData or Map
+    String? token,
+    Map<String, dynamic>? queryParameters,
+    bool noBody = false,
+  }) async {
     try {
-      final requestData = data is FormData ? data : FormData.fromMap(data);
-
+      // Generate request headers
       final headers = _generateHeaders(token);
+
+      // Handle requests with no body
+      final requestData = noBody ? null : (data is FormData ? data : FormData.fromMap(data));
 
       final response = await dio.post(
         endpoint,
@@ -42,8 +47,11 @@ class MyApi {
   }
 
   // GET Request Method
-  Future<Response> get(String endpoint,
-      {Map<String, dynamic>? queryParameters, String? token}) async {
+  Future<Response> get(
+    String endpoint, {
+    Map<String, dynamic>? queryParameters,
+    String? token,
+  }) async {
     try {
       final headers = _generateHeaders(token);
 
@@ -62,8 +70,11 @@ class MyApi {
   }
 
   // DELETE Request Method
-  Future<Response> delete(String endpoint,
-      {Map<String, dynamic>? queryParameters, String? token}) async {
+  Future<Response> delete(
+    String endpoint, {
+    Map<String, dynamic>? queryParameters,
+    String? token,
+  }) async {
     try {
       final headers = _generateHeaders(token);
 
@@ -94,7 +105,11 @@ class MyApi {
 
   // Log error details for debugging
   void _logError(DioException e) {
-    if (e.response != null) {}
+    if (e.response != null) {
+      print('Dio Error: ${e.response?.statusCode} ${e.response?.data}');
+    } else {
+      print('Dio Error: ${e.message}');
+    }
   }
 
   // Handle Dio-specific exceptions
@@ -102,7 +117,6 @@ class MyApi {
     if (e.response != null) {
       if (e.response?.statusCode == 401) {
         final detail = e.response?.data['detail']?.toString() ?? '';
-
         throw Exception(detail);
       }
     }
