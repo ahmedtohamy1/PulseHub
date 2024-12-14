@@ -72,7 +72,7 @@ class GroupedProjectsList extends StatelessWidget {
 
             // Horizontal Scrolling Projects
             SizedBox(
-              height: 215, // Height for the horizontal scrollable row
+              height: 250, // Height for the horizontal scrollable row
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: ownerProjects.length,

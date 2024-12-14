@@ -5,7 +5,6 @@ import 'package:pulsehub/core/networking/end_points.dart';
 import 'package:pulsehub/core/networking/my_api.dart';
 import 'package:pulsehub/core/networking/status_code.dart';
 import 'package:pulsehub/features/projects/data/models/get_projects_response.dart';
-import 'package:pulsehub/features/projects/data/models/project_response.dart';
 import 'package:pulsehub/features/projects/data/repos/projects_repo.dart';
 @LazySingleton(as: ProjectsRepository)
 class ProjectsRepoImpl extends ProjectsRepository {
