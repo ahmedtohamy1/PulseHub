@@ -61,3 +61,12 @@ final class LogoutError extends SettingsState {
   final String message;
   const LogoutError(this.message);
 }
+
+final class ResetPasswordLoading extends SettingsState {}
+
+final class ResetPasswordSuccess extends SettingsState {}
+
+final class ResetPasswordError extends SettingsState {
+  final String message;
+  const ResetPasswordError(this.message);
+}

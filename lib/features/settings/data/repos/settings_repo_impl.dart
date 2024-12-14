@@ -149,4 +149,34 @@ class SettingsRepoImpl extends SettingsRepository {
       return Left('Exception occurred: $error');
     }
   }
+@override
+  Future resetPassword(String password, String newPassword,
+      String confirmPassword, String token) async {
+    try {
+      final response = await myApiService.post(
+        EndPoints.resetPassword,
+        token: token,
+        data: {
+          'old_password': password,
+          'new_password': newPassword,
+          'confirm_new_password': confirmPassword,
+        },
+      );
+
+      if (response.statusCode == StatusCode.created ||
+          response.statusCode == StatusCode.ok) {
+        final json = response.data;
+        if (json['success'] == true) {
+       
+          return const Right('Password reset successfully');
+        } else {
+          return const Left('Failed to log out: Server responded with failure');
+        }
+      } else {
+        return Left('Failed to log out: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
 }

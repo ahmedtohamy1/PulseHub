@@ -15,4 +15,6 @@ abstract class SettingsRepository {
       String picture,
       String mode);
   Future logout(String refreshToken, String token);
+ Future resetPassword(String password, String newPassword,
+      String confirmPassword, String token);
 }

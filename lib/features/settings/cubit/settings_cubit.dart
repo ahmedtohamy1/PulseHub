@@ -71,4 +71,16 @@ class SettingsCubit extends Cubit<SettingsState> {
       (message) => emit(LogoutSuccess()),
     );
   }
+
+  resetPassword(String password, String newPassword,
+      String confirmPassword, ) async{
+      emit(ResetPasswordLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+
+    final res = await _repository.resetPassword(password, newPassword, confirmPassword, token);
+    res.fold(
+      (failure) => emit(ResetPasswordError(failure)),
+      (message) => emit(ResetPasswordSuccess()),
+    );
+  }
 }

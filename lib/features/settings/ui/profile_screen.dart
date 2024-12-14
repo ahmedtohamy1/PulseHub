@@ -2,11 +2,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/core/theming/app_styles.dart';
 import 'package:pulsehub/core/utils/user_manager.dart';
 import 'package:pulsehub/features/settings/cubit/settings_cubit.dart';
+import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -67,6 +69,8 @@ class ProfileScreenState extends State<ProfileScreen> {
     } catch (e) {}
   }
 
+  
+
   @override
   Widget build(BuildContext context) {
     String email = '';
@@ -102,7 +106,19 @@ class ProfileScreenState extends State<ProfileScreen> {
                           icon: const Icon(Icons.arrow_back),
                           onPressed: () => Navigator.of(context).pop(),
                         ),
+                         const  Spacer(),
+                        Tooltip(
+                          message: 'Change Password',
+                          child: IconButton.filled(
+                            icon: const Icon(Icons.password),
+                            onPressed: () {
+                             _onResetPassword(context);
+                            },
+                          ),
+                        ),
                       ],
+                 
+
                     ),
                     const SizedBox(height: 16.0),
                     GestureDetector(
@@ -179,6 +195,111 @@ class ProfileScreenState extends State<ProfileScreen> {
       },
     );
   }
+    _onResetPassword(BuildContext context){
+
+    final oldPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmNewPasswordController = TextEditingController(); // New password field
+
+
+    WoltModalSheet.show(
+      modalDecorator: (child) {
+        return BlocProvider(
+          create: (context) => sl<SettingsCubit>(),
+          child: child,
+        );
+      },
+      context: context,
+      pageListBuilder: (modalSheetContext) => [
+
+        WoltModalSheetPage(
+          useSafeArea: true,
+          pageTitle: const Center(
+              child: Text("Reset Password",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Divider(
+                  color: Colors.grey[400],
+                  thickness: 1,
+                  endIndent: 60,
+                  indent: 60,
+                ),
+                TextField(
+                  controller: oldPasswordController,
+                  decoration: customInputDecoration("Old Password", Icons.password, true),
+                ),
+                const SizedBox(height: 16),
+                  TextField(
+                  controller: newPasswordController,
+                  decoration: customInputDecoration("New Password", Icons.password_outlined, true),
+                ),
+                const SizedBox(height: 16),  TextField(
+                  controller: confirmNewPasswordController,
+                  decoration: customInputDecoration("Confirm new Password", Icons.password_outlined, true),
+                ),
+                const SizedBox(height: 16), 
+                BlocConsumer<SettingsCubit, SettingsState>(
+                  listener: (context, state) {
+                            if (state is ResetPasswordSuccess){
+                  Fluttertoast.showToast(
+                        msg: "Password reset successfully!",
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.BOTTOM,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.green,
+                        textColor: Colors.white,
+                        fontSize: 16.0,
+                      );
+                    }
+                    if (state is ResetPasswordError){
+                  Fluttertoast.showToast(
+                        msg: "Password reset failed, try again later!",
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.BOTTOM,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.red,
+                        textColor: Colors.white,
+                        fontSize: 16.0,
+                      );
+                    }
+                  },
+                  builder: (context, state) {
+                    return 
+                    state is ResetPasswordLoading ? CircularProgressIndicator() 
+                    :
+                     SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                  context.read<SettingsCubit>().resetPassword(oldPasswordController.text, newPasswordController.text, confirmNewPasswordController.text);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.green,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                              ),
+                              child: const Text("Reset Passwrod"),
+                            ),
+                          );
+                  },
+                )
+              ],
+            ),
+          ),
+        ),
+
+   ],
+    );
+
+  }
+
 }
 
 class ProfileImageAvatar extends StatelessWidget {
@@ -240,4 +361,5 @@ class ProfileImageAvatar extends StatelessWidget {
   bool _isValidUrl(String? url) {
     return url != null && Uri.tryParse(url)?.hasAbsolutePath == true;
   }
+
 }
