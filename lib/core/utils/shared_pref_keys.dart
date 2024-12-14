@@ -1,5 +1,6 @@
 class SharedPrefKeys {
   static const String token = 'token';
+  static const String refreshToken = 'refreshToken';
   static const String user = 'user';
   static const String store = 'store';
   static const String customer = 'customer';

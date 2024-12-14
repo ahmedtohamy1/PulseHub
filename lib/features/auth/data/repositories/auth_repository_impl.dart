@@ -56,33 +56,6 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<String, Unit>> logout(String refreshToken) async {
-    try {
-      final response = await myApiService.post(
-        EndPoints.logout,
-        data: {
-          'refresh': refreshToken,
-        },
-      );
-
-      if (response.statusCode == StatusCode.created ||
-          response.statusCode == StatusCode.ok) {
-        final json = response.data;
-        if (json['success'] == true) {
-          UserManager().clearUser();
-          return const Right(unit);
-        } else {
-          return const Left('Failed to log out: Server responded with failure');
-        }
-      } else {
-        return Left('Failed to log out: ${response.statusCode}');
-      }
-    } catch (error) {
-      return Left('Exception occurred: $error');
-    }
-  }
-
-  @override
   Future sendPasswordResetCode(String email) async {
     try {
       final response = await myApiService.get(
@@ -159,6 +132,8 @@ class AuthRepositoryImpl implements AuthRepository {
         if (json['success'] == true) {
           await SharedPrefHelper.setSecuredString(
               SharedPrefKeys.token, json['access']);
+          await SharedPrefHelper.setSecuredString(
+              SharedPrefKeys.refreshToken, json['refresh']);
           return Right(OtpVerify.fromJson(json));
         } else {
           return const Left(
