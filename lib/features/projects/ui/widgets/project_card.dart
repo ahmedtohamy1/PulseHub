@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:pulsehub/core/di/service_locator.dart';
-import 'package:pulsehub/core/layout/main_layout.dart';
+
 import 'package:pulsehub/core/routing/routes.dart';
 import 'package:pulsehub/core/utils/user_manager.dart';
 import 'package:pulsehub/features/projects/cubit/cubit/projects_cubit.dart';
@@ -23,7 +24,8 @@ class _ProjectCardState extends State<ProjectCard> {
   @override
   void initState() {
     super.initState();
-    isPinned = widget.project.isFlag; // Initialize with the project's current pinned state
+    isPinned = widget
+        .project.isFlag; // Initialize with the project's current pinned state
   }
 
   void togglePin(BuildContext context) async {
@@ -36,7 +38,7 @@ class _ProjectCardState extends State<ProjectCard> {
     });
 
     try {
-       cubit.flagOrUnflagProject(
+      cubit.flagOrUnflagProject(
         userId: userId,
         projectId: widget.project.projectId,
         isFlag: isPinned,
@@ -53,23 +55,25 @@ class _ProjectCardState extends State<ProjectCard> {
         ),
       );
     }
+    context.read<ProjectsCubit>().getProjects();
   }
 
   @override
   Widget build(BuildContext context) {
     final formattedDate = widget.project.startDate != null
-        ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(widget.project.startDate!))
+        ? DateFormat('MMMM dd, yyyy')
+            .format(DateTime.parse(widget.project.startDate!))
         : 'N/A';
 
     return GestureDetector(
-     onTap: () {
-    sl<ProjectsCubit>().getProject(widget.project.projectId);
-    context.push(
-      Routes.projectDetailsPage,
-      extra: widget.project.projectId.toString(),
-    );
-  },
-  child: Card(
+      onTap: () {
+        sl<ProjectsCubit>().getProject(widget.project.projectId);
+        context.push(
+          Routes.projectDetailsPage,
+          extra: widget.project.projectId.toString(),
+        );
+      },
+      child: Card(
         elevation: 3,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
@@ -109,7 +113,7 @@ class _ProjectCardState extends State<ProjectCard> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 5),
-      
+
                       // Start Date
                       Row(
                         children: [
@@ -123,7 +127,7 @@ class _ProjectCardState extends State<ProjectCard> {
                           ),
                         ],
                       ),
-      
+
                       // Warning Count
                       if (widget.project.warnings > 0)
                         Padding(
@@ -146,7 +150,7 @@ class _ProjectCardState extends State<ProjectCard> {
                 ),
               ],
             ),
-      
+
             // Floating Pin/Unpin Button
             Positioned(
               top: 8,
