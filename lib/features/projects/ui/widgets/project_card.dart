@@ -20,20 +20,37 @@ class _ProjectCardState extends State<ProjectCard> {
   @override
   void initState() {
     super.initState();
-    isPinned = widget.project.isFlag; // Initialize with the project's pinned state
+    isPinned = widget.project.isFlag; // Initialize with the project's current pinned state
   }
 
-void togglePin(BuildContext context) {
-  final userId = UserManager().user!.userId; // Get the user ID (from shared preferences or app state)
-  final cubit = sl<ProjectsCubit>();
+  void togglePin(BuildContext context) async {
+    final userId = UserManager().user!.userId; // Get the user ID
+    final cubit = sl<ProjectsCubit>();
 
-  cubit.flagOrUnflagProject(
-    userId: userId,
-    projectId: widget.project.projectId,
-    isFlag: !isPinned, // Toggle the current state
-  );
-}
+    // Optimistic UI update
+    setState(() {
+      isPinned = !isPinned;
+    });
 
+    try {
+       cubit.flagOrUnflagProject(
+        userId: userId,
+        projectId: widget.project.projectId,
+        isFlag: isPinned,
+      );
+    } catch (error) {
+      // Revert the UI state in case of an error
+      setState(() {
+        isPinned = !isPinned;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to ${isPinned ? 'pin' : 'unpin'} the project.'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -120,40 +137,40 @@ void togglePin(BuildContext context) {
           ),
 
           // Floating Pin/Unpin Button
-      Positioned(
-  top: 8,
-  left: 8,
-  child: GestureDetector(
-    onTap: () => togglePin(context),
-    child: Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: isPinned ? Colors.blue : Colors.grey,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-            color: Colors.white,
-            size: 16,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            isPinned ? 'Unpin' : 'Pin',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
+          Positioned(
+            top: 8,
+            left: 8,
+            child: GestureDetector(
+              onTap: () => togglePin(context),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: isPinned ? Colors.blue : Colors.grey,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      isPinned ? 'Unpin' : 'Pin',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
-      ),
-    ),
-  ),
-),
- ],
       ),
     );
   }

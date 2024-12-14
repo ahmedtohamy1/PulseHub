@@ -12,30 +12,38 @@ class MyApi {
     dio.options.baseUrl = EndPoints.apiUrl;
     dio.options.headers['Content-Type'] = 'application/json';
 
-    // Add the AppIntercepters to the Dio instance
+    // Add the AppInterceptors to the Dio instance
     dio.interceptors.add(AppIntercepters());
   }
 
   // POST Request Method
   Future<Response> post(
     String endpoint, {
-    dynamic data, // Accept either FormData or Map
+    dynamic data, // Accept either Map or raw data
     String? token,
     Map<String, dynamic>? queryParameters,
     bool noBody = false,
+    bool encodeAsJson = false, // Flag for JSON encoding
   }) async {
     try {
       // Generate request headers
       final headers = _generateHeaders(token);
 
       // Handle requests with no body
-      final requestData = noBody ? null : (data is FormData ? data : FormData.fromMap(data));
+      final requestData = noBody
+          ? null
+          : encodeAsJson
+              ? data // Use raw data for JSON encoding
+              : FormData.fromMap(data); // Convert to FormData
 
       final response = await dio.post(
         endpoint,
         data: requestData,
         queryParameters: queryParameters,
-        options: Options(headers: headers),
+        options: Options(
+          headers: headers,
+          contentType: encodeAsJson ? Headers.jsonContentType : Headers.formUrlEncodedContentType,
+        ),
       );
 
       return response;

@@ -20,18 +20,19 @@ Future<Either<String, void>> flagOrUnflagProject({
   required bool isFlag,
 }) async {
   try {
-    // Create the request body
+    // Prepare the request body
     final requestBody = {
       "user_id": userId,
       "project_id": projectId,
-      "is_flag": isFlag,
+      "is_flag": isFlag, 
     };
-    // Make the POST request with the required headers
+
+    // Send POST request using the updated MyApi class
     final response = await myApiService.post(
       EndPoints.flagProject, // Endpoint URL
-      token: token, // Authorization token
-      data: requestBody,
-   
+      data: requestBody, 
+      token: token, 
+      encodeAsJson: true, 
     );
 
     // Handle the response
