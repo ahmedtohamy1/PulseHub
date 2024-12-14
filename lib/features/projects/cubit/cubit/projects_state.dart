@@ -28,3 +28,11 @@ final class ProjectsError extends ProjectsState {
   @override
   List<Object> get props => [message];
 }
+class ProjectDetailsLoaded extends ProjectsState {
+  final pr.Project project;
+
+  const ProjectDetailsLoaded(this.project);
+
+  @override
+  List<Object> get props => [project];
+}

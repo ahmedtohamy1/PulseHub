@@ -12,7 +12,9 @@ import 'package:pulsehub/features/auth/ui/screens/otp_screen.dart';
 import 'package:pulsehub/features/dics/cubit/dic_cubit.dart';
 import 'package:pulsehub/features/dics/ui/dic_screen.dart';
 import 'package:pulsehub/features/projects/cubit/cubit/projects_cubit.dart';
+import 'package:pulsehub/features/projects/data/models/get_projects_response.dart';
 import 'package:pulsehub/features/projects/ui/home_screen.dart';
+import 'package:pulsehub/features/projects/ui/project_details_screen.dart';
 
 import 'package:pulsehub/features/settings/cubit/settings_cubit.dart';
 import 'package:pulsehub/features/settings/ui/profile_screen.dart';
@@ -60,6 +62,19 @@ final router = GoRouter(
                 create: (context) => sl<ProjectsCubit>()..getProjects(),
                 child: const HomeScreen(),
               ),
+              routes: [
+                GoRoute(
+                  path: 'project-details',
+                  builder: (context, state) {
+                    final projectId = state.extra  as String;
+                    return BlocProvider(
+                      create: (context) =>
+                          sl<ProjectsCubit>()..getProject(int.parse(projectId)),
+                      child: const ProjectDetailsScreen(),
+                    );
+                  },
+                ),
+              ],
             ),
           ],
         ),

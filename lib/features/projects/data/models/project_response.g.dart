@@ -8,24 +8,25 @@ part of 'project_response.dart';
 
 ProjectResponse _$ProjectResponseFromJson(Map<String, dynamic> json) =>
     ProjectResponse(
-      success: json['success'] as bool,
-      projects: (json['projects'] as List<dynamic>)
-          .map((e) => Project.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      success: json['success'] as bool?,
+      project: json['project'] == null
+          ? null
+          : Project.fromJson(json['project'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$ProjectResponseToJson(ProjectResponse instance) =>
     <String, dynamic>{
       'success': instance.success,
-      'projects': instance.projects,
+      'project': instance.project,
     };
 
 Project _$ProjectFromJson(Map<String, dynamic> json) => Project(
-      projectId: (json['project_id'] as num).toInt(),
-      warnings: (json['warnings'] as num).toInt(),
-      title: json['title'] as String,
-      acronym: json['acronym'] as String,
-      pictureUrl: json['picture_url'] as String,
+      projectId: (json['project_id'] as num?)?.toInt(),
+      warnings: (json['warnings'] as num?)?.toInt(),
+      title: json['title'] as String?,
+      acronym: json['acronym'] as String?,
+      pictureUrl: json['picture_url'] as String?,
+      picture: json['picture'] as String?,
       startDate: json['start_date'] as String?,
       duration: json['duration'] as String?,
       budget: json['budget'] as String?,
@@ -48,7 +49,12 @@ Project _$ProjectFromJson(Map<String, dynamic> json) => Project(
           json['importance_of_risk_identification'] as String?,
       budgetConstraints: json['budget_constraints'] as String?,
       plansAndFiles: json['plans_and_files'] as String?,
-      owner: Owner.fromJson(json['owner'] as Map<String, dynamic>),
+      monitorings: (json['monitorings'] as List<dynamic>?)
+          ?.map((e) => Monitoring.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      owner: json['owner'] == null
+          ? null
+          : Owner.fromJson(json['owner'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$ProjectToJson(Project instance) => <String, dynamic>{
@@ -57,6 +63,7 @@ Map<String, dynamic> _$ProjectToJson(Project instance) => <String, dynamic>{
       'title': instance.title,
       'acronym': instance.acronym,
       'picture_url': instance.pictureUrl,
+      'picture': instance.picture,
       'start_date': instance.startDate,
       'duration': instance.duration,
       'budget': instance.budget,
@@ -78,13 +85,27 @@ Map<String, dynamic> _$ProjectToJson(Project instance) => <String, dynamic>{
           instance.importanceOfRiskIdentification,
       'budget_constraints': instance.budgetConstraints,
       'plans_and_files': instance.plansAndFiles,
+      'monitorings': instance.monitorings,
       'owner': instance.owner,
     };
 
+Monitoring _$MonitoringFromJson(Map<String, dynamic> json) => Monitoring(
+      monitoringId: (json['monitoring_id'] as num?)?.toInt(),
+      monitoringName: json['monitoring_name'] as String?,
+      monitoringCommunications: json['monitoring_communications'] as String?,
+    );
+
+Map<String, dynamic> _$MonitoringToJson(Monitoring instance) =>
+    <String, dynamic>{
+      'monitoring_id': instance.monitoringId,
+      'monitoring_name': instance.monitoringName,
+      'monitoring_communications': instance.monitoringCommunications,
+    };
+
 Owner _$OwnerFromJson(Map<String, dynamic> json) => Owner(
-      ownerId: (json['owner_id'] as num).toInt(),
-      name: json['name'] as String,
-      logoUrl: json['logo_url'] as String,
+      ownerId: (json['owner_id'] as num?)?.toInt(),
+      name: json['name'] as String?,
+      logoUrl: json['logo_url'] as String?,
     );
 
 Map<String, dynamic> _$OwnerToJson(Owner instance) => <String, dynamic>{

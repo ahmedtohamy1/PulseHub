@@ -17,6 +17,7 @@ class EndPoints {
 
   // Projects
   static const String getProjects = "/project/fetch-projects/";
+  static const String getProject = "/project/";
   static const String flagProject = "/project/flag-project/";
 
   // imgs

@@ -5,6 +5,7 @@ import 'package:pulsehub/core/utils/shared_pref_helper.dart';
 import 'package:pulsehub/core/utils/shared_pref_keys.dart';
 import 'package:pulsehub/features/projects/data/models/get_projects_response.dart';
 import 'package:pulsehub/features/projects/data/repos/projects_repo.dart';
+import 'package:pulsehub/features/projects/data/models/project_response.dart' as pr;
 
 part 'projects_state.dart';
 @injectable
@@ -61,6 +62,23 @@ void flagOrUnflagProject({
         // After flagging/unflagging, reload projects to reflect the change
          getProjects();
       },
+    );
+  } catch (e) {
+    emit(ProjectsError('Unexpected error occurred: $e'));
+  }
+}
+void getProject(int projectId) async {
+  emit(ProjectsLoading());
+  try {
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final response = await _repository.getProject(
+      token: token,
+      projectId: projectId,
+    );
+
+    response.fold(
+      (failure) => emit(ProjectsError('Error: $failure')),
+      (pr) => emit(ProjectDetailsLoaded(pr)), // New state for project details
     );
   } catch (e) {
     emit(ProjectsError('Unexpected error occurred: $e'));

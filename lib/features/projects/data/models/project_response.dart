@@ -1,49 +1,33 @@
 import 'package:json_annotation/json_annotation.dart';
 
-
 part 'project_response.g.dart';
 
 @JsonSerializable()
 class ProjectResponse {
-  final bool success;
-  final List<Project> projects;
+  final bool? success;
+  final Project? project;
 
   ProjectResponse({
-    required this.success,
-    required this.projects,
+    this.success,
+    this.project,
   });
 
-  factory ProjectResponse.fromJson(Map<String, dynamic> json) {
-    final projectData = json['projects'];
-    List<Project> parsedProjects;
-
-    if (projectData is Map<String, dynamic>) {
-      parsedProjects = [Project.fromJson(projectData)];
-    } else if (projectData is List) {
-      parsedProjects = projectData.map<Project>((p) => Project.fromJson(p)).toList();
-    } else {
-      parsedProjects = [];
-    }
-
-    return ProjectResponse(
-      success: json['success'] as bool,
-      projects: parsedProjects,
-    );
-  }
+  factory ProjectResponse.fromJson(Map<String, dynamic> json) =>
+      _$ProjectResponseFromJson(json);
 
   Map<String, dynamic> toJson() => _$ProjectResponseToJson(this);
 }
 
-
 @JsonSerializable()
 class Project {
   @JsonKey(name: 'project_id')
-  final int projectId;
-  final int warnings;
-  final String title;
-  final String acronym;
+  final int? projectId;
+  final int? warnings;
+  final String? title;
+  final String? acronym;
   @JsonKey(name: 'picture_url')
-  final String pictureUrl;
+  final String? pictureUrl;
+  final String? picture;
   @JsonKey(name: 'start_date')
   final String? startDate;
   final String? duration;
@@ -77,14 +61,16 @@ class Project {
   final String? budgetConstraints;
   @JsonKey(name: 'plans_and_files')
   final String? plansAndFiles;
-  final Owner owner;
+  final List<Monitoring>? monitorings;
+  final Owner? owner;
 
   Project({
-    required this.projectId,
-    required this.warnings,
-    required this.title,
-    required this.acronym,
-    required this.pictureUrl,
+    this.projectId,
+    this.warnings,
+    this.title,
+    this.acronym,
+    this.pictureUrl,
+    this.picture,
     this.startDate,
     this.duration,
     this.budget,
@@ -105,27 +91,49 @@ class Project {
     this.importanceOfRiskIdentification,
     this.budgetConstraints,
     this.plansAndFiles,
-    required this.owner,
+    this.monitorings,
+    this.owner,
   });
 
-  factory Project.fromJson(Map<String, dynamic> json) => _$ProjectFromJson(json);
+  factory Project.fromJson(Map<String, dynamic> json) =>
+      _$ProjectFromJson(json);
 
   Map<String, dynamic> toJson() => _$ProjectToJson(this);
 }
 
+@JsonSerializable()
+class Monitoring {
+  @JsonKey(name: 'monitoring_id')
+  final int? monitoringId;
+  @JsonKey(name: 'monitoring_name')
+  final String? monitoringName;
+  @JsonKey(name: 'monitoring_communications')
+  final String? monitoringCommunications;
+
+  Monitoring({
+    this.monitoringId,
+    this.monitoringName,
+    this.monitoringCommunications,
+  });
+
+  factory Monitoring.fromJson(Map<String, dynamic> json) =>
+      _$MonitoringFromJson(json);
+
+  Map<String, dynamic> toJson() => _$MonitoringToJson(this);
+}
 
 @JsonSerializable()
 class Owner {
   @JsonKey(name: 'owner_id')
-  final int ownerId;
-  final String name;
+  final int? ownerId;
+  final String? name;
   @JsonKey(name: 'logo_url')
-  final String logoUrl;
+  final String? logoUrl;
 
   Owner({
-    required this.ownerId,
-    required this.name,
-    required this.logoUrl,
+    this.ownerId,
+    this.name,
+    this.logoUrl,
   });
 
   factory Owner.fromJson(Map<String, dynamic> json) => _$OwnerFromJson(json);
