@@ -22,28 +22,22 @@ class MyApi {
       String? token,
       Map<String, dynamic>? queryParameters}) async {
     try {
-      // Check if data is already FormData; if not, convert it
       final requestData = data is FormData ? data : FormData.fromMap(data);
 
-      // Create the headers for the request
-      final headers = <String, String>{
-        'Content-Type': 'application/json', // Always application/json
-      };
-      if (token != null) {
-        headers['Authorization'] = 'Bearer $token'; // Add token if available
-      }
+      final headers = _generateHeaders(token);
 
-      // Perform the POST request
-      var response = await dio.post(
+      final response = await dio.post(
         endpoint,
-        data: requestData, // Use the appropriate data
+        data: requestData,
         queryParameters: queryParameters,
         options: Options(headers: headers),
       );
 
       return response;
     } on DioException catch (e) {
-      throw Exception('DioError: Failed to make POST request: ${e.message}');
+      _logError(e);
+      _handleDioException(e);
+      rethrow; // Let the caller handle the exception if necessary
     }
   }
 
@@ -51,16 +45,9 @@ class MyApi {
   Future<Response> get(String endpoint,
       {Map<String, dynamic>? queryParameters, String? token}) async {
     try {
-      // Create the headers for the request
-      final headers = <String, String>{
-        'Content-Type': 'application/json', // Always application/json
-      };
-      if (token != null) {
-        headers['Authorization'] = 'Bearer $token'; // Add token if available
-      }
+      final headers = _generateHeaders(token);
 
-      // Perform the GET request
-      var response = await dio.get(
+      final response = await dio.get(
         endpoint,
         queryParameters: queryParameters,
         options: Options(headers: headers),
@@ -68,7 +55,9 @@ class MyApi {
 
       return response;
     } on DioException catch (e) {
-      throw Exception('DioError: Failed to make GET request: ${e.message}');
+      _logError(e);
+      _handleDioException(e);
+      rethrow; // Let the caller handle the exception if necessary
     }
   }
 
@@ -76,16 +65,9 @@ class MyApi {
   Future<Response> delete(String endpoint,
       {Map<String, dynamic>? queryParameters, String? token}) async {
     try {
-      // Create the headers for the request
-      final headers = <String, String>{
-        'Content-Type': 'application/json', // Always application/json
-      };
-      if (token != null) {
-        headers['Authorization'] = 'Bearer $token'; // Add token if available
-      }
+      final headers = _generateHeaders(token);
 
-      // Perform the DELETE request
-      var response = await dio.delete(
+      final response = await dio.delete(
         endpoint,
         queryParameters: queryParameters,
         options: Options(headers: headers),
@@ -93,7 +75,37 @@ class MyApi {
 
       return response;
     } on DioException catch (e) {
-      throw Exception('DioError: Failed to make DELETE request: ${e.message}');
+      _logError(e);
+      _handleDioException(e);
+      rethrow; // Let the caller handle the exception if necessary
     }
+  }
+
+  // Generate headers for requests
+  Map<String, String> _generateHeaders(String? token) {
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+    };
+    if (token != null) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+    return headers;
+  }
+
+  // Log error details for debugging
+  void _logError(DioException e) {
+    if (e.response != null) {}
+  }
+
+  // Handle Dio-specific exceptions
+  void _handleDioException(DioException e) {
+    if (e.response != null) {
+      if (e.response?.statusCode == 401) {
+        final detail = e.response?.data['detail']?.toString() ?? '';
+
+        throw Exception(detail);
+      }
+    }
+    throw Exception('DioError: Failed to make request: ${e.message}');
   }
 }

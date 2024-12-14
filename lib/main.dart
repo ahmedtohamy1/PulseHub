@@ -7,10 +7,17 @@ import 'package:pulsehub/core/utils/user_manager.dart';
 import 'package:pulsehub/my_app.dart';
 
 void main() async {
+  // init flutter stuff
   WidgetsFlutterBinding.ensureInitialized();
+  // init dependencies and services
   configureDependencies();
+  // init shared preferences storage
   await SharedPrefHelper.init();
+  // init user manager
   await UserManager().init();
+  // init bloc observer (for logging)
   Bloc.observer = MyBlocObserver();
+
+  // run app
   runApp(const MyApp());
 }
