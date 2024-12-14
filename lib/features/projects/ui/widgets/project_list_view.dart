@@ -6,7 +6,7 @@ import 'project_card.dart';
 class ProjectsList extends StatelessWidget {
   final List<Project> projects;
 
-  const ProjectsList({Key? key, required this.projects}) : super(key: key);
+  const ProjectsList({super.key, required this.projects});
 
   @override
   Widget build(BuildContext context) {

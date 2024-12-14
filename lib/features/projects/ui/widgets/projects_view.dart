@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:pulsehub/features/projects/data/models/get_projects_response.dart';
 import 'package:pulsehub/features/projects/ui/widgets/project_card.dart';
 
-
 class ProjectsView extends StatelessWidget {
   final List<Project> projects;
 
@@ -24,17 +23,22 @@ class ProjectsView extends StatelessWidget {
   }
 }
 
-
 class GroupedProjectsList extends StatelessWidget {
   final List<Project> projects;
 
-  const GroupedProjectsList({Key? key, required this.projects}) : super(key: key);
+  const GroupedProjectsList({Key? key, required this.projects})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Group projects by owner
+    // Sort projects: pinned projects first
+    // Sort projects: pinned projects first
+    final List<Project> sortedProjects = List.from(projects)
+      ..sort((a, b) => (b.isFlag ? 1 : 0).compareTo(a.isFlag ? 1 : 0));
+
+    // Group sorted projects by owner
     final Map<Owner, List<Project>> groupedProjects = {};
-    for (var project in projects) {
+    for (var project in sortedProjects) {
       groupedProjects.putIfAbsent(project.owner, () => []).add(project);
     }
 
