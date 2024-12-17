@@ -13,41 +13,10 @@ class ProjectsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('All Projects'),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: IconButton.filled(
-              icon: const Icon(
-                Icons.refresh,
-                color: Colors.white,
-              ),
-              onPressed: () {
-                context.read<ProjectsCubit>().getProjects();
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: IconButton.filled(
-              icon: const Icon(
-                Icons.home,
-                color: Colors.white,
-              ),
-              onPressed: () {
-                context.go(Routes.dicScreen);
-              },
-            ),
-          ),
-        ],
-      ),
-      body: projects.isNotEmpty
-          ? GroupedProjectsList(projects: projects)
-          : const Center(
-              child: Text('No Projects Found'),
-            ),
-    );
+    return projects.isNotEmpty
+        ? GroupedProjectsList(projects: projects)
+        : const Center(
+            child: Text('No Projects Found'),
+          );
   }
 }

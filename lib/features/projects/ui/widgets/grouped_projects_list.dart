@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:pulsehub/core/routing/routes.dart';
 import 'package:pulsehub/features/projects/cubit/cubit/projects_cubit.dart';
 import 'package:pulsehub/features/projects/data/models/get_projects_response.dart';
 import 'package:pulsehub/features/projects/ui/widgets/project_card.dart';
@@ -49,8 +51,6 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
       // Prepare the new order of owner IDs
       final newOrder = owners.map((o) => o.ownerId).toList();
 
-      // Print the new order for debugging
-
       // Call updateOrder from the ProjectsCubit
       context.read<ProjectsCubit>().updateOrder(newOrder);
     });
@@ -58,91 +58,143 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ProjectsCubit, ProjectsState>(
-      builder: (context, state) {
-        return ReorderableListView(
-          padding: const EdgeInsets.all(10),
-          onReorder: _onReorder,
-          children: owners.map((owner) {
-            final ownerProjects = groupedProjects[owner]!;
-
-            return ReorderableDragStartListener(
-              key: ValueKey(owner.ownerId), // Use owner ID as the unique key
-              index: owners.indexOf(owner),
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(10),
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
-                      spreadRadius: 1,
-                      blurRadius: 5,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+    return Column(
+      children: [
+        // Custom Row as Header
+        SizedBox(
+          height: kToolbarHeight,
+          child: Container(
+            color: Theme.of(context).appBarTheme.backgroundColor,
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'All Projects',
+                  style: TextStyle(
+                    color: Theme.of(context).appBarTheme.foregroundColor,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Row(
                   children: [
-                    // Owner Header
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.2),
-                        borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(10)),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 5),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              backgroundImage: NetworkImage(owner.logoUrl),
-                              radius: 20,
-                              onBackgroundImageError: (_, __) =>
-                                  const Icon(Icons.person),
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              '${owner.name} (ID: ${owner.ownerId})', // Display owner name and ID
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: IconButton.filled(
+                        icon: const Icon(Icons.refresh, color: Colors.white),
+                        onPressed: () {
+                          context.read<ProjectsCubit>().getProjects();
+                        },
                       ),
                     ),
-
-                    // Horizontal Scrolling Projects
-                    SizedBox(
-                      height: 230, // Height for the horizontal scrollable row
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: ownerProjects.length,
-                        itemBuilder: (context, projectIndex) {
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 10),
-                            child: SizedBox(
-                              width: 300, // Width of each project card
-                              child: ProjectCard(
-                                  project: ownerProjects[projectIndex]),
-                            ),
-                          );
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: IconButton.filled(
+                        icon: const Icon(Icons.home, color: Colors.white),
+                        onPressed: () {
+                          context.go(Routes.dicScreen);
                         },
                       ),
                     ),
                   ],
                 ),
-              ),
-            );
-          }).toList(),
-        );
-      },
+              ],
+            ),
+          ),
+        ),
+
+        // Grouped Projects List Below
+        Expanded(
+          child: BlocBuilder<ProjectsCubit, ProjectsState>(
+            builder: (context, state) {
+              return ReorderableListView(
+                padding: const EdgeInsets.all(10),
+                onReorder: _onReorder,
+                children: owners.map((owner) {
+                  final ownerProjects = groupedProjects[owner]!;
+
+                  return ReorderableDragStartListener(
+                    key: ValueKey(owner.ownerId),
+                    index: owners.indexOf(owner),
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.2),
+                            spreadRadius: 1,
+                            blurRadius: 5,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Owner Header
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.green.withOpacity(0.2),
+                              borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(10)),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 10, horizontal: 5),
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    backgroundImage:
+                                        NetworkImage(owner.logoUrl),
+                                    radius: 20,
+                                    onBackgroundImageError: (_, __) =>
+                                        const Icon(Icons.person),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    '${owner.name} (ID: ${owner.ownerId})',
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // Horizontal Scrolling Projects
+                          SizedBox(
+                            height: 230,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: ownerProjects.length,
+                              itemBuilder: (context, projectIndex) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 10),
+                                  child: SizedBox(
+                                    width: 300,
+                                    child: ProjectCard(
+                                        project: ownerProjects[projectIndex]),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
