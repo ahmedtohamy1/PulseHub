@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:pulsehub/features/projects/cubit/cubit/projects_cubit.dart';
 
 class ProjectDetailsScreen extends StatefulWidget {
@@ -14,11 +15,11 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
 
   Widget _buildHeaderIcons(BuildContext context) {
     final iconData = [
-      Icons.home_max,
-      Icons.dashboard,
+      Icons.arrow_back_ios_new_outlined,
+      LucideIcons.layoutGrid,
       Icons.map_sharp,
-      Icons.speed_outlined,
-      Icons.file_copy,
+      LucideIcons.gauge,
+      LucideIcons.fileText,
     ];
 
     return Row(
