@@ -169,7 +169,7 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
 
                           // Horizontal Scrolling Projects
                           SizedBox(
-                            height: 230,
+                            height: 290,
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
                               itemCount: ownerProjects.length,

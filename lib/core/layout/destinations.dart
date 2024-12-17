@@ -8,7 +8,7 @@ class Destination {
 }
 
 const destinations = [
-  Destination(label: 'Home', icon: Icons.home),
   Destination(label: 'Cloud Mate', icon: Icons.cloud),
+  Destination(label: 'Cloud Mate', icon: Icons.more),
   Destination(label: 'More', icon: Icons.menu),
 ];

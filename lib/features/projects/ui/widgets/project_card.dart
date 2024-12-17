@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_material_design_icons/flutter_material_design_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:pulsehub/core/di/service_locator.dart';
-
 import 'package:pulsehub/core/routing/routes.dart';
 import 'package:pulsehub/core/utils/user_manager.dart';
 import 'package:pulsehub/features/projects/cubit/cubit/projects_cubit.dart';
@@ -24,17 +24,15 @@ class ProjectCardState extends State<ProjectCard> {
   @override
   void initState() {
     super.initState();
-    isPinned = widget
-        .project.isFlag; // Initialize with the project's current pinned state
+    isPinned = widget.project.isFlag; // Initialize pinned state
   }
 
   void togglePin(BuildContext context) async {
-    final userId = UserManager().user!.userId; // Get the user ID
+    final userId = UserManager().user!.userId;
     final cubit = sl<ProjectsCubit>();
 
-    // Optimistic UI update
     setState(() {
-      isPinned = !isPinned;
+      isPinned = !isPinned; // Optimistic update
     });
 
     try {
@@ -44,7 +42,6 @@ class ProjectCardState extends State<ProjectCard> {
         isFlag: isPinned,
       );
     } catch (error) {
-      // Revert the UI state in case of an error
       setState(() {
         isPinned = !isPinned;
       });
@@ -78,111 +75,87 @@ class ProjectCardState extends State<ProjectCard> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Stack(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Card Content
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Project Image
-                ClipRRect(
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(8)),
-                  child: Image.network(
-                    widget.project.pictureUrl,
-                    height: 120,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const Icon(Icons.broken_image, size: 50),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Project Title
-                      Text(
-                        widget.project.title,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 5),
-
-                      // Start Date
-                      Row(
-                        children: [
-                          const Icon(Icons.calendar_today,
-                              size: 12, color: Colors.grey),
-                          const SizedBox(width: 5),
-                          Text(
-                            formattedDate,
-                            style: const TextStyle(
-                                fontSize: 12, color: Colors.black54),
-                          ),
-                        ],
-                      ),
-
-                      // Warning Count
-                      if (widget.project.warnings > 0)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 5),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.warning,
-                                  size: 12, color: Colors.red),
-                              const SizedBox(width: 5),
-                              Text(
-                                '${widget.project.warnings} Warnings',
-                                style: const TextStyle(
-                                    fontSize: 12, color: Colors.black54),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
+            // Project Image
+            ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(8)),
+              child: Image.network(
+                widget.project.pictureUrl,
+                height: 200, // Increased image height
+                width: double.infinity,
+                fit: BoxFit.cover, // Properly fills the area
+                errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.broken_image, size: 50),
+              ),
             ),
-
-            // Floating Pin/Unpin Button
-            Positioned(
-              top: 8,
-              left: 8,
-              child: GestureDetector(
-                onTap: () => togglePin(context),
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: isPinned ? Colors.blue : Colors.grey,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title with Pin Icon
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Icon(
-                        isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-                        color: Colors.white,
-                        size: 16,
+                      Expanded(
+                        child: Text(
+                          widget.project.title,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        isPinned ? 'Unpin' : 'Pin',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                      GestureDetector(
+                        onTap: () => togglePin(context),
+                        child: Icon(
+                          isPinned ? MdiIcons.pin : MdiIcons.pinOff,
+                          color: isPinned ? Colors.green : Colors.grey,
                         ),
                       ),
                     ],
                   ),
-                ),
+                  const SizedBox(height: 8),
+
+                  // Start Date
+                  Row(
+                    children: [
+                      const Icon(Icons.calendar_today,
+                          size: 14, color: Colors.green),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Start Date: $formattedDate',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black54,
+                        ),
+                      ),
+                      if (widget.project.warnings > 0) const Spacer(),
+                      if (widget.project.warnings > 0)
+                        Row(
+                          children: [
+                            const Icon(Icons.warning,
+                                color: Colors.red, size: 14),
+                            const SizedBox(width: 8),
+                            Text(
+                              '${widget.project.warnings}',
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+
+                  // Warning Badge
+                ],
               ),
             ),
           ],
