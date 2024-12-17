@@ -31,8 +31,9 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
       groupedProjects.putIfAbsent(project.owner, () => []).add(project);
     }
 
-    // Initialize the list of owners
-    owners = groupedProjects.keys.toList();
+    // Sort owners based on the 'order' property
+    owners = groupedProjects.keys.toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
   }
 
   void _onReorder(int oldIndex, int newIndex) {
