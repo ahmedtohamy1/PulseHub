@@ -116,7 +116,7 @@ class ProjectsRepoImpl extends ProjectsRepository {
   @override
   Future<Either<String, String>> updateOrder({
     required String token,
-    required List<String> ownersOrder,
+    required List<int> ownersOrder,
   }) async {
     try {
       // Prepare the request body
@@ -126,8 +126,9 @@ class ProjectsRepoImpl extends ProjectsRepository {
 
       // Send POST request
       final response = await myApiService.post(
-        EndPoints.userDetails, // Endpoint URL
+        EndPoints.userDetails,
         data: requestBody,
+        encodeAsJson: true,
         token: token,
       );
 

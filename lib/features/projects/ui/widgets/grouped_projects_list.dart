@@ -36,7 +36,7 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
   }
 
   void _onReorder(int oldIndex, int newIndex) {
-/*     if (newIndex > oldIndex) {
+    if (newIndex > oldIndex) {
       newIndex -= 1;
     }
 
@@ -46,14 +46,13 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
       owners.insert(newIndex, owner);
 
       // Prepare the new order of owner IDs
-      final newOrder = owners.map((o) => o.ownerId.toString()).toList();
+      final newOrder = owners.map((o) => o.ownerId).toList();
 
       // Print the new order for debugging
-      print('New owner order: $newOrder');
 
       // Call updateOrder from the ProjectsCubit
       context.read<ProjectsCubit>().updateOrder(newOrder);
-    }); */
+    });
   }
 
   @override

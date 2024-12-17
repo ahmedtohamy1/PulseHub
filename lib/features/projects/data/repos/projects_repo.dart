@@ -18,6 +18,6 @@ abstract class ProjectsRepository {
   });
   Future<Either<String, String>> updateOrder({
     required String token,
-    required List<String> ownersOrder,
+    required List<int> ownersOrder,
   });
 }
