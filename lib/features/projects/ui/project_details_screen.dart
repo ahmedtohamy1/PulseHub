@@ -14,7 +14,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
 
   Widget _buildHeaderIcons(BuildContext context) {
     final iconData = [
-      Icons.arrow_back,
+      Icons.home_max,
       Icons.dashboard,
       Icons.map_sharp,
       Icons.speed_outlined,
@@ -192,7 +192,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           _buildInfoRow('Date Format:', project.dateFormat ?? 'N/A'),
           const SizedBox(height: 24),
 
-          // Monitorings Section
+          /*  // Monitorings Section
           if (project.monitorings != null &&
               project.monitorings!.isNotEmpty) ...[
             _buildSectionTitle(context, 'Monitorings'),
@@ -204,7 +204,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
                       monitoring.monitoringCommunications ?? 'N/A'),
                 )),
           ] else
-            const Text('No monitorings available.'),
+            const Text('No monitorings available.'), */
         ],
       ),
     );

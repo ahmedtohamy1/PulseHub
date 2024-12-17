@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:pulsehub/core/routing/routes.dart';
 import 'package:pulsehub/features/projects/cubit/cubit/projects_cubit.dart';
 import 'package:pulsehub/features/projects/data/models/get_projects_response.dart';
 import 'package:pulsehub/features/projects/ui/widgets/grouped_projects_list.dart';
-import 'package:pulsehub/features/projects/ui/widgets/project_card.dart';
 
 class ProjectsView extends StatelessWidget {
   final List<Project> projects;
@@ -25,6 +26,18 @@ class ProjectsView extends StatelessWidget {
               ),
               onPressed: () {
                 context.read<ProjectsCubit>().getProjects();
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: IconButton.filled(
+              icon: const Icon(
+                Icons.home,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                context.go(Routes.dicScreen);
               },
             ),
           ),

@@ -10,10 +10,10 @@ class GroupedProjectsList extends StatefulWidget {
   const GroupedProjectsList({super.key, required this.projects});
 
   @override
-  _GroupedProjectsListState createState() => _GroupedProjectsListState();
+  GroupedProjectsListState createState() => GroupedProjectsListState();
 }
 
-class _GroupedProjectsListState extends State<GroupedProjectsList> {
+class GroupedProjectsListState extends State<GroupedProjectsList> {
   late List<Owner> owners;
   late Map<Owner, List<Project>> groupedProjects;
 
@@ -36,7 +36,7 @@ class _GroupedProjectsListState extends State<GroupedProjectsList> {
   }
 
   void _onReorder(int oldIndex, int newIndex) {
-    if (newIndex > oldIndex) {
+/*     if (newIndex > oldIndex) {
       newIndex -= 1;
     }
 
@@ -53,7 +53,7 @@ class _GroupedProjectsListState extends State<GroupedProjectsList> {
 
       // Call updateOrder from the ProjectsCubit
       context.read<ProjectsCubit>().updateOrder(newOrder);
-    });
+    }); */
   }
 
   @override

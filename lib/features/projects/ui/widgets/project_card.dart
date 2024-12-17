@@ -15,10 +15,10 @@ class ProjectCard extends StatefulWidget {
   const ProjectCard({super.key, required this.project});
 
   @override
-  _ProjectCardState createState() => _ProjectCardState();
+  ProjectCardState createState() => ProjectCardState();
 }
 
-class _ProjectCardState extends State<ProjectCard> {
+class ProjectCardState extends State<ProjectCard> {
   late bool isPinned;
 
   @override

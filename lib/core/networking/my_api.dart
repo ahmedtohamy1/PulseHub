@@ -42,13 +42,14 @@ class MyApi {
         queryParameters: queryParameters,
         options: Options(
           headers: headers,
-          contentType: encodeAsJson ? Headers.jsonContentType : Headers.formUrlEncodedContentType,
+          contentType: encodeAsJson
+              ? Headers.jsonContentType
+              : Headers.formUrlEncodedContentType,
         ),
       );
 
       return response;
     } on DioException catch (e) {
-      _logError(e);
       _handleDioException(e);
       rethrow; // Let the caller handle the exception if necessary
     }
@@ -71,7 +72,6 @@ class MyApi {
 
       return response;
     } on DioException catch (e) {
-      _logError(e);
       _handleDioException(e);
       rethrow; // Let the caller handle the exception if necessary
     }
@@ -94,7 +94,6 @@ class MyApi {
 
       return response;
     } on DioException catch (e) {
-      _logError(e);
       _handleDioException(e);
       rethrow; // Let the caller handle the exception if necessary
     }
@@ -109,15 +108,6 @@ class MyApi {
       headers['Authorization'] = 'Bearer $token';
     }
     return headers;
-  }
-
-  // Log error details for debugging
-  void _logError(DioException e) {
-    if (e.response != null) {
-      print('Dio Error: ${e.response?.statusCode} ${e.response?.data}');
-    } else {
-      print('Dio Error: ${e.message}');
-    }
   }
 
   // Handle Dio-specific exceptions

@@ -69,8 +69,6 @@ class ProfileScreenState extends State<ProfileScreen> {
     } catch (e) {}
   }
 
-  
-
   @override
   Widget build(BuildContext context) {
     String email = '';
@@ -106,19 +104,17 @@ class ProfileScreenState extends State<ProfileScreen> {
                           icon: const Icon(Icons.arrow_back),
                           onPressed: () => Navigator.of(context).pop(),
                         ),
-                         const  Spacer(),
+                        const Spacer(),
                         Tooltip(
                           message: 'Change Password',
                           child: IconButton.filled(
                             icon: const Icon(Icons.password),
                             onPressed: () {
-                             _onResetPassword(context);
+                              _onResetPassword(context);
                             },
                           ),
                         ),
                       ],
-                 
-
                     ),
                     const SizedBox(height: 16.0),
                     GestureDetector(
@@ -195,12 +191,12 @@ class ProfileScreenState extends State<ProfileScreen> {
       },
     );
   }
-    _onResetPassword(BuildContext context){
 
+  _onResetPassword(BuildContext context) {
     final oldPasswordController = TextEditingController();
     final newPasswordController = TextEditingController();
-    final confirmNewPasswordController = TextEditingController(); // New password field
-
+    final confirmNewPasswordController =
+        TextEditingController(); // New password field
 
     WoltModalSheet.show(
       modalDecorator: (child) {
@@ -211,7 +207,6 @@ class ProfileScreenState extends State<ProfileScreen> {
       },
       context: context,
       pageListBuilder: (modalSheetContext) => [
-
         WoltModalSheetPage(
           useSafeArea: true,
           pageTitle: const Center(
@@ -229,22 +224,26 @@ class ProfileScreenState extends State<ProfileScreen> {
                 ),
                 TextField(
                   controller: oldPasswordController,
-                  decoration: customInputDecoration("Old Password", Icons.password, true),
+                  decoration: customInputDecoration(
+                      "Old Password", Icons.password, true),
                 ),
                 const SizedBox(height: 16),
-                  TextField(
+                TextField(
                   controller: newPasswordController,
-                  decoration: customInputDecoration("New Password", Icons.password_outlined, true),
+                  decoration: customInputDecoration(
+                      "New Password", Icons.password_outlined, true),
                 ),
-                const SizedBox(height: 16),  TextField(
+                const SizedBox(height: 16),
+                TextField(
                   controller: confirmNewPasswordController,
-                  decoration: customInputDecoration("Confirm new Password", Icons.password_outlined, true),
+                  decoration: customInputDecoration(
+                      "Confirm new Password", Icons.password_outlined, true),
                 ),
-                const SizedBox(height: 16), 
+                const SizedBox(height: 16),
                 BlocConsumer<SettingsCubit, SettingsState>(
                   listener: (context, state) {
-                            if (state is ResetPasswordSuccess){
-                  Fluttertoast.showToast(
+                    if (state is ResetPasswordSuccess) {
+                      Fluttertoast.showToast(
                         msg: "Password reset successfully!",
                         toastLength: Toast.LENGTH_SHORT,
                         gravity: ToastGravity.BOTTOM,
@@ -254,8 +253,8 @@ class ProfileScreenState extends State<ProfileScreen> {
                         fontSize: 16.0,
                       );
                     }
-                    if (state is ResetPasswordError){
-                  Fluttertoast.showToast(
+                    if (state is ResetPasswordError) {
+                      Fluttertoast.showToast(
                         msg: "Password reset failed, try again later!",
                         toastLength: Toast.LENGTH_SHORT,
                         gravity: ToastGravity.BOTTOM,
@@ -267,14 +266,16 @@ class ProfileScreenState extends State<ProfileScreen> {
                     }
                   },
                   builder: (context, state) {
-                    return 
-                    state is ResetPasswordLoading ? CircularProgressIndicator() 
-                    :
-                     SizedBox(
+                    return state is ResetPasswordLoading
+                        ? const CircularProgressIndicator()
+                        : SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed: () {
-                                  context.read<SettingsCubit>().resetPassword(oldPasswordController.text, newPasswordController.text, confirmNewPasswordController.text);
+                                context.read<SettingsCubit>().resetPassword(
+                                    oldPasswordController.text,
+                                    newPasswordController.text,
+                                    confirmNewPasswordController.text);
                               },
                               style: ElevatedButton.styleFrom(
                                 foregroundColor: Colors.white,
@@ -294,12 +295,9 @@ class ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ),
-
-   ],
+      ],
     );
-
   }
-
 }
 
 class ProfileImageAvatar extends StatelessWidget {
@@ -361,5 +359,4 @@ class ProfileImageAvatar extends StatelessWidget {
   bool _isValidUrl(String? url) {
     return url != null && Uri.tryParse(url)?.hasAbsolutePath == true;
   }
-
 }
