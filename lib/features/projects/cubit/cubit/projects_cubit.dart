@@ -91,7 +91,7 @@ class ProjectsCubit extends Cubit<ProjectsState> {
     }
   }
 
-  void updateOrder(List<String> ownersOrder) async {
+  void updateOrder(List<int> ownersOrder) async {
     emit(ProjectsLoading());
     try {
       final token =
