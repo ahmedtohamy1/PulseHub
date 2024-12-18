@@ -34,8 +34,16 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
           final List<Widget> contentPages = [
             const SizedBox(), // Placeholder for arrow_back.
             ProjectDetailsContent(project: project), // Dashboard content.
-            const VisualiseScreen(),
-            const AnalyseScreen(),
+            BlocProvider(
+              create: (context) =>
+                  sl<ProjectDashboardCubit>()..getDashs(project.projectId!),
+              child: const VisualiseScreen(),
+            ),
+            BlocProvider(
+              create: (context) =>
+                  sl<ProjectDashboardCubit>()..getDashs(project.projectId!),
+              child: const AnalyseScreen(),
+            ),
             const Center(child: Text('File Content')),
           ];
 
@@ -55,10 +63,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
                   color: Colors.white,
                   child: _activeIconIndex == 0
                       ? const SizedBox()
-                      : BlocProvider(
-                          create: (context) => sl<ProjectDashboardCubit>(),
-                          child: contentPages[_activeIconIndex],
-                        ),
+                      : contentPages[_activeIconIndex],
                 ),
               ),
             ],
