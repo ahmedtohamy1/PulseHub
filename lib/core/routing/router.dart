@@ -12,7 +12,6 @@ import 'package:pulsehub/features/auth/ui/screens/otp_screen.dart';
 import 'package:pulsehub/features/dics/cubit/dic_cubit.dart';
 import 'package:pulsehub/features/dics/ui/dic_screen.dart';
 import 'package:pulsehub/features/projects/cubit/cubit/projects_cubit.dart';
-import 'package:pulsehub/features/projects/data/models/get_projects_response.dart';
 import 'package:pulsehub/features/projects/ui/home_screen.dart';
 import 'package:pulsehub/features/projects/ui/project_details_screen.dart';
 

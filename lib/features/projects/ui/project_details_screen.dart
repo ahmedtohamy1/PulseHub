@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:pulsehub/core/di/service_locator.dart';
+import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
+import 'package:pulsehub/features/project_dashboard/ui/screens/analyse_screen.dart';
+import 'package:pulsehub/features/project_dashboard/ui/screens/visualise_screen.dart';
 import 'package:pulsehub/features/projects/cubit/cubit/projects_cubit.dart';
 
 class ProjectDetailsScreen extends StatefulWidget {
@@ -12,66 +16,6 @@ class ProjectDetailsScreen extends StatefulWidget {
 
 class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
   int _activeIconIndex = 1; // Start with "dashboard" content active.
-
-  Widget _buildHeaderIcons(BuildContext context) {
-    final iconData = [
-      Icons.arrow_back_ios_new_outlined,
-      LucideIcons.layoutGrid,
-      Icons.map_sharp,
-      LucideIcons.gauge,
-      LucideIcons.fileText,
-    ];
-
-    return Row(
-      children: [
-        // Back Arrow
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Tooltip(
-            message: _getTooltipMessage(0),
-            child: IconButton.filled(
-              onPressed: () {
-                Navigator.of(context).pop(); // Navigate back for "arrow_back".
-              },
-              icon: Icon(iconData[0]),
-            ),
-          ),
-        ),
-        const Spacer(), // Push other icons to the right
-
-        // Rest of the Icons
-        for (int i = 1; i < iconData.length; i++)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5.0),
-            child: Tooltip(
-              message: _getTooltipMessage(i),
-              child: InkWell(
-                onTap: () {
-                  setState(() {
-                    _activeIconIndex = i; // Update active icon.
-                  });
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: _activeIconIndex == i
-                        ? Theme.of(context).primaryColor
-                        : Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  padding: const EdgeInsets.all(10.0),
-                  child: Icon(
-                    iconData[i],
-                    color: _activeIconIndex == i
-                        ? Colors.white
-                        : Theme.of(context).primaryColor,
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,27 +33,32 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
 
           final List<Widget> contentPages = [
             const SizedBox(), // Placeholder for arrow_back.
-            _buildProjectDetails(context, project), // Dashboard content.
-            const Center(child: Text('Map Content')),
-            const Center(child: Text('Speed Content')),
+            ProjectDetailsContent(project: project), // Dashboard content.
+            const VisualiseScreen(),
+            const AnalyseScreen(),
             const Center(child: Text('File Content')),
           ];
 
           return Column(
             children: [
-              // Header Icons
-              Container(
-                color: Colors.white,
-                child: _buildHeaderIcons(context),
+              HeaderIcons(
+                activeIconIndex: _activeIconIndex,
+                onIconTap: (index) {
+                  setState(() {
+                    _activeIconIndex = index;
+                  });
+                },
               ),
-              // Content Area
               Expanded(
                 child: Container(
                   padding: const EdgeInsets.all(16.0),
                   color: Colors.white,
                   child: _activeIconIndex == 0
-                      ? const SizedBox() // Placeholder for navigation action.
-                      : contentPages[_activeIconIndex],
+                      ? const SizedBox()
+                      : BlocProvider(
+                          create: (context) => sl<ProjectDashboardCubit>(),
+                          child: contentPages[_activeIconIndex],
+                        ),
                 ),
               ),
             ],
@@ -124,117 +73,222 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
       },
     );
   }
+}
 
-  Widget _buildProjectDetails(BuildContext context, dynamic project) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(5.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+// HeaderIcons Widget
+class HeaderIcons extends StatelessWidget {
+  final int activeIconIndex;
+  final Function(int) onIconTap;
+
+  const HeaderIcons({
+    required this.activeIconIndex,
+    required this.onIconTap,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final iconData = [
+      Icons.arrow_back_ios_new_outlined,
+      LucideIcons.layoutGrid,
+      Icons.map_sharp,
+      LucideIcons.gauge,
+      LucideIcons.fileText,
+    ];
+
+    return Container(
+      color: Colors.white,
+      child: Row(
         children: [
-          // Project Owner Section
-          _buildSectionTitle(context, 'Project: ${project.title}'),
-          const SizedBox(height: 8),
-          if (project.owner != null)
-            Row(
-              children: [
-                CircleAvatar(
-                  backgroundImage: project.owner!.logoUrl != null
-                      ? NetworkImage(project.owner!.logoUrl!)
-                      : null,
-                  radius: 30,
-                  child: project.owner!.logoUrl == null
-                      ? const Icon(Icons.broken_image)
-                      : null,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    project.owner?.name ?? 'Unknown',
-                    style: Theme.of(context).textTheme.bodyLarge,
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Tooltip(
+              message: _getTooltipMessage(0),
+              child: IconButton.filled(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: Icon(iconData[0]),
+              ),
+            ),
+          ),
+          const Spacer(),
+          for (int i = 1; i < iconData.length; i++)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 5.0),
+              child: Tooltip(
+                message: _getTooltipMessage(i),
+                child: InkWell(
+                  onTap: () => onIconTap(i),
+                  child: CircleIcon(
+                    icon: iconData[i],
+                    isActive: activeIconIndex == i,
                   ),
                 ),
-              ],
-            )
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  String _getTooltipMessage(int index) {
+    switch (index) {
+      case 0:
+        return 'Back';
+      case 1:
+        return 'Dashboard';
+      case 2:
+        return 'Map';
+      case 3:
+        return 'Speed';
+      case 4:
+        return 'File Content';
+      default:
+        return '';
+    }
+  }
+}
+
+// CircleIcon Widget
+class CircleIcon extends StatelessWidget {
+  final IconData icon;
+  final bool isActive;
+
+  const CircleIcon({
+    required this.icon,
+    required this.isActive,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isActive ? Theme.of(context).primaryColor : Colors.white,
+        shape: BoxShape.circle,
+      ),
+      padding: const EdgeInsets.all(10.0),
+      child: Icon(
+        icon,
+        color: isActive ? Colors.white : Theme.of(context).primaryColor,
+      ),
+    );
+  }
+}
+
+// ProjectDetailsContent Widget
+class ProjectDetailsContent extends StatelessWidget {
+  final dynamic project;
+
+  const ProjectDetailsContent({required this.project, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          SectionTitle(title: 'Project: ${project.title}'),
+          const SizedBox(height: 8),
+          if (project.owner != null)
+            ProjectOwner(owner: project.owner)
           else
             const Text('Owner information not available.'),
           const SizedBox(height: 24),
-
-          // Overview Section
-          _buildSectionTitle(context, 'Overview'),
+          const SectionTitle(title: 'Overview'),
           const SizedBox(height: 8),
-          _buildInfoRow('Project Title:', project.title ?? 'N/A'),
-          _buildInfoRow('Project Acronym:', project.acronym ?? 'N/A'),
-          _buildInfoRow('Start Date:', project.startDate ?? 'N/A'),
-          _buildInfoRow('Duration:', project.duration ?? 'N/A'),
-          _buildInfoRow('Budget:', project.budget ?? 'N/A'),
-          _buildInfoRow('Consultant:', project.consultant ?? 'N/A'),
-          _buildInfoRow('Contractor:', project.contractor ?? 'N/A'),
-          _buildInfoRow(
-              'Construction Date:', project.constructionDate ?? 'N/A'),
-          _buildInfoRow('Age of Building:', project.ageOfBuilding ?? 'N/A'),
-          _buildInfoRow('Type of Building:', project.typeOfBuilding ?? 'N/A'),
-          _buildInfoRow('Size of Building:', project.size ?? 'N/A'),
-          _buildInfoRow('Structure:', project.structure ?? 'N/A'),
-          _buildInfoRow('Building History:', project.buildingHistory ?? 'N/A'),
-          _buildInfoRow('Construction Characteristics:',
-              project.constructionCharacteristics ?? 'N/A'),
-          _buildInfoRow('Surrounding Environment:',
-              project.surroundingEnvironment ?? 'N/A'),
-          _buildInfoRow('Plans and Files:', project.plansAndFiles ?? 'N/A'),
-          _buildInfoRow('Description:', project.description ?? 'N/A'),
+          ProjectOverview(project: project),
           const SizedBox(height: 24),
-
-          // Project Settings Section
-          _buildSectionTitle(context, 'Project Settings'),
+          const SectionTitle(title: 'Project Settings'),
           const SizedBox(height: 8),
-          _buildInfoRow('Timezone:', project.timeZone ?? 'N/A'),
-          _buildInfoRow(
-              'Coordinate System:', project.coordinateSystem ?? 'N/A'),
-          _buildInfoRow('Date Format:', project.dateFormat ?? 'N/A'),
-          const SizedBox(height: 24),
-
-          /*  // Monitorings Section
-          if (project.monitorings != null &&
-              project.monitorings!.isNotEmpty) ...[
-            _buildSectionTitle(context, 'Monitorings'),
-            const SizedBox(height: 8),
-            ...project.monitorings!.map((monitoring) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: _buildInfoRow(
-                      monitoring.monitoringName ?? 'Monitoring',
-                      monitoring.monitoringCommunications ?? 'N/A'),
-                )),
-          ] else
-            const Text('No monitorings available.'), */
+          ProjectSettings(project: project),
         ],
       ),
     );
   }
+}
 
-  // Helper to build section titles
-  Widget _buildSectionTitle(BuildContext context, String title) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Row(
-        children: [
-          Text(
-            title,
-            style: Theme.of(context)
-                .textTheme
-                .headlineSmall
-                ?.copyWith(fontWeight: FontWeight.bold),
+// ProjectOwner Widget
+class ProjectOwner extends StatelessWidget {
+  final dynamic owner;
+
+  const ProjectOwner({required this.owner, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        CircleAvatar(
+          backgroundImage:
+              owner.logoUrl != null ? NetworkImage(owner.logoUrl!) : null,
+          radius: 30,
+          child: owner.logoUrl == null ? const Icon(Icons.broken_image) : null,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            owner.name ?? 'Unknown',
+            style: Theme.of(context).textTheme.bodyLarge,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
+}
 
-  // Helper to build rows of information
-  Widget _buildInfoRow(String label, String value) {
+// ProjectOverview Widget
+class ProjectOverview extends StatelessWidget {
+  final dynamic project;
+
+  const ProjectOverview({required this.project, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        InfoRow(label: 'Project Title:', value: project.title ?? 'N/A'),
+        InfoRow(label: 'Project Acronym:', value: project.acronym ?? 'N/A'),
+        InfoRow(label: 'Start Date:', value: project.startDate ?? 'N/A'),
+        InfoRow(label: 'Duration:', value: project.duration ?? 'N/A'),
+        InfoRow(label: 'Budget:', value: project.budget ?? 'N/A'),
+        InfoRow(label: 'Consultant:', value: project.consultant ?? 'N/A'),
+        InfoRow(label: 'Contractor:', value: project.contractor ?? 'N/A'),
+      ],
+    );
+  }
+}
+
+// ProjectSettings Widget
+class ProjectSettings extends StatelessWidget {
+  final dynamic project;
+
+  const ProjectSettings({required this.project, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        InfoRow(label: 'Timezone:', value: project.timeZone ?? 'N/A'),
+        InfoRow(
+            label: 'Coordinate System:',
+            value: project.coordinateSystem ?? 'N/A'),
+        InfoRow(label: 'Date Format:', value: project.dateFormat ?? 'N/A'),
+      ],
+    );
+  }
+}
+
+// InfoRow Widget
+class InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const InfoRow({
+    required this.label,
+    required this.value,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
@@ -258,21 +312,30 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
       ),
     );
   }
+}
 
-  String _getTooltipMessage(int index) {
-    switch (index) {
-      case 0:
-        return 'Back';
-      case 1:
-        return 'Dashboard';
-      case 2:
-        return 'Map';
-      case 3:
-        return 'Speed';
-      case 4:
-        return 'File Content';
-      default:
-        return '';
-    }
+// SectionTitle Widget
+class SectionTitle extends StatelessWidget {
+  final String title;
+
+  const SectionTitle({required this.title, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        title,
+        style: Theme.of(context)
+            .textTheme
+            .headlineSmall
+            ?.copyWith(fontWeight: FontWeight.bold),
+      ),
+    );
   }
 }

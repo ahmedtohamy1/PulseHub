@@ -19,6 +19,11 @@ import '../../features/auth/data/repositories/auth_repository_impl.dart'
 import '../../features/dics/cubit/dic_cubit.dart' as _i819;
 import '../../features/dics/data/repos/dic_repo.dart' as _i90;
 import '../../features/dics/data/repos/dic_repo_impl.dart' as _i1046;
+import '../../features/project_dashboard/cubit/project_dashboard_cubit.dart'
+    as _i495;
+import '../../features/project_dashboard/data/repos/dash_repo.dart' as _i346;
+import '../../features/project_dashboard/data/repos/dash_repo_impl.dart'
+    as _i503;
 import '../../features/projects/cubit/cubit/projects_cubit.dart' as _i616;
 import '../../features/projects/data/repos/proects_repo_impl.dart' as _i12;
 import '../../features/projects/data/repos/projects_repo.dart' as _i234;
@@ -42,8 +47,12 @@ extension GetItInjectableX on _i174.GetIt {
     final dioModule = _$DioModule();
     gh.lazySingleton<_i361.Dio>(() => dioModule.provideDio());
     gh.lazySingleton<_i713.MyApi>(() => _i713.MyApi(gh<_i361.Dio>()));
+    gh.lazySingleton<_i346.DashRepository>(
+        () => _i503.DashRepoImpl(gh<_i713.MyApi>()));
     gh.lazySingleton<_i90.DicRepository>(
         () => _i1046.DicRepoImpl(gh<_i713.MyApi>()));
+    gh.factory<_i495.ProjectDashboardCubit>(
+        () => _i495.ProjectDashboardCubit(gh<_i346.DashRepository>()));
     gh.lazySingleton<_i573.AuthRepository>(
         () => _i153.AuthRepositoryImpl(gh<_i713.MyApi>()));
     gh.lazySingleton<_i234.ProjectsRepository>(
