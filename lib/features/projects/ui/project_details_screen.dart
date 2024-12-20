@@ -313,7 +313,6 @@ class InfoRow extends StatelessWidget {
             flex: 5,
             child: Text(
               value,
-              style: const TextStyle(color: Colors.black54),
             ),
           ),
         ],
