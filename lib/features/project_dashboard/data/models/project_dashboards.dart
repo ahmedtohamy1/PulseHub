@@ -56,7 +56,7 @@ class Component {
   @JsonKey(name: 'component_id')
   final int componentId;
   final String name;
-  final String? content;
+  final Map<String, dynamic>? content;
   final int dashboard;
 
   Component({

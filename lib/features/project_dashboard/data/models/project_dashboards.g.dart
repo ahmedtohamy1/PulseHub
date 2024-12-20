@@ -49,7 +49,7 @@ Map<String, dynamic> _$DashboardToJson(Dashboard instance) => <String, dynamic>{
 Component _$ComponentFromJson(Map<String, dynamic> json) => Component(
       componentId: (json['component_id'] as num).toInt(),
       name: json['name'] as String,
-      content: json['content'] as String?,
+      content: json['content'] as Map<String, dynamic>?,
       dashboard: (json['dashboard'] as num).toInt(),
     );
 
