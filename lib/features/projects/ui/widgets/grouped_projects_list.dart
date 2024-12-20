@@ -90,17 +90,6 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
                         },
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: IconButton.filled(
-                        icon: const Icon(
-                          Icons.home,
-                        ),
-                        onPressed: () {
-                          context.go(Routes.dicScreen);
-                        },
-                      ),
-                    ),
                   ],
                 ),
               ],
@@ -163,7 +152,7 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
 
                           // Horizontal Scrolling Projects
                           SizedBox(
-                            height: 290,
+                            height: 310,
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
                               itemCount: ownerProjects.length,

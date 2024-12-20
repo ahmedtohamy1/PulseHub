@@ -54,18 +54,6 @@ class HomeScreen extends StatelessWidget {
                               },
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: IconButton.filled(
-                              icon: const Icon(
-                                Icons.home,
-                                color: Colors.white,
-                              ),
-                              onPressed: () {
-                                context.go(Routes.dicScreen);
-                              },
-                            ),
-                          ),
                         ],
                       ),
                     ],

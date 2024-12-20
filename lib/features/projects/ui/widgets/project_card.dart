@@ -111,12 +111,19 @@ class ProjectCardState extends State<ProjectCard> {
                           maxLines: 1,
                         ),
                       ),
-                      GestureDetector(
-                        onTap: () => togglePin(context),
-                        child: Icon(
-                          isPinned ? MdiIcons.pin : MdiIcons.pinOff,
-                          color: isPinned ? Colors.green : Colors.grey,
+                      IconButton.filled(
+                        onPressed: () => togglePin(context),
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.green.withOpacity(0),
                         ),
+                        icon: isPinned
+                            ? const Icon(
+                                MdiIcons.pin,
+                              )
+                            : const Icon(
+                                MdiIcons.pinOff,
+                              ),
+                        color: isPinned ? Colors.green : Colors.grey,
                       ),
                     ],
                   ),

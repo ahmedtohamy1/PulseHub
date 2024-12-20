@@ -9,6 +9,6 @@ class Destination {
 
 const destinations = [
   Destination(label: 'Cloud Mate', icon: Icons.cloud),
-  Destination(label: 'Cloud Mate', icon: Icons.more),
+  Destination(label: 'DIC Services', icon: Icons.dashboard),
   Destination(label: 'More', icon: Icons.menu),
 ];

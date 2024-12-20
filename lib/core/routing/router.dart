@@ -65,7 +65,7 @@ final router = GoRouter(
                 GoRoute(
                   path: 'project-details',
                   builder: (context, state) {
-                    final projectId = state.extra  as String;
+                    final projectId = state.extra as String;
                     return BlocProvider(
                       create: (context) =>
                           sl<ProjectsCubit>()..getProject(int.parse(projectId)),
@@ -80,9 +80,12 @@ final router = GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: Routes.explorePage,
-              builder: (context, state) => const NotFoundScreen(),
-            ),
+              path: Routes.dicScreen,
+              builder: (context, state) => BlocProvider(
+                create: (context) => sl<DicCubit>(),
+                child: const DicScreen(),
+              ),
+            )
           ],
         ),
         StatefulShellBranch(
