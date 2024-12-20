@@ -82,7 +82,9 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: IconButton.filled(
-                        icon: const Icon(Icons.refresh, color: Colors.white),
+                        icon: const Icon(
+                          Icons.refresh,
+                        ),
                         onPressed: () {
                           context.read<ProjectsCubit>().getProjects();
                         },
@@ -91,7 +93,9 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: IconButton.filled(
-                        icon: const Icon(Icons.home, color: Colors.white),
+                        icon: const Icon(
+                          Icons.home,
+                        ),
                         onPressed: () {
                           context.go(Routes.dicScreen);
                         },
@@ -120,17 +124,7 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
                     child: Container(
                       margin: const EdgeInsets.only(bottom: 10),
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
                         borderRadius: BorderRadius.circular(10),
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.2),
-                            spreadRadius: 1,
-                            blurRadius: 5,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,7 +150,7 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
                                   ),
                                   const SizedBox(width: 10),
                                   Text(
-                                    '${owner.name} (ID: ${owner.ownerId})',
+                                    '${owner.name} ',
                                     style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,

@@ -22,6 +22,7 @@ class EndPoints {
 
   // Dashboards
   static const String getDashs = "/project/dashboards/";
+  static const String aiQuestion = "/analysis/ai/";
 
   // imgs
   static String imageUrl(String path) => '$baseUrl$path';

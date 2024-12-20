@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:pulsehub/core/routing/routes.dart';
+import 'package:pulsehub/core/theme/cubit/theme_cubit.dart';
 import 'package:pulsehub/core/utils/user_manager.dart';
 import 'package:pulsehub/features/settings/cubit/settings_cubit.dart';
 
@@ -99,7 +101,39 @@ class SettingsScreen extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 150),
+          const SizedBox(height: 3),
+          Card(
+            elevation: 0,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(LucideIcons.moon, size: 30, color: Colors.grey),
+                      SizedBox(width: 16),
+                      Text(
+                        'Dark Mode',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                  BlocBuilder<ThemeCubit, bool>(
+                    builder: (context, isDarkMode) {
+                      return Switch(
+                        value: isDarkMode,
+                        onChanged: (value) {
+                          context.read<ThemeCubit>().toggleTheme();
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 100),
           BlocConsumer<SettingsCubit, SettingsState>(
             listener: (context, state) {
               if (state is LogoutSuccess) {

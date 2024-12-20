@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:pulsehub/core/di/service_locator.dart';
+import 'package:pulsehub/features/ai_report/cubit/ai_report_cubit.dart';
+import 'package:pulsehub/features/ai_report/ui/ai_screen.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/ui/screens/analyse_screen.dart';
 import 'package:pulsehub/features/project_dashboard/ui/screens/visualise_screen.dart';
@@ -44,7 +46,10 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
                   sl<ProjectDashboardCubit>()..getDashs(project.projectId!),
               child: const AnalyseScreen(),
             ),
-            const Center(child: Text('File Content')),
+            BlocProvider(
+              create: (context) => sl<AiReportCubit>(),
+              child: const AiScreen(),
+            ),
           ];
 
           return Column(
@@ -60,7 +65,6 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
               Expanded(
                 child: Container(
                   padding: const EdgeInsets.all(16.0),
-                  color: Colors.white,
                   child: _activeIconIndex == 0
                       ? const SizedBox()
                       : contentPages[_activeIconIndex],
@@ -101,37 +105,36 @@ class HeaderIcons extends StatelessWidget {
       LucideIcons.fileText,
     ];
 
-    return Container(
-      color: Colors.white,
-      child: Row(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Tooltip(
-              message: _getTooltipMessage(0),
-              child: IconButton.filled(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: Icon(iconData[0]),
+    return Row(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Tooltip(
+            message: _getTooltipMessage(0),
+            child: IconButton.filled(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: Icon(
+                iconData[0],
               ),
             ),
           ),
-          const Spacer(),
-          for (int i = 1; i < iconData.length; i++)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 5.0),
-              child: Tooltip(
-                message: _getTooltipMessage(i),
-                child: InkWell(
-                  onTap: () => onIconTap(i),
-                  child: CircleIcon(
-                    icon: iconData[i],
-                    isActive: activeIconIndex == i,
-                  ),
+        ),
+        const Spacer(),
+        for (int i = 1; i < iconData.length; i++)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 5.0),
+            child: Tooltip(
+              message: _getTooltipMessage(i),
+              child: InkWell(
+                onTap: () => onIconTap(i),
+                child: CircleIcon(
+                  icon: iconData[i],
+                  isActive: activeIconIndex == i,
                 ),
               ),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 

@@ -12,6 +12,9 @@ import 'package:dio/dio.dart' as _i361;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 
+import '../../features/ai_report/cubit/ai_report_cubit.dart' as _i782;
+import '../../features/ai_report/data/ai_report_repo.dart' as _i767;
+import '../../features/ai_report/data/ai_report_repo_impl.dart' as _i1064;
 import '../../features/auth/cubit/auth_cubit.dart' as _i698;
 import '../../features/auth/data/repositories/auth_repository.dart' as _i573;
 import '../../features/auth/data/repositories/auth_repository_impl.dart'
@@ -55,10 +58,14 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i495.ProjectDashboardCubit(gh<_i346.DashRepository>()));
     gh.lazySingleton<_i573.AuthRepository>(
         () => _i153.AuthRepositoryImpl(gh<_i713.MyApi>()));
+    gh.lazySingleton<_i767.AiReportRepository>(
+        () => _i1064.AiReportRepositoryImpl(gh<_i713.MyApi>()));
     gh.lazySingleton<_i234.ProjectsRepository>(
         () => _i12.ProjectsRepoImpl(gh<_i713.MyApi>()));
     gh.lazySingleton<_i878.SettingsRepository>(
         () => _i181.SettingsRepoImpl(gh<_i713.MyApi>()));
+    gh.factory<_i782.AiReportCubit>(
+        () => _i782.AiReportCubit(gh<_i767.AiReportRepository>()));
     gh.factory<_i960.SettingsCubit>(
         () => _i960.SettingsCubit(gh<_i878.SettingsRepository>()));
     gh.factory<_i819.DicCubit>(() => _i819.DicCubit(gh<_i90.DicRepository>()));

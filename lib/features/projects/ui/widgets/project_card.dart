@@ -132,7 +132,6 @@ class ProjectCardState extends State<ProjectCard> {
                         'Start Date: $formattedDate',
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.black54,
                         ),
                       ),
                       if (widget.project.warnings > 0) const Spacer(),
