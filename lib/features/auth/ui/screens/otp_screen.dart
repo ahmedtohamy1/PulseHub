@@ -87,7 +87,7 @@ class VerifyOtpScreen extends StatelessWidget {
               ),
               controller: otpController,
               length: 6,
-              validator: (pin) => pin!.length == 6 ? null : 'Invalid OTP',
+              validator: (pin) => pin!.length == 6 ? null : 'Invalid Code',
             ),
             const SizedBox(height: 16),
             BlocConsumer<AuthCubit, AuthState>(
@@ -140,7 +140,7 @@ class VerifyOtpScreen extends StatelessWidget {
                             ? const CircularProgressIndicator(
                                 color: Colors.white,
                               )
-                            : const Text("Verify OTP"),
+                            : const Text("Verify"),
                       ),
                     ),
                     TextButton(
@@ -148,7 +148,7 @@ class VerifyOtpScreen extends StatelessWidget {
                         Navigator.pop(context); // Navigate back to login
                       },
                       child: const Text(
-                        "Resend OTP",
+                        "Resend Code",
                         style: TextStyle(color: Colors.green),
                       ),
                     ),

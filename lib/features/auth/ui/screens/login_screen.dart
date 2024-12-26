@@ -37,7 +37,9 @@ class LoginScreen extends StatelessWidget {
               const SizedBox(height: 8),
               const Text(
                 "Welcome back, you've been missed!",
-                style: TextStyle(fontSize: 16, color: Colors.black54),
+                style: TextStyle(
+                  fontSize: 16,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 100),
@@ -60,7 +62,6 @@ class LoginScreen extends StatelessWidget {
                   },
                   child: const Text(
                     "Forgot your password?",
-                    style: TextStyle(color: Colors.black54),
                   ),
                 ),
               ),
@@ -147,7 +148,7 @@ class LoginScreen extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(8.0),
                                 ),
                               ),
-                              child: const Text("Send OTP"),
+                              child: const Text("Send Verification Code"),
                             ),
                           );
                   },
@@ -162,7 +163,7 @@ class LoginScreen extends StatelessWidget {
           useSafeArea: true,
           pageTitle: const Center(
             child: Text(
-              "Enter OTP and Reset Password",
+              "Enter Code and Reset Password",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ),
@@ -213,14 +214,14 @@ class LoginScreen extends StatelessWidget {
                       height: 1,
                       margin: const EdgeInsets.only(bottom: 12),
                       decoration: BoxDecoration(
-                        color: const Color.fromRGBO(137, 146, 160, 1),
+                        color: const Color.fromARGB(255, 105, 114, 128),
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
                   ),
                   controller: otpController,
                   length: 6,
-                  validator: (pin) => pin!.length == 6 ? null : 'Invalid OTP',
+                  validator: (pin) => pin!.length == 6 ? null : 'Invalid CODE',
                 ),
                 const SizedBox(height: 16),
                 TextField(

@@ -8,6 +8,7 @@ import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubi
 import 'package:pulsehub/features/project_dashboard/ui/screens/analyse_screen.dart';
 import 'package:pulsehub/features/project_dashboard/ui/screens/visualise_screen.dart';
 import 'package:pulsehub/features/projects/cubit/cubit/projects_cubit.dart';
+import 'package:pulsehub/features/projects/data/models/project_response.dart';
 
 class ProjectDetailsScreen extends StatefulWidget {
   const ProjectDetailsScreen({super.key});
@@ -244,7 +245,7 @@ class ProjectOwner extends StatelessWidget {
 
 // ProjectOverview Widget
 class ProjectOverview extends StatelessWidget {
-  final dynamic project;
+  final Project project;
 
   const ProjectOverview({required this.project, super.key});
 
@@ -256,9 +257,28 @@ class ProjectOverview extends StatelessWidget {
         InfoRow(label: 'Project Acronym:', value: project.acronym ?? 'N/A'),
         InfoRow(label: 'Start Date:', value: project.startDate ?? 'N/A'),
         InfoRow(label: 'Duration:', value: project.duration ?? 'N/A'),
+        InfoRow(label: 'Time Zone:', value: project.timeZone ?? 'N/A'),
         InfoRow(label: 'Budget:', value: project.budget ?? 'N/A'),
         InfoRow(label: 'Consultant:', value: project.consultant ?? 'N/A'),
         InfoRow(label: 'Contractor:', value: project.contractor ?? 'N/A'),
+        InfoRow(
+            label: 'Contraction Date:',
+            value: project.constructionDate ?? 'N/A'),
+        InfoRow(
+            label: 'Age of building:', value: project.ageOfBuilding ?? 'N/A'),
+        InfoRow(
+            label: 'Type of building:', value: project.typeOfBuilding ?? 'N/A'),
+        InfoRow(label: 'Size of building:', value: project.size ?? 'N/A'),
+        InfoRow(label: 'Structure:', value: project.structure ?? 'N/A'),
+        InfoRow(
+            label: 'Building History:',
+            value: project.buildingHistory ?? 'N/A'),
+        InfoRow(
+            label: 'Consturtion Characteristics:',
+            value: project.constructionCharacteristics ?? 'N/A'),
+        InfoRow(
+            label: 'Plans and files:', value: project.plansAndFiles ?? 'N/A'),
+        InfoRow(label: 'Description:', value: project.description ?? 'N/A'),
       ],
     );
   }
