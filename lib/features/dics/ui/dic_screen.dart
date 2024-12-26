@@ -25,12 +25,19 @@ class DicScreenState extends State<DicScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('PulseHub Services',
-            style: TextStyle(
-                color: Theme.of(context).primaryColor,
-                fontSize: 24.0,
-                fontWeight: FontWeight.bold)),
-        centerTitle: true,
+        title: const Text(
+          'PulseHub Services',
+          style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+        ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              context.read<DicCubit>().logout();
+              context.go(Routes.loginScreen);
+            },
+            icon: const Icon(Icons.logout),
+          )
+        ],
       ),
       body: BlocBuilder<DicCubit, DicState>(
         builder: (context, state) {

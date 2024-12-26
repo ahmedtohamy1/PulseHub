@@ -68,9 +68,12 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i782.AiReportCubit(gh<_i767.AiReportRepository>()));
     gh.factory<_i960.SettingsCubit>(
         () => _i960.SettingsCubit(gh<_i878.SettingsRepository>()));
-    gh.factory<_i819.DicCubit>(() => _i819.DicCubit(gh<_i90.DicRepository>()));
     gh.factory<_i698.AuthCubit>(
         () => _i698.AuthCubit(gh<_i573.AuthRepository>()));
+    gh.factory<_i819.DicCubit>(() => _i819.DicCubit(
+          gh<_i90.DicRepository>(),
+          gh<_i878.SettingsRepository>(),
+        ));
     gh.factory<_i616.ProjectsCubit>(
         () => _i616.ProjectsCubit(gh<_i234.ProjectsRepository>()));
     return this;
