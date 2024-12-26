@@ -9,16 +9,31 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle.dark.copyWith(
-        statusBarColor: Theme.of(context).scaffoldBackgroundColor,
-        systemNavigationBarColor: Theme.of(context).scaffoldBackgroundColor,
-      ),
-    );
     return BlocProvider(
       create: (context) => ThemeCubit(),
       child: BlocBuilder<ThemeCubit, bool>(
         builder: (context, isDarkMode) {
+          final theme = isDarkMode ? ThemeData.from(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: const Color(0xFF4E833B),
+                brightness: Brightness.dark,
+              ),
+            ) : ThemeData.from(
+              colorScheme:
+                  ColorScheme.fromSeed(seedColor: const Color(0xFF4E833B)),
+            );
+
+          SystemChrome.setSystemUIOverlayStyle(
+            SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
+              statusBarBrightness: isDarkMode ? Brightness.dark : Brightness.light,
+              systemNavigationBarColor: theme.scaffoldBackgroundColor,
+              systemNavigationBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
+              systemNavigationBarDividerColor: Colors.transparent,
+            ),
+          );
+
           return MaterialApp.router(
             routerConfig: router,
             debugShowCheckedModeBanner: false,

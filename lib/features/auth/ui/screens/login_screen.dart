@@ -19,57 +19,61 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                "Login here",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 90),
+                const Text(
+                  "Login here",
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                "Welcome back, you've been missed!",
-                style: TextStyle(
-                  fontSize: 16,
+                const SizedBox(height: 8),
+                const Text(
+                  "Welcome back, you've been missed!",
+                  style: TextStyle(
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 100),
-              TextField(
-                controller: emailController,
-                decoration: customInputDecoration("Email", Icons.email, true),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: customInputDecoration("Password", Icons.lock, true),
-              ),
-              const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {
-                    _showForgotPasswordModal(context);
-                  },
-                  child: const Text(
-                    "Forgot your password?",
+                const SizedBox(height: 100),
+                TextField(
+                  controller: emailController,
+                  decoration: customInputDecoration("Email", Icons.email, true),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration:
+                      customInputDecoration("Password", Icons.lock, true),
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      _showForgotPasswordModal(context);
+                    },
+                    child: const Text(
+                      "Forgot your password?",
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              SaveButton(
-                  emailController: emailController,
-                  passwordController: passwordController),
-            ],
+                const SizedBox(height: 16),
+                SaveButton(
+                    emailController: emailController,
+                    passwordController: passwordController),
+              ],
+            ),
           ),
         ),
       ),

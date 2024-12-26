@@ -52,6 +52,7 @@ class ProjectCardState extends State<ProjectCard> {
         ),
       );
     }
+    setState(() {});
     context.read<ProjectsCubit>().getProjects();
   }
 

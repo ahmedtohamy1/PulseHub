@@ -8,10 +8,17 @@ import 'package:pulsehub/core/routing/routes.dart';
 import 'package:pulsehub/features/auth/cubit/auth_cubit.dart';
 import 'package:pulsehub/features/auth/cubit/auth_state.dart';
 
-class VerifyOtpScreen extends StatelessWidget {
+class VerifyOtpScreen extends StatefulWidget {
+  const VerifyOtpScreen({super.key});
+
+  @override
+  State<VerifyOtpScreen> createState() => _VerifyOtpScreenState();
+}
+
+class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
   final TextEditingController otpController = TextEditingController();
 
-  VerifyOtpScreen({super.key});
+  bool rememberMe = false;
 
   @override
   Widget build(BuildContext context) {
@@ -120,13 +127,30 @@ class VerifyOtpScreen extends StatelessWidget {
               builder: (context, state) {
                 return Column(
                   children: [
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: rememberMe,
+                          onChanged: (value) {
+                            setState(() {
+                              rememberMe = value ?? false;
+                            });
+                          },
+                        ),
+                        const Text(
+                          "Remember Me",
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
                           context
                               .read<AuthCubit>()
-                              .verifyLoginOTP(otpController.text, true);
+                              .verifyLoginOTP(otpController.text, rememberMe);
                         },
                         style: ElevatedButton.styleFrom(
                           foregroundColor: Colors.white,
