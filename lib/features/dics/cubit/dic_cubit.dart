@@ -20,7 +20,7 @@ class DicCubit extends Cubit<DicState> {
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
     final refreshToken =
         await SharedPrefHelper.getSecuredString(SharedPrefKeys.refreshToken);
-    final res = await _settingsRepository.logout(refreshToken, token);
+    await _settingsRepository.logout(refreshToken, token);
   }
 
   Future<void> getDic() async {
