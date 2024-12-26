@@ -19,6 +19,7 @@ class ProfileScreen extends StatefulWidget {
 
 class ProfileScreenState extends State<ProfileScreen> {
   final SettingsCubit _cubit = sl<SettingsCubit>();
+  bool _isEditMode = false;
 
   TextEditingController _firstNameController = TextEditingController();
   TextEditingController _lastNameController = TextEditingController();
@@ -106,6 +107,17 @@ class ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const Spacer(),
                         Tooltip(
+                          message: 'Edit Profile',
+                          child: IconButton.filled(
+                            icon: Icon(_isEditMode ? Icons.close : Icons.edit),
+                            onPressed: () {
+                              setState(() {
+                                _isEditMode = !_isEditMode;
+                              });
+                            },
+                          ),
+                        ),
+                        Tooltip(
                           message: 'Change Password',
                           child: IconButton.filled(
                             icon: const Icon(Icons.password),
@@ -134,18 +146,21 @@ class ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 16.0),
                     TextField(
                       controller: _firstNameController,
+                      enabled: _isEditMode,
                       decoration: customInputDecoration(
                           "First Name", Icons.person, true),
                     ),
                     const SizedBox(height: 16.0),
                     TextField(
                       controller: _lastNameController,
+                      enabled: _isEditMode,
                       decoration: customInputDecoration(
                           "Last Name", Icons.person, true),
                     ),
                     const SizedBox(height: 16.0),
                     TextField(
                       controller: _titleController,
+                      enabled: _isEditMode,
                       decoration:
                           customInputDecoration("Title", Icons.title, true),
                     ),
@@ -162,26 +177,24 @@ class ProfileScreenState extends State<ProfileScreen> {
                       child: ElevatedButton(
                         onPressed: () {
                           _cubit.updateProfile(
-                            email,
+                            _emailController.text,
                             _firstNameController.text,
                             _lastNameController.text,
                             _titleController.text,
                             _cubit.userDetails!.pictureUrl,
                             _cubit.userDetails!.mode,
                           );
+                          setState(() {
+                            _isEditMode = false;
+                          });
                         },
                         style: ElevatedButton.styleFrom(
                           foregroundColor: Colors.white,
                           backgroundColor: Colors.green,
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
+                          disabledBackgroundColor: Colors.grey,
                         ),
-                        child: const Text(
-                          'Update Profile',
-                          style: TextStyle(fontSize: 16.0),
-                        ),
+                        child: Text(
+                            _isEditMode ? 'Save Changes' : 'Update Profile'),
                       ),
                     ),
                     const SizedBox(height: 16.0),
