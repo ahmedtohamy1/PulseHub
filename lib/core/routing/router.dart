@@ -16,6 +16,7 @@ import 'package:pulsehub/features/projects/ui/project_details_screen.dart';
 
 import 'package:pulsehub/features/settings/cubit/settings_cubit.dart';
 import 'package:pulsehub/features/settings/ui/profile_screen.dart';
+import 'package:pulsehub/features/settings/ui/session_screen.dart';
 import 'package:pulsehub/features/settings/ui/settings_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -37,7 +38,7 @@ final router = GoRouter(
       path: Routes.otpScreen,
       builder: (context, state) => BlocProvider(
         create: (context) => sl<AuthCubit>(),
-        child: VerifyOtpScreen(),
+        child: const VerifyOtpScreen(),
       ),
     ),
     GoRoute(
@@ -99,6 +100,14 @@ final router = GoRouter(
                 GoRoute(
                   path: 'profile', // Use relative path for nested routes
                   builder: (context, state) => const ProfileScreen(),
+                ),
+                GoRoute(
+                  path:
+                      'session-manager', // Use relative path for nested routes
+                  builder: (context, state) => BlocProvider(
+                    create: (context) => sl<SettingsCubit>(),
+                    child: const SessionScreen(),
+                  ),
                 ),
               ],
             ),
