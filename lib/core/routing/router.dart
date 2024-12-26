@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/core/layout/main_layout.dart';
-import 'package:pulsehub/core/routing/404.dart';
 import 'package:pulsehub/core/routing/routes.dart';
 import 'package:pulsehub/core/utils/user_manager.dart';
 import 'package:pulsehub/features/auth/cubit/auth_cubit.dart';

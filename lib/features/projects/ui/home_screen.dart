@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-import 'package:pulsehub/core/routing/routes.dart';
 import 'package:pulsehub/features/projects/cubit/cubit/projects_cubit.dart';
 import 'package:pulsehub/features/projects/ui/widgets/projects_view.dart';
 
