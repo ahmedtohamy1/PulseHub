@@ -102,72 +102,75 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
               return ReorderableListView(
                 padding: const EdgeInsets.all(10),
                 onReorder: _onReorder,
+                buildDefaultDragHandles: false,
                 children: owners.map((owner) {
                   final ownerProjects = groupedProjects[owner]!;
 
-                  return ReorderableDragStartListener(
+                  return Container(
                     key: ValueKey(owner.ownerId),
-                    index: owners.indexOf(owner),
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Owner Header
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(0.2),
-                              borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(10)),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 10, horizontal: 5),
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    backgroundImage:
-                                        NetworkImage(owner.logoUrl),
-                                    radius: 20,
-                                    onBackgroundImageError: (_, __) =>
-                                        const Icon(Icons.person),
+                    margin: const EdgeInsets.only(bottom: 10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Owner Header
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.green.withOpacity(0.2),
+                            borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(10)),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 5),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundImage:
+                                      NetworkImage(owner.logoUrl),
+                                  radius: 20,
+                                  onBackgroundImageError: (_, __) =>
+                                      const Icon(Icons.person),
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  '${owner.name} ',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    '${owner.name} ',
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                ),
+                                const Spacer(),
+                                ReorderableDragStartListener(
+                                  index: owners.indexOf(owner),
+                                  child: const Icon(Icons.drag_handle),
+                                ),
+                              ],
                             ),
                           ),
+                        ),
 
-                          // Horizontal Scrolling Projects
-                          SizedBox(
-                            height: 310,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: ownerProjects.length,
-                              itemBuilder: (context, projectIndex) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 10),
-                                  child: SizedBox(
-                                    width: 300,
-                                    child: ProjectCard(
-                                        project: ownerProjects[projectIndex]),
-                                  ),
-                                );
-                              },
-                            ),
+                        // Horizontal Scrolling Projects
+                        SizedBox(
+                          height: 310,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: ownerProjects.length,
+                            itemBuilder: (context, projectIndex) {
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 10),
+                                child: SizedBox(
+                                  width: 300,
+                                  child: ProjectCard(
+                                      project: ownerProjects[projectIndex]),
+                                ),
+                              );
+                            },
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   );
                 }).toList(),

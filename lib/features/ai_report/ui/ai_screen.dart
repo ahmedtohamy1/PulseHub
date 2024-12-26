@@ -11,7 +11,7 @@ class AiScreen extends StatefulWidget {
 }
 
 class AiScreenState extends State<AiScreen> {
-  String? selectedModel = 'GPT-4o-Mini-128k';
+  String? selectedModel = 'Gemini-1.0-Pro';
   bool useKnowledgeBase = false;
   double numberOfReferences = 1; // Initial value for the slider
   final TextEditingController questionController = TextEditingController();
@@ -52,6 +52,8 @@ class AiScreenState extends State<AiScreen> {
                   },
                   items: const [
                     DropdownMenuItem(
+                        value: 'Gemini-1.0-Pro', child: Text('Gemini-1.0-Pro')),
+                    DropdownMenuItem(
                         value: 'GPT-4o-Mini-128k',
                         child: Text('GPT-4o-Mini-128k')),
                     DropdownMenuItem(
@@ -60,8 +62,6 @@ class AiScreenState extends State<AiScreen> {
                     DropdownMenuItem(
                         value: 'Gemini-1.5-Flash',
                         child: Text('Gemini-1.5-Flash')),
-                    DropdownMenuItem(
-                        value: 'Gemini-1.0-Pro', child: Text('Gemini-1.0-Pro')),
                     DropdownMenuItem(
                         value: 'Claude-instant', child: Text('Claude-instant')),
                     DropdownMenuItem(
