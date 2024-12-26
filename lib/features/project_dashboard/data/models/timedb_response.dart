@@ -1,0 +1,69 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'timedb_response.g.dart';
+
+@JsonSerializable(nullable: true)
+class SensorDataResponse {
+  final bool? success;
+  final Result? result;
+  final Map<String, List<double>>? frequency;
+  final Map<String, List<double>>? magnitude;
+  final Map<String, List<double>>? dominateFrequencies;
+
+  SensorDataResponse({
+    this.success,
+    this.result,
+    this.frequency,
+    this.magnitude,
+    this.dominateFrequencies,
+  });
+
+  factory SensorDataResponse.fromJson(Map<String, dynamic> json) =>
+      _$SensorDataResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$SensorDataResponseToJson(this);
+}
+
+@JsonSerializable(nullable: true)
+class Result {
+  final Data? accelX;
+  final Data? accelY;
+  final Data? accelZ;
+  final Data? humidity;
+  final Data? temperature;
+
+  Result({
+    this.accelX,
+    this.accelY,
+    this.accelZ,
+    this.humidity,
+    this.temperature,
+  });
+
+  factory Result.fromJson(Map<String, dynamic> json) => _$ResultFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ResultToJson(this);
+}
+
+@JsonSerializable(nullable: true)
+class Data {
+  final List<DateTime>? time;
+  final List<double>? value;
+
+  Data({this.time, this.value});
+
+  factory Data.fromJson(Map<String, dynamic> json) => _$DataFromJson(json);
+
+  Map<String, dynamic> toJson() => _$DataToJson(this);
+}
+
+// Custom serializer for DateTime
+DateTime? _dateTimeFromJson(String? str) {
+  if (str == null) return null;
+  return DateTime.parse(str);
+}
+
+String? _dateTimeToJson(DateTime? dateTime) {
+  if (dateTime == null) return null;
+  return dateTime.toIso8601String();
+}

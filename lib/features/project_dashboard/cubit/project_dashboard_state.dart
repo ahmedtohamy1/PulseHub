@@ -28,3 +28,44 @@ final class ProjectDashboardFetchFailure extends ProjectDashboardState {
   @override
   List<Object> get props => [message];
 }
+
+final class ProjectDashboardDetailsLoading extends ProjectDashboardState {}
+
+final class ProjectDashboardDetailsSuccess extends ProjectDashboardState {
+  final CloudHubResponse cloudHubResponse;
+
+  const ProjectDashboardDetailsSuccess(this.cloudHubResponse);
+
+  @override
+  List<Object> get props => [cloudHubResponse];
+}
+
+final class ProjectDashboardDetailsFailure extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardDetailsFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
+final class ProjectDashboardDetailsTimeDbLoading
+    extends ProjectDashboardState {}
+
+final class ProjectDashboardDetailsTimeDbSuccess extends ProjectDashboardState {
+  final SensorDataResponse sensorDataResponse;
+
+  const ProjectDashboardDetailsTimeDbSuccess(this.sensorDataResponse);
+
+  @override
+  List<Object> get props => [sensorDataResponse];
+}
+
+final class ProjectDashboardDetailsTimeDbFailure extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardDetailsTimeDbFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}

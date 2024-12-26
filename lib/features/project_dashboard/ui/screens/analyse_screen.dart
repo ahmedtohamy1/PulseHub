@@ -4,6 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/core/theming/app_styles.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
+import 'package:pulsehub/features/project_dashboard/ui/screens/dashboard_details.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/dashboard_card.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/section_title.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
@@ -108,8 +109,21 @@ class AnalyseScreen extends StatelessWidget {
                     },
                     title: 'Analyse Dashboards'),
                 const SizedBox(height: 16),
-                ...dashboards
-                    .map((dashboard) => DashboardCard(dashboard: dashboard)),
+                ...dashboards.map((dashboard) => DashboardCard(
+                      dashboard: dashboard,
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => BlocProvider(
+                                      create: (context) =>
+                                          sl<ProjectDashboardCubit>(),
+                                      child: DashboardDetails(
+                                        dashboard: dashboard,
+                                      ),
+                                    )));
+                      },
+                    )),
               ],
             ),
           );

@@ -3,9 +3,11 @@ import 'package:intl/intl.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/project_dashboards.dart';
 
 class DashboardCard extends StatelessWidget {
+  final VoidCallback onTap;
   final Dashboard dashboard;
 
-  const DashboardCard({required this.dashboard, super.key});
+  const DashboardCard(
+      {required this.dashboard, super.key, required this.onTap});
 
   String _formatDate(String isoDate) {
     try {
@@ -26,11 +28,23 @@ class DashboardCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              dashboard.name.isNotEmpty ? dashboard.name : 'Unnamed Dashboard',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+            Row(
+              children: [
+                Text(
+                  dashboard.name.isNotEmpty
+                      ? dashboard.name
+                      : 'Unnamed Dashboard',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const Spacer(),
+                IconButton(
+                    onPressed: () {
+                      onTap();
+                    },
+                    icon: const Icon(Icons.remove_red_eye_rounded)),
+              ],
             ),
             const SizedBox(height: 8.0),
             Text(

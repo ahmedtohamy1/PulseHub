@@ -3,8 +3,10 @@ import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/networking/end_points.dart';
 import 'package:pulsehub/core/networking/my_api.dart';
 import 'package:pulsehub/core/networking/status_code.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/cloudhub_model.dart';
 
 import 'package:pulsehub/features/project_dashboard/data/models/project_dashboards.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/timedb_response.dart';
 import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo.dart';
 
 @LazySingleton(as: DashRepository)
@@ -34,5 +36,102 @@ class DashRepoImpl extends DashRepository {
     } catch (error) {
       return Left('Exception occurred: $error');
     }
+  }
+
+  @override
+  Future<Either<String, CloudHubResponse>> getDashDetails(
+      String org, int projectId, String token) async {
+    try {
+      final response = await myApiService.get(
+        EndPoints.getDashDetails,
+        token: token,
+        queryParameters: {'project_id': projectId, 'org': org},
+      );
+
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        final json = response.data;
+
+        return Right(CloudHubResponse.fromJson(json));
+      } else {
+        return Left('Failed to get Dashs: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
+  Future<Either<String, SensorDataResponse>> getTimeDb(
+      String token, QueryParams queryParams) async {
+    try {
+      final response = await myApiService.get(
+        EndPoints.timeDbData,
+        token: token,
+        queryParameters: queryParams.toJson(),
+      );
+
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        final json = response.data;
+
+        return Right(SensorDataResponse.fromJson(json));
+      } else {
+        return Left('Failed to get Dashs: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+}
+
+class QueryParams {
+  final String? aggregateFunc;
+  final String? bucket;
+  final String? deviationThreshold;
+  final String? fields;
+  final String? measurementName;
+  final String? org;
+  final bool? rawData;
+  final String? sensorsToAnalyze;
+  final String? timeRangeStart;
+  final String? timeRangeStop;
+  final String? topic;
+  final String? windowPeriod;
+  final String? windowSize;
+
+  QueryParams({
+    this.aggregateFunc,
+    this.bucket,
+    this.deviationThreshold,
+    this.fields,
+    this.measurementName,
+    this.org,
+    this.topic,
+    this.sensorsToAnalyze,
+    this.timeRangeStart,
+    this.windowSize,
+  })  : rawData = false, // Fixed value
+        timeRangeStop = 'now', // Fixed value
+        windowPeriod = '10m'; // Fixed value
+
+  Map<String, dynamic> toJson() {
+    return {
+      'aggregate_func': aggregateFunc,
+      'bucket': bucket,
+      'deviation_threshold': deviationThreshold,
+      'fields': fields,
+      'measurement_name': measurementName,
+      'org': org,
+      'raw_data': rawData,
+      'sensors_to_analyze': sensorsToAnalyze,
+      'time_range_start': timeRangeStart,
+      'time_range_stop': timeRangeStop,
+      'topic': topic,
+      'window_period': windowPeriod,
+      'window_size': windowSize,
+    };
   }
 }
