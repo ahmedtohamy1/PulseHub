@@ -186,7 +186,7 @@ class CircleIcon extends StatelessWidget {
 
 // ProjectDetailsContent Widget
 class ProjectDetailsContent extends StatelessWidget {
-  final dynamic project;
+  final Project project;
 
   const ProjectDetailsContent({required this.project, super.key});
 
@@ -197,10 +197,14 @@ class ProjectDetailsContent extends StatelessWidget {
         children: [
           SectionTitle(title: 'Project: ${project.title}'),
           const SizedBox(height: 8),
-          if (project.owner != null)
-            ProjectOwner(owner: project.owner)
-          else
-            const Text('Owner information not available.'),
+          if (project.owner != null) ProjectOwner(owner: project.owner),
+          const SizedBox(
+            height: 3,
+          ),
+          Image.network(
+            project.pictureUrl ?? '',
+            fit: BoxFit.cover,
+          ),
           const SizedBox(height: 24),
           const SectionTitle(title: 'Overview'),
           const SizedBox(height: 8),
