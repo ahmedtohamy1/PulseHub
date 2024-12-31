@@ -90,9 +90,14 @@ class _DashboardDetailsState extends State<DashboardDetails> {
           const SizedBox(height: 16),
           BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
             builder: (context, state) {
-              if (state is ProjectDashboardDetailsSuccess) {
-                final measurements =
-                    state.cloudHubResponse.buckets!.first.measurements;
+              if (context.read<ProjectDashboardCubit>().cloudHubResponse !=
+                  null) {
+                final measurements = context
+                    .read<ProjectDashboardCubit>()
+                    .cloudHubResponse!
+                    .buckets!
+                    .first
+                    .measurements;
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

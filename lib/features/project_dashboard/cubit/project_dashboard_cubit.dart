@@ -27,13 +27,18 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
     );
   }
 
+  CloudHubResponse? cloudHubResponse;
   getDashDetails(int projectId) async {
     emit(ProjectDashboardDetailsLoading());
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
     final res = await _repository.getDashDetails('DIC', projectId, token);
+
     res.fold(
       (failure) => emit(ProjectDashboardDetailsFailure(failure)),
-      (response) => emit(ProjectDashboardDetailsSuccess(response)),
+      (response) {
+        cloudHubResponse = response;
+        emit(ProjectDashboardDetailsSuccess(response));
+      },
     );
   }
 
