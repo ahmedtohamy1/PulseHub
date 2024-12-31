@@ -69,3 +69,23 @@ final class ProjectDashboardDetailsTimeDbFailure extends ProjectDashboardState {
   @override
   List<Object> get props => [message];
 }
+
+final class ProjectDashboardCreateDashLoading extends ProjectDashboardState {}
+
+final class ProjectDashboardCreateDashSuccess extends ProjectDashboardState {
+  final bool success;
+
+  const ProjectDashboardCreateDashSuccess(this.success);
+
+  @override
+  List<Object> get props => [success];
+}
+
+final class ProjectDashboardCreateDashFailure extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardCreateDashFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}

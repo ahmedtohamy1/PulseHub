@@ -25,6 +25,7 @@ class EndPoints {
   static const String aiQuestion = "/analysis/ai/";
   static const String getDashDetails = "/project/timedb-schema/";
   static const String timeDbData = "/project/timedb/";
+  static const String createDash = "/project/dashboard/";
   // imgs
   static String imageUrl(String path) => '$baseUrl$path';
 }

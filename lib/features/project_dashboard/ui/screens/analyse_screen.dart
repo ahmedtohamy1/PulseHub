@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/core/theming/app_styles.dart';
@@ -10,7 +11,8 @@ import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/sec
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class AnalyseScreen extends StatelessWidget {
-  const AnalyseScreen({super.key});
+  const AnalyseScreen({super.key, required this.projectId});
+  final int projectId;
   _onAdd(BuildContext context) {
     final titleController = TextEditingController();
     final descController = TextEditingController();
@@ -52,26 +54,50 @@ class AnalyseScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 BlocConsumer<ProjectDashboardCubit, ProjectDashboardState>(
-                  listener: (context, state) {},
+                  listener: (context, state) {
+                    if (state is ProjectDashboardCreateDashSuccess) {
+                      Navigator.of(context).pop();
+
+                      Fluttertoast.showToast(
+                        msg: "Dashboard created successfully!",
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.BOTTOM,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.green,
+                        textColor: Colors.white,
+                      );
+                    }
+                  },
                   builder: (context, state) {
-                    return SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor: Theme.of(context).primaryColor,
-                          padding: const EdgeInsets.symmetric(vertical: 16.0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                        ),
-                        child: const Text(
-                          "Create",
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    );
+                    return state is ProjectDashboardCreateDashLoading
+                        ? const CircularProgressIndicator()
+                        : SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                context
+                                    .read<ProjectDashboardCubit>()
+                                    .createDash(
+                                        titleController.text,
+                                        descController.text,
+                                        'analyse',
+                                        projectId);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Theme.of(context).primaryColor,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                              ),
+                              child: const Text(
+                                "Create",
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          );
                   },
                 )
               ],

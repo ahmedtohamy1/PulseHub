@@ -11,4 +11,7 @@ abstract class DashRepository {
       String org, int projectId, String token);
   Future<Either<String, SensorDataResponse>> getTimeDb(
       String token, QueryParams queryParams);
+
+  Future<Either<String, bool>> createDash(String token, String name,
+      String description, String group, int projectId);
 }

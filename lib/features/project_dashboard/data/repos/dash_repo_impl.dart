@@ -85,6 +85,35 @@ class DashRepoImpl extends DashRepository {
       return Left('Exception occurred: $error');
     }
   }
+
+  @override
+  Future<Either<String, bool>> createDash(String token, String name,
+      String description, String group, int projectId) async {
+    try {
+      final response = await myApiService.post(
+        EndPoints.createDash,
+        token: token,
+        data: {
+          "name": name,
+          "description": description,
+          "groups": group,
+          "project": projectId,
+        },
+      );
+
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        final json = response.data;
+
+        return const Right(true);
+      } else {
+        return Left('Failed to get Dashs: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
 }
 
 class QueryParams {
