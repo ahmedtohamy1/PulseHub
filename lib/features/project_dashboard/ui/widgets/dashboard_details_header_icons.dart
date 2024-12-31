@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/timedb_response.dart';
 import 'package:csv/csv.dart';
-import 'package:pulsehub/features/project_dashboard/ui/screens/dashboard_details.dart';
+import 'package:pulsehub/features/project_dashboard/ui/screens/graph_dashboard_sensors.dart';
 import 'package:share_plus/share_plus.dart';
 
 class DashboardDetailsheaderIcons extends StatelessWidget {
@@ -13,7 +13,7 @@ class DashboardDetailsheaderIcons extends StatelessWidget {
     required this.widget,
   });
 
-  final DashboardDetails widget;
+  final GraphDashboardSensors widget;
   String _generateCsvData(SensorDataResponse data) {
     final List<List<dynamic>> csvData = [];
 

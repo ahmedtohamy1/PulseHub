@@ -10,16 +10,16 @@ import 'package:pulsehub/features/project_dashboard/ui/widgets/number_input.dart
 import 'package:pulsehub/features/project_dashboard/ui/widgets/submit_button.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/time_db_response_builder.dart';
 
-class DashboardDetails extends StatefulWidget {
+class GraphDashboardSensors extends StatefulWidget {
   final Dashboard dashboard;
 
-  const DashboardDetails({super.key, required this.dashboard});
+  const GraphDashboardSensors({super.key, required this.dashboard});
 
   @override
-  State<DashboardDetails> createState() => _DashboardDetailsState();
+  State<GraphDashboardSensors> createState() => _GraphDashboardSensorsState();
 }
 
-class _DashboardDetailsState extends State<DashboardDetails> {
+class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
   @override
   void initState() {
     super.initState();
