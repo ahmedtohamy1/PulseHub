@@ -116,8 +116,12 @@ class VisualiseScreen extends StatelessWidget {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => DashboardDetails(
-                                      dashboard: dashboard,
+                                builder: (context) => BlocProvider(
+                                      create: (context) =>
+                                          sl<ProjectDashboardCubit>(),
+                                      child: DashboardDetails(
+                                        dashboard: dashboard,
+                                      ),
                                     )));
                       },
                     )),
