@@ -54,11 +54,6 @@ class SettingsScreen extends StatelessWidget {
                               .titleLarge
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          user?.userId.toString() ?? 'No Email Available',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
                       ],
                     ),
                   ],
