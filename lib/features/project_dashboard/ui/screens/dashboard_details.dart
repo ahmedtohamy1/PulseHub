@@ -56,11 +56,11 @@ class _DashboardDetailsState extends State<DashboardDetails> {
     final serverFields = selectedFields.map((field) {
       switch (field) {
         case 'accelX':
-          return 'acceleration_x';
+          return 'accelX';
         case 'accelY':
-          return 'acceleration_y';
+          return 'accelY';
         case 'accelZ':
-          return 'acceleration_z';
+          return 'accelZ';
         default:
           return field;
       }
@@ -69,7 +69,7 @@ class _DashboardDetailsState extends State<DashboardDetails> {
     final queryParams = QueryParams(
       measurementName: selectedMeasurement,
       topic: selectedTopic,
-      fields: 'all',
+      fields: serverFields,
       sensorsToAnalyze: serverFields,
       windowSize: windowSize.toString(),
       deviationThreshold: deviationController.text,
@@ -81,7 +81,6 @@ class _DashboardDetailsState extends State<DashboardDetails> {
     );
 
     context.read<ProjectDashboardCubit>().getTimeDb(queryParams);
-    print(queryParams.toJson());
   }
 
   @override
