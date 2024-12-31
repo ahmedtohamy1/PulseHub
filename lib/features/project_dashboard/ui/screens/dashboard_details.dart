@@ -594,14 +594,16 @@ class DashboardDetailsheaderIcons extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
         const SizedBox(width: 8),
-        Text(
-          widget.dashboard.name,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+        Expanded(
+          child: Text(
+            widget.dashboard.name,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
-        const Spacer(),
         Tooltip(
           message: 'Import Dashboard Data',
           child: IconButton.filled(
