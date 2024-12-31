@@ -2,7 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'timedb_response.g.dart';
 
-@JsonSerializable(nullable: true)
+@JsonSerializable()
 class SensorDataResponse {
   final bool? success;
   final Result? result;
@@ -32,7 +32,7 @@ class SensorDataResponse {
   Map<String, dynamic> toJson() => _$SensorDataResponseToJson(this);
 }
 
-@JsonSerializable(nullable: true)
+@JsonSerializable()
 class Result {
   final Data? accelX;
   final Data? accelY;
@@ -53,7 +53,7 @@ class Result {
   Map<String, dynamic> toJson() => _$ResultToJson(this);
 }
 
-@JsonSerializable(nullable: true)
+@JsonSerializable()
 class Data {
   final List<DateTime>? time;
   final List<double>? value;
