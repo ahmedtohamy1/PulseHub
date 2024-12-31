@@ -79,9 +79,19 @@ class TimeSeriesChart extends StatelessWidget {
     if (result == null) return false;
 
     final dataForField = _getDataForField(result, field);
-    return dataForField != null &&
-        dataForField.value != null &&
-        dataForField.value!.isNotEmpty;
+    if (dataForField == null ||
+        dataForField.value == null ||
+        dataForField.value!.isEmpty) {
+      return false;
+    }
+
+    // Optionally, skip if *all* values are zero (or NaN):
+    final allZero = dataForField.value!.every((v) => v == 0.0);
+    if (allZero) {
+      return false; // or keep true if you want to see a “flat line” at zero
+    }
+
+    return true;
   }
 
   bool _hasDataForFields(List<String> fields) {
@@ -113,20 +123,37 @@ class TimeSeriesChart extends StatelessWidget {
     final yScaleFactor = isMicroUnits ? 1e6 : 1.0;
     lineBarsData = _scaleLineBarsData(lineBarsData, yScaleFactor);
 
-    final (minX, maxX, minY, maxY) =
+    // Calculate axis limits from the data
+    var (minX, maxX, minY, maxY) =
         _calculateAxisLimits(lineBarsData, isTimeXAxis);
 
     if (minX == null || maxX == null || minY == null || maxY == null) {
       return const Center(child: Text('No valid data to display'));
     }
 
-    final yInterval = (maxY - minY) / 4;
-    final xInterval = (maxX - minX) / 4;
+    // --- FIX 1: If we have a zero range (single point or constant data),
+    //            force a minimal range so intervals won't be zero.
+    if (minX == maxX) {
+      minX = minX - 1;
+      maxX = maxX + 1;
+    }
+    if (minY == maxY) {
+      minY = minY - 1;
+      maxY = maxY + 1;
+    }
+
+    // Now we can safely compute intervals
+    double xInterval = (maxX - minX) / 4;
+    double yInterval = (maxY - minY) / 4;
+
+    // --- FIX 2: Just in case, avoid passing an interval of 0.0 to FLChart
+    if (xInterval <= 0) xInterval = 1;
+    if (yInterval <= 0) yInterval = 1;
 
     return SizedBox(
       height: 300,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(8, 20, 16, 12), // Adjusted padding
+        padding: const EdgeInsets.fromLTRB(8, 20, 16, 12),
         child: LineChart(
           LineChartData(
             gridData: FlGridData(
@@ -136,47 +163,37 @@ class TimeSeriesChart extends StatelessWidget {
               horizontalInterval: yInterval,
               verticalInterval: xInterval,
               getDrawingHorizontalLine: (value) => FlLine(
-                color: Colors.grey.withOpacity(0.1), // Lighter grid lines
+                color: Colors.grey.withOpacity(0.1),
                 strokeWidth: 0.5,
               ),
               getDrawingVerticalLine: (value) => FlLine(
-                color: Colors.grey.withOpacity(0.1), // Lighter grid lines
+                color: Colors.grey.withOpacity(0.1),
                 strokeWidth: 0.5,
               ),
             ),
             titlesData: FlTitlesData(
               bottomTitles: AxisTitles(
                 sideTitles: SideTitles(
-                  showTitles: true, // Enable x-axis labels
-                  reservedSize: 22, // Space for x-axis labels
+                  showTitles: true,
+                  reservedSize: 22,
                   interval: xInterval,
                   getTitlesWidget: (value, meta) {
                     if (isTimeXAxis) {
-                      // Format as time
                       final date =
                           DateTime.fromMillisecondsSinceEpoch(value.toInt());
                       final hh = date.hour.toString().padLeft(2, '0');
                       final mm = date.minute.toString().padLeft(2, '0');
                       return Padding(
                         padding: const EdgeInsets.only(top: 4.0),
-                        child: Text(
-                          '$hh:$mm',
-                          style: const TextStyle(
-                            fontSize: 10, // Smaller font size
-                            color: Colors.black87, // Darker text color
-                          ),
-                        ),
+                        child: Text('$hh:$mm',
+                            style: const TextStyle(fontSize: 10)),
                       );
                     } else {
-                      // Format as frequency
                       return Padding(
                         padding: const EdgeInsets.only(top: 4.0),
                         child: Text(
                           value.toStringAsFixed(0),
-                          style: const TextStyle(
-                            fontSize: 10, // Smaller font size
-                            color: Colors.black87, // Darker text color
-                          ),
+                          style: const TextStyle(fontSize: 10),
                         ),
                       );
                     }
@@ -186,21 +203,22 @@ class TimeSeriesChart extends StatelessWidget {
               leftTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
-                  reservedSize: 40, // Adjusted reserved size for y-axis
+                  reservedSize: 40,
                   interval: yInterval,
                   getTitlesWidget: (value, meta) {
-                    final formattedValue =
-                        _formatValue(value, isTimeXAxis, isMicroUnits, field);
+                    final formattedValue = _formatValue(
+                      value,
+                      isTimeXAxis,
+                      isMicroUnits,
+                      field,
+                    );
                     return Padding(
                       padding: const EdgeInsets.only(right: 8.0),
                       child: SideTitleWidget(
                         axisSide: meta.axisSide,
                         child: Text(
                           formattedValue + (isMicroUnits ? ' µ' : ''),
-                          style: const TextStyle(
-                            fontSize: 12, // Slightly larger font size
-                            color: Colors.black87, // Darker text color
-                          ),
+                          style: const TextStyle(fontSize: 12),
                         ),
                       ),
                     );
@@ -220,6 +238,7 @@ class TimeSeriesChart extends StatelessWidget {
               ),
             ),
             lineBarsData: lineBarsData,
+            // Use the possibly adjusted axis values
             minX: minX,
             maxX: maxX,
             minY: minY,
@@ -227,7 +246,7 @@ class TimeSeriesChart extends StatelessWidget {
             clipData: const FlClipData.all(),
             backgroundColor: Colors.white,
             lineTouchData: LineTouchData(
-              enabled: true, // Enable touch interaction
+              enabled: true,
               touchTooltipData: LineTouchTooltipData(
                 getTooltipItems: (List<LineBarSpot> touchedSpots) {
                   return touchedSpots.map((spot) {
@@ -238,15 +257,12 @@ class TimeSeriesChart extends StatelessWidget {
                     final yValue = spot.y.toStringAsFixed(2);
                     return LineTooltipItem(
                       '$field\nX: $xValue\nY: $yValue',
-                      const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12, // Tooltip font size
-                      ),
+                      const TextStyle(color: Colors.white, fontSize: 12),
                     );
                   }).toList();
                 },
-                tooltipPadding: const EdgeInsets.all(8), // Tooltip padding
-                tooltipRoundedRadius: 8, // Tooltip border radius
+                tooltipPadding: const EdgeInsets.all(8),
+                tooltipRoundedRadius: 8,
               ),
             ),
           ),

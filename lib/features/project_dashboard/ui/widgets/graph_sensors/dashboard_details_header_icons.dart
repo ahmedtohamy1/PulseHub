@@ -21,6 +21,7 @@ class DashboardDetailsheaderIcons extends StatelessWidget {
     try {
       final rows = const CsvToListConverter().convert(csvData);
 
+      // If the file is completely empty or there's no header row, bail out
       if (rows.isEmpty || rows[0].length < 13) {
         throw Exception("CSV file format is incorrect");
       }
@@ -36,15 +37,34 @@ class DashboardDetailsheaderIcons extends StatelessWidget {
       final dominateFrequencies = <double>[];
       final anomalyRegions = <List<double>>[];
 
-      // Skip the header row and parse data
+      // Start from row index 1, because row[0] is typically your CSV header
       for (var i = 1; i < rows.length; i++) {
         final row = rows[i];
 
-        // Parse and validate each field
-        time.add(
-          DateTime.fromMillisecondsSinceEpoch(
-              int.tryParse(row[0].toString()) ?? 0),
-        );
+        // --- 1) Skip if the row is too short to have all columns we need:
+        if (row.length < 10) {
+          continue;
+        }
+
+        // --- 2) Determine if this row is "empty" by checking columns you require:
+        //         For instance, time, temperature, accelX, etc.
+        bool isRowEmpty = true;
+        // Check the first 6 columns as an example (depending on your CSV structure):
+        for (var j = 0; j < 6; j++) {
+          final cell = row[j];
+          if (cell != null && cell.toString().trim().isNotEmpty) {
+            isRowEmpty = false;
+            break;
+          }
+        }
+        if (isRowEmpty) {
+          continue;
+        }
+
+        // If not empty, parse the row
+        time.add(DateTime.fromMillisecondsSinceEpoch(
+          int.tryParse(row[0].toString()) ?? 0,
+        ));
         accelX.add(double.tryParse(row[1]?.toString() ?? '') ?? 0.0);
         accelY.add(double.tryParse(row[2]?.toString() ?? '') ?? 0.0);
         accelZ.add(double.tryParse(row[3]?.toString() ?? '') ?? 0.0);
@@ -62,6 +82,7 @@ class DashboardDetailsheaderIcons extends StatelessWidget {
         anomalyRegions.add(anomalyRegion);
       }
 
+      // Construct your SensorDataResponse only with the filtered, non-empty rows
       return SensorDataResponse(
         result: Result(
           accelX: Data(time: time, value: accelX),
@@ -75,8 +96,8 @@ class DashboardDetailsheaderIcons extends StatelessWidget {
         dominate_frequencies: {'accelX': dominateFrequencies},
         anomaly_regions: {'accelX': anomalyRegions},
         anomaly_percentage: {'accelX': 0.0}, // Default value
-        open_ticket: {'accelX': false}, // Default value
-        ticket: {'accelX': false}, // Default value
+        open_ticket: {'accelX': false},
+        ticket: {'accelX': false},
       );
     } catch (e) {
       debugPrint('Error parsing CSV: $e');
