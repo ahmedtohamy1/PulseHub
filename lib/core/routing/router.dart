@@ -13,7 +13,6 @@ import 'package:pulsehub/features/dics/ui/dic_screen.dart';
 import 'package:pulsehub/features/projects/cubit/cubit/projects_cubit.dart';
 import 'package:pulsehub/features/projects/ui/home_screen.dart';
 import 'package:pulsehub/features/projects/ui/project_details_screen.dart';
-
 import 'package:pulsehub/features/settings/cubit/settings_cubit.dart';
 import 'package:pulsehub/features/settings/ui/profile_screen.dart';
 import 'package:pulsehub/features/settings/ui/session_screen.dart';
@@ -23,9 +22,21 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: UserManager().user?.userId != null
-      ? Routes.dicScreen
-      : Routes.loginScreen,
+  initialLocation: Routes.homePage,
+  redirect: (context, state) {
+    final isLoggedIn = UserManager().user?.userId != null;
+    final isLoggingIn = state.path == Routes.loginScreen;
+
+    if (!isLoggedIn && !isLoggingIn) {
+      return Routes.loginScreen;
+    }
+
+    if (isLoggedIn && isLoggingIn) {
+      return Routes.dicScreen;
+    }
+
+    return null;
+  },
   routes: [
     GoRoute(
       path: Routes.loginScreen,
@@ -39,13 +50,6 @@ final router = GoRouter(
       builder: (context, state) => BlocProvider(
         create: (context) => sl<AuthCubit>(),
         child: const VerifyOtpScreen(),
-      ),
-    ),
-    GoRoute(
-      path: Routes.dicScreen,
-      builder: (context, state) => BlocProvider(
-        create: (context) => sl<DicCubit>(),
-        child: const DicScreen(),
       ),
     ),
     StatefulShellRoute.indexedStack(
@@ -85,7 +89,7 @@ final router = GoRouter(
                 create: (context) => sl<DicCubit>(),
                 child: const DicScreen(),
               ),
-            )
+            ),
           ],
         ),
         StatefulShellBranch(
@@ -98,14 +102,13 @@ final router = GoRouter(
               ),
               routes: [
                 GoRoute(
-                  path: 'profile', // Use relative path for nested routes
+                  path: 'profile',
                   builder: (context, state) => const ProfileScreen(),
                 ),
                 GoRoute(
-                  path:
-                      'session-manager', // Use relative path for nested routes
-                  builder: (context, state) => BlocProvider(
-                    create: (context) => sl<SettingsCubit>(),
+                  path: 'session-manager',
+                  builder: (context, state) => BlocProvider.value(
+                    value: context.read<SettingsCubit>(),
                     child: const SessionScreen(),
                   ),
                 ),
