@@ -6,7 +6,7 @@ import 'package:pulsehub/core/theming/app_styles.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/ui/screens/graph_dashboard_sensors.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/dashboard_card.dart';
-import 'package:pulsehub/features/project_dashboard/ui/widgets/section_title.dart';
+import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/section_title.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class AnalyseScreen extends StatelessWidget {

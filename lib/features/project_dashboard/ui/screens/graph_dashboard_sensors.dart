@@ -3,12 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/project_dashboards.dart';
 import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo_impl.dart';
-import 'package:pulsehub/features/project_dashboard/ui/widgets/dashboard_details_header_icons.dart';
-import 'package:pulsehub/features/project_dashboard/ui/widgets/dropdown_selector.dart';
-import 'package:pulsehub/features/project_dashboard/ui/widgets/field_selector.dart';
-import 'package:pulsehub/features/project_dashboard/ui/widgets/number_input.dart';
-import 'package:pulsehub/features/project_dashboard/ui/widgets/submit_button.dart';
-import 'package:pulsehub/features/project_dashboard/ui/widgets/time_db_response_builder.dart';
+import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/dashboard_details_header_icons.dart';
+import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/dropdown_selector.dart';
+import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/field_selector.dart';
+import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/number_input.dart';
+import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/submit_button.dart';
+import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/time_db_response_builder.dart';
 
 class GraphDashboardSensors extends StatefulWidget {
   final Dashboard dashboard;

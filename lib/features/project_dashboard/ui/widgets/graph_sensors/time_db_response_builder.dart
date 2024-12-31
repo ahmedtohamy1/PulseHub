@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
-import 'package:pulsehub/features/project_dashboard/ui/widgets/time_series_chart.dart';
+import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/time_series_chart.dart';
 
 class TimeDbResponseBuilder extends StatelessWidget {
   const TimeDbResponseBuilder({
