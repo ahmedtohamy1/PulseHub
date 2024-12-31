@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pulsehub/core/routing/router.dart';
-import 'package:pulsehub/core/theme/config/theme_config.dart';
-import 'package:pulsehub/core/theme/cubit/theme_cubit.dart';
+import 'package:pulsehub/core/theming/config/theme_config.dart';
+import 'package:pulsehub/core/theming/cubit/theme_cubit.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

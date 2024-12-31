@@ -4,7 +4,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:pulsehub/core/routing/routes.dart';
-import 'package:pulsehub/core/theme/cubit/theme_cubit.dart';
+import 'package:pulsehub/core/theming/cubit/theme_cubit.dart';
 import 'package:pulsehub/core/utils/user_manager.dart';
 import 'package:pulsehub/features/settings/cubit/settings_cubit.dart';
 

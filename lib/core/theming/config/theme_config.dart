@@ -2,22 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class ThemeConfig {
+  static const PageTransitionsTheme _pageTransitionsTheme =
+      PageTransitionsTheme(
+    builders: {
+      TargetPlatform.windows: CupertinoPageTransitionsBuilder(),
+      TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+      TargetPlatform.fuchsia: CupertinoPageTransitionsBuilder(),
+      TargetPlatform.linux: CupertinoPageTransitionsBuilder(),
+    },
+  );
+
+  // Light theme
   static ThemeData get lightTheme {
     return ThemeData.from(
       colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF4E833B)),
     ).copyWith(
-      pageTransitionsTheme: const PageTransitionsTheme(
-        builders: {
-          TargetPlatform.windows: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.fuchsia: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.linux: CupertinoPageTransitionsBuilder(),
-        },
-      ),
+      pageTransitionsTheme: _pageTransitionsTheme,
     );
   }
 
+  // Dark theme
   static ThemeData get darkTheme {
     return ThemeData.from(
       colorScheme: ColorScheme.fromSeed(
@@ -25,18 +30,11 @@ class ThemeConfig {
         brightness: Brightness.dark,
       ),
     ).copyWith(
-      pageTransitionsTheme: const PageTransitionsTheme(
-        builders: {
-          TargetPlatform.windows: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.fuchsia: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.linux: CupertinoPageTransitionsBuilder(),
-        },
-      ),
+      pageTransitionsTheme: _pageTransitionsTheme,
     );
   }
 
+  // System UI overlay style
   static SystemUiOverlayStyle systemUiOverlayStyle(bool isDarkMode) {
     return SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
