@@ -35,7 +35,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
           children: [
             const Center(
               child: Text(
-                "Enter OTP",
+                "Enter your Verification Code",
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
