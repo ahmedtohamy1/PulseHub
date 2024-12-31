@@ -12,7 +12,6 @@ class TimeSeriesChart extends StatelessWidget {
     required this.data,
     required this.selectedFields,
   });
-
   @override
   Widget build(BuildContext context) {
     if (data.result == null) {
@@ -22,20 +21,28 @@ class TimeSeriesChart extends StatelessWidget {
     return SingleChildScrollView(
       child: Column(
         children: [
-          _buildSectionTitle('Combined Sensor Data Over Time'),
-          _buildLineChart(
-            _createCombinedOverTimeData(),
-            isTimeXAxis: true,
-            isMicroUnits: false,
-            field: 'combined',
-          ),
-          _buildSectionTitle('Combined Frequency-Magnitude'),
-          _buildLineChart(
-            _createCombinedFreqMagnitudeData(),
-            isTimeXAxis: false,
-            isMicroUnits: true,
-            field: 'combined',
-          ),
+          if (_hasDataForFields(
+              ['accelX', 'accelY', 'accelZ', 'humidity', 'temperature']))
+            _buildSectionTitle('Combined Sensor Data Over Time'),
+          if (_hasDataForFields(
+              ['accelX', 'accelY', 'accelZ', 'humidity', 'temperature']))
+            _buildLineChart(
+              _createCombinedOverTimeData(),
+              isTimeXAxis: true,
+              isMicroUnits: false,
+              field: 'combined',
+            ),
+          if (_hasDataForFields(
+              ['accelX', 'accelY', 'accelZ', 'humidity', 'temperature']))
+            _buildSectionTitle('Combined Frequency-Magnitude'),
+          if (_hasDataForFields(
+              ['accelX', 'accelY', 'accelZ', 'humidity', 'temperature']))
+            _buildLineChart(
+              _createCombinedFreqMagnitudeData(),
+              isTimeXAxis: false,
+              isMicroUnits: true,
+              field: 'combined',
+            ),
           for (var field in [
             'accelX',
             'accelY',
@@ -43,24 +50,42 @@ class TimeSeriesChart extends StatelessWidget {
             'humidity',
             'temperature'
           ]) ...[
-            _buildSectionTitle('${_capitalize(field)} Over Time'),
-            _buildLineChart(
-              _createLineBarsData(field: field, byTime: true),
-              isTimeXAxis: true,
-              isMicroUnits: false,
-              field: field,
-            ),
-            _buildSectionTitle('${_capitalize(field)} Over Frequency'),
-            _buildLineChart(
-              _createLineBarsData(field: field, byTime: false),
-              isTimeXAxis: false,
-              isMicroUnits: true,
-              field: field,
-            ),
+            if (_hasDataForField(field))
+              _buildSectionTitle('${_capitalize(field)} Over Time'),
+            if (_hasDataForField(field))
+              _buildLineChart(
+                _createLineBarsData(field: field, byTime: true),
+                isTimeXAxis: true,
+                isMicroUnits: false,
+                field: field,
+              ),
+            if (_hasDataForField(field))
+              _buildSectionTitle('${_capitalize(field)} Over Frequency'),
+            if (_hasDataForField(field))
+              _buildLineChart(
+                _createLineBarsData(field: field, byTime: false),
+                isTimeXAxis: false,
+                isMicroUnits: true,
+                field: field,
+              ),
           ],
         ],
       ),
     );
+  }
+
+  bool _hasDataForField(String field) {
+    final result = data.result;
+    if (result == null) return false;
+
+    final dataForField = _getDataForField(result, field);
+    return dataForField != null &&
+        dataForField.value != null &&
+        dataForField.value!.isNotEmpty;
+  }
+
+  bool _hasDataForFields(List<String> fields) {
+    return fields.any((field) => _hasDataForField(field));
   }
 
   String _capitalize(String s) => s[0].toUpperCase() + s.substring(1);
@@ -82,7 +107,7 @@ class TimeSeriesChart extends StatelessWidget {
     String? field,
   }) {
     if (lineBarsData.isEmpty) {
-      return const Center(child: Text('No data points to display'));
+      return const SizedBox.shrink();
     }
 
     final yScaleFactor = isMicroUnits ? 1e6 : 1.0;
