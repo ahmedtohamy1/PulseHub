@@ -94,10 +94,10 @@ class QueryParams {
   final String? fields;
   final String? measurementName;
   final String? org;
-  final bool? rawData;
+  final bool rawData; // Fixed value
   final String? sensorsToAnalyze;
   final String? timeRangeStart;
-  final String? timeRangeStop;
+  final String timeRangeStop; // Default value set
   final String? topic;
   final String? windowPeriod;
   final String? windowSize;
@@ -113,9 +113,9 @@ class QueryParams {
     this.sensorsToAnalyze,
     this.timeRangeStart,
     this.windowSize,
-  })  : rawData = false, // Fixed value
-        timeRangeStop = 'now', // Fixed value
-        windowPeriod = '10m'; // Fixed value
+    this.windowPeriod,
+  })  : rawData = false, // Assign fixed value in constructor list
+        timeRangeStop = 'now'; // Assign default value in constructor list
 
   Map<String, dynamic> toJson() {
     return {
@@ -130,8 +130,8 @@ class QueryParams {
       'time_range_start': timeRangeStart,
       'time_range_stop': timeRangeStop,
       'topic': topic,
-      'window_period': windowPeriod,
       'window_size': windowSize,
+      'window_period': windowPeriod,
     };
   }
 }

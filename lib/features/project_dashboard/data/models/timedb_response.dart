@@ -8,14 +8,22 @@ class SensorDataResponse {
   final Result? result;
   final Map<String, List<double>>? frequency;
   final Map<String, List<double>>? magnitude;
-  final Map<String, List<double>>? dominateFrequencies;
+  final Map<String, List<double>>? dominate_frequencies;
+  final Map<String, double>? anomaly_percentage;
+  final Map<String, List<List<double>>>? anomaly_regions;
+  final Map<String, dynamic>? ticket;
+  final Map<String, dynamic>? open_ticket;
 
   SensorDataResponse({
     this.success,
     this.result,
     this.frequency,
     this.magnitude,
-    this.dominateFrequencies,
+    this.dominate_frequencies,
+    this.anomaly_percentage,
+    this.anomaly_regions,
+    this.ticket,
+    this.open_ticket,
   });
 
   factory SensorDataResponse.fromJson(Map<String, dynamic> json) =>

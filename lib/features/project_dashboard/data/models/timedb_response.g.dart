@@ -20,11 +20,26 @@ SensorDataResponse _$SensorDataResponseFromJson(Map<String, dynamic> json) =>
         (k, e) => MapEntry(
             k, (e as List<dynamic>).map((e) => (e as num).toDouble()).toList()),
       ),
-      dominateFrequencies:
-          (json['dominateFrequencies'] as Map<String, dynamic>?)?.map(
+      dominate_frequencies:
+          (json['dominate_frequencies'] as Map<String, dynamic>?)?.map(
         (k, e) => MapEntry(
             k, (e as List<dynamic>).map((e) => (e as num).toDouble()).toList()),
       ),
+      anomaly_percentage:
+          (json['anomaly_percentage'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(k, (e as num).toDouble()),
+      ),
+      anomaly_regions: (json['anomaly_regions'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(
+            k,
+            (e as List<dynamic>)
+                .map((e) => (e as List<dynamic>)
+                    .map((e) => (e as num).toDouble())
+                    .toList())
+                .toList()),
+      ),
+      ticket: json['ticket'] as Map<String, dynamic>?,
+      open_ticket: json['open_ticket'] as Map<String, dynamic>?,
     );
 
 Map<String, dynamic> _$SensorDataResponseToJson(SensorDataResponse instance) =>
@@ -33,7 +48,11 @@ Map<String, dynamic> _$SensorDataResponseToJson(SensorDataResponse instance) =>
       'result': instance.result,
       'frequency': instance.frequency,
       'magnitude': instance.magnitude,
-      'dominateFrequencies': instance.dominateFrequencies,
+      'dominate_frequencies': instance.dominate_frequencies,
+      'anomaly_percentage': instance.anomaly_percentage,
+      'anomaly_regions': instance.anomaly_regions,
+      'ticket': instance.ticket,
+      'open_ticket': instance.open_ticket,
     };
 
 Result _$ResultFromJson(Map<String, dynamic> json) => Result(

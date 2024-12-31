@@ -24,10 +24,13 @@ class _DashboardDetailsState extends State<DashboardDetails> {
 
   final List<String> selectedFields = [];
   int windowSize = 20; // Default window size
+  String windowPeriod = '5m'; // Default window period
   final TextEditingController deviationController =
       TextEditingController(text: '0.05');
   final TextEditingController windowSizeController =
       TextEditingController(text: '20');
+  final TextEditingController windowPeriodController =
+      TextEditingController(text: '5m');
 
   String aggregateFunction = 'mean';
   String timeRange = '1h'; // Default time range
@@ -36,7 +39,6 @@ class _DashboardDetailsState extends State<DashboardDetails> {
 
   String? selectedMeasurement;
   String? selectedTopic;
-
   void _submitForm() {
     if (selectedMeasurement == null ||
         selectedTopic == null ||
@@ -67,7 +69,7 @@ class _DashboardDetailsState extends State<DashboardDetails> {
     final queryParams = QueryParams(
       measurementName: selectedMeasurement,
       topic: selectedTopic,
-      fields: serverFields,
+      fields: 'all',
       sensorsToAnalyze: serverFields,
       windowSize: windowSize.toString(),
       deviationThreshold: deviationController.text,
@@ -75,6 +77,7 @@ class _DashboardDetailsState extends State<DashboardDetails> {
       aggregateFunc: aggregateFunction,
       bucket: 'CloudHub',
       org: 'DIC',
+      windowPeriod: windowPeriod,
     );
 
     context.read<ProjectDashboardCubit>().getTimeDb(queryParams);
@@ -302,6 +305,42 @@ class _DashboardDetailsState extends State<DashboardDetails> {
             ],
           ),
           const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Window Period:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<String>(
+                      value: windowPeriod,
+                      decoration: const InputDecoration(
+                        labelText: 'Select Window Period',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: ['5s', '10s', '1m', '5m', '15m', '30m', '1h']
+                          .map((period) {
+                        return DropdownMenuItem(
+                          value: period,
+                          child: Text(period),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          windowPeriod = value!;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
           // Deviation Threshold Section in a new row
           Row(
             children: [
@@ -474,13 +513,20 @@ class _DashboardDetailsState extends State<DashboardDetails> {
               ),
             ),
           const SizedBox(height: 16),
-
-          const SizedBox(height: 16),
-          Center(
-            child: ElevatedButton(
-              onPressed: _submitForm,
-              child: const Text('Submit'),
-            ),
+          Row(
+            children: [
+              const Spacer(),
+              Center(
+                child: ElevatedButton(
+                  onPressed: _submitForm,
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                  ),
+                  child: const Text('Submit'),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
@@ -516,13 +562,9 @@ class _DashboardDetailsState extends State<DashboardDetails> {
                   );
                 }
 
-                return Container(
-                  height: 400,
-                  padding: const EdgeInsets.all(16),
-                  child: TimeSeriesChart(
-                    data: state.sensorDataResponse,
-                    selectedFields: selectedFields,
-                  ),
+                return TimeSeriesChart(
+                  data: state.sensorDataResponse,
+                  selectedFields: selectedFields,
                 );
               }
 
