@@ -22,7 +22,7 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: Routes.homePage,
+  initialLocation: Routes.dicScreen,
   redirect: (context, state) {
     final isLoggedIn = UserManager().user?.userId != null;
     final isLoggingIn = state.path == Routes.loginScreen;
@@ -50,6 +50,13 @@ final router = GoRouter(
       builder: (context, state) => BlocProvider(
         create: (context) => sl<AuthCubit>(),
         child: const VerifyOtpScreen(),
+      ),
+    ),
+    GoRoute(
+      path: Routes.dicScreen,
+      builder: (context, state) => BlocProvider(
+        create: (context) => sl<DicCubit>(),
+        child: const DicScreen(),
       ),
     ),
     StatefulShellRoute.indexedStack(
