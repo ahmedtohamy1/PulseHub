@@ -51,4 +51,8 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
       (response) => emit(ProjectDashboardDetailsTimeDbSuccess(response)),
     );
   }
+
+  void updateSensorData(SensorDataResponse sensorData) {
+    emit(ProjectDashboardDetailsTimeDbSuccess(sensorData));
+  }
 }

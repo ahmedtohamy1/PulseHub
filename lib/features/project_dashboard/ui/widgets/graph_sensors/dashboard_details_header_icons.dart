@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'dart:typed_data';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
@@ -14,6 +16,104 @@ class DashboardDetailsheaderIcons extends StatelessWidget {
   });
 
   final GraphDashboardSensors widget;
+
+  SensorDataResponse? _parseCsvData(String csvData) {
+    try {
+      final rows = const CsvToListConverter().convert(csvData);
+
+      if (rows.isEmpty || rows[0].length < 13) {
+        throw Exception("CSV file format is incorrect");
+      }
+
+      final time = <DateTime>[];
+      final accelX = <double>[];
+      final accelY = <double>[];
+      final accelZ = <double>[];
+      final humidity = <double>[];
+      final temperature = <double>[];
+      final frequency = <double>[];
+      final magnitude = <double>[];
+      final dominateFrequencies = <double>[];
+      final anomalyRegions = <List<double>>[];
+
+      // Skip the header row and parse data
+      for (var i = 1; i < rows.length; i++) {
+        final row = rows[i];
+
+        // Parse and validate each field
+        time.add(
+          DateTime.fromMillisecondsSinceEpoch(
+              int.tryParse(row[0].toString()) ?? 0),
+        );
+        accelX.add(double.tryParse(row[1]?.toString() ?? '') ?? 0.0);
+        accelY.add(double.tryParse(row[2]?.toString() ?? '') ?? 0.0);
+        accelZ.add(double.tryParse(row[3]?.toString() ?? '') ?? 0.0);
+        humidity.add(double.tryParse(row[4]?.toString() ?? '') ?? 0.0);
+        temperature.add(double.tryParse(row[5]?.toString() ?? '') ?? 0.0);
+        frequency.add(double.tryParse(row[6]?.toString() ?? '') ?? 0.0);
+        magnitude.add(double.tryParse(row[7]?.toString() ?? '') ?? 0.0);
+        dominateFrequencies
+            .add(double.tryParse(row[8]?.toString() ?? '') ?? 0.0);
+
+        final anomalyRegion = (row[9]?.toString() ?? '')
+            .split(';')
+            .map((e) => double.tryParse(e) ?? 0.0)
+            .toList();
+        anomalyRegions.add(anomalyRegion);
+      }
+
+      return SensorDataResponse(
+        result: Result(
+          accelX: Data(time: time, value: accelX),
+          accelY: Data(time: time, value: accelY),
+          accelZ: Data(time: time, value: accelZ),
+          humidity: Data(time: time, value: humidity),
+          temperature: Data(time: time, value: temperature),
+        ),
+        frequency: {'accelX': frequency},
+        magnitude: {'accelX': magnitude},
+        dominate_frequencies: {'accelX': dominateFrequencies},
+        anomaly_regions: {'accelX': anomalyRegions},
+        anomaly_percentage: {'accelX': 0.0}, // Default value
+        open_ticket: {'accelX': false}, // Default value
+        ticket: {'accelX': false}, // Default value
+      );
+    } catch (e) {
+      debugPrint('Error parsing CSV: $e');
+      return null;
+    }
+  }
+
+  Future<void> _importCsv(BuildContext context) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv'], // Restrict to CSV files
+      );
+
+      if (result == null || result.files.isEmpty) {
+        throw Exception("No file selected");
+      }
+
+      final file = File(result.files.single.path!);
+      final csvData = await file.readAsString();
+      final parsedData = _parseCsvData(csvData);
+
+      if (parsedData == null) {
+        throw Exception("Invalid CSV structure");
+      }
+
+      context.read<ProjectDashboardCubit>().updateSensorData(parsedData);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Data uploaded successfully!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    }
+  }
+
   String _generateCsvData(SensorDataResponse data) {
     final List<List<dynamic>> csvData = [];
 
@@ -33,41 +133,64 @@ class DashboardDetailsheaderIcons extends StatelessWidget {
       'ticket'
     ]);
 
-    final time = data.result?.accelX?.time ?? [];
-    final accelX = data.result?.accelX?.value ?? [];
-    final accelY = data.result?.accelY?.value ?? [];
-    final accelZ = data.result?.accelZ?.value ?? [];
-    final humidity = data.result?.humidity?.value ?? [];
-    final temperature = data.result?.temperature?.value ?? [];
+    // 1) Figure out which time list to use
+    //    If accelX is empty, try temperature, etc.
+    final allTimes = [
+      data.result?.accelX?.time,
+      data.result?.temperature?.time,
+      data.result?.humidity?.time,
+      data.result?.accelY?.time,
+      data.result?.accelZ?.time,
+    ];
 
+    // Pick the first non-empty list of times we find:
+    List<DateTime> time = [];
+    for (final tList in allTimes) {
+      if (tList != null && tList.isNotEmpty) {
+        time = tList;
+        break;
+      }
+    }
+
+    // If we still have no times, throw an exception
     if (time.isEmpty) {
       throw Exception("No data available to export.");
     }
 
+    // 2) Grab each series. If null or shorter than time, fill with empty strings
+    List<double> accelX = data.result?.accelX?.value ?? [];
+    List<double> accelY = data.result?.accelY?.value ?? [];
+    List<double> accelZ = data.result?.accelZ?.value ?? [];
+    List<double> humidity = data.result?.humidity?.value ?? [];
+    List<double> temperature = data.result?.temperature?.value ?? [];
+
+    // Frequencies, magnitudes, etc.
+    final freqX = data.frequency?['accelX'] ?? [];
+    final magX = data.magnitude?['accelX'] ?? [];
+    final domFreqX = data.dominate_frequencies?['accelX'] ?? [];
+    final anomalyRegionsX = data.anomaly_regions?['accelX'] ?? [];
+    final anomalyPctX = data.anomaly_percentage?['accelX'] ?? '';
+    final openTicketX = data.open_ticket?['accelX'] ?? '';
+    final ticketX = data.ticket?['accelX'] ?? '';
+
+    // 3) Loop through and add rows
     for (int i = 0; i < time.length; i++) {
-      csvData.add([
+      final row = [
         time[i].millisecondsSinceEpoch,
         i < accelX.length ? accelX[i] : '',
         i < accelY.length ? accelY[i] : '',
         i < accelZ.length ? accelZ[i] : '',
         i < humidity.length ? humidity[i] : '',
         i < temperature.length ? temperature[i] : '',
-        i < (data.frequency?['accelX']?.length ?? 0)
-            ? data.frequency!['accelX']![i]
-            : '',
-        i < (data.magnitude?['accelX']?.length ?? 0)
-            ? data.magnitude!['accelX']![i]
-            : '',
-        i < (data.dominate_frequencies?['accelX']?.length ?? 0)
-            ? data.dominate_frequencies!['accelX']![i]
-            : '',
-        data.anomaly_percentage?['accelX'] ?? '',
-        i < (data.anomaly_regions?['accelX']?.length ?? 0)
-            ? data.anomaly_regions!['accelX']![i].join('; ')
-            : '',
-        data.open_ticket?['accelX'] ?? '',
-        data.ticket?['accelX'] ?? '',
-      ]);
+        i < freqX.length ? freqX[i] : '',
+        i < magX.length ? magX[i] : '',
+        i < domFreqX.length ? domFreqX[i] : '',
+        anomalyPctX,
+        i < anomalyRegionsX.length ? (anomalyRegionsX[i]).join('; ') : '',
+        openTicketX,
+        ticketX,
+      ];
+      csvData.add(row);
     }
 
     return const ListToCsvConverter().convert(csvData);
@@ -78,7 +201,6 @@ class DashboardDetailsheaderIcons extends StatelessWidget {
       final csvData = _generateCsvData(data);
 
       final fileName = '${widget.dashboard.name}_data.csv';
-
       final csvBytes = Uint8List.fromList(csvData.codeUnits);
 
       Share.shareXFiles(
@@ -133,7 +255,7 @@ class DashboardDetailsheaderIcons extends StatelessWidget {
           message: 'Export Dashboard Data',
           child: IconButton.filled(
             icon: const Icon(Icons.upload),
-            onPressed: () {},
+            onPressed: () => _importCsv(context),
           ),
         ),
       ],
