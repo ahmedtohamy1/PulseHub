@@ -39,18 +39,23 @@ class DicScreenState extends State<DicScreen> {
           )
         ],
       ),
-      body: BlocBuilder<DicCubit, DicState>(
-        builder: (context, state) {
-          if (state is DicLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is DicError) {
+      body: BlocListener<DicCubit, DicState>(
+        listener: (context, state) {
+          if (state is DicError) {
             UserManager().clearUser();
             context.go(Routes.loginScreen);
-          } else if (state is DicSuccess) {
-            return _buildDicServicesList(state.dic.dicServicesList.first);
           }
-          return const Center(child: Text('Unexpected state.'));
         },
+        child: BlocBuilder<DicCubit, DicState>(
+          builder: (context, state) {
+            if (state is DicLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is DicSuccess) {
+              return _buildDicServicesList(state.dic.dicServicesList.first);
+            }
+            return const Center(child: Text('Unexpected state.'));
+          },
+        ),
       ),
     );
   }
