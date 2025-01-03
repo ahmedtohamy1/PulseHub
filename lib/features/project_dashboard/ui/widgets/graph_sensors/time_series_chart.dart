@@ -3,7 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/timedb_response.dart';
 
-class TimeSeriesChart extends StatelessWidget {
+class TimeSeriesChart extends StatefulWidget {
   final SensorDataResponse data;
   final List<String> selectedFields;
 
@@ -12,70 +12,115 @@ class TimeSeriesChart extends StatelessWidget {
     required this.data,
     required this.selectedFields,
   });
+
+  @override
+  State<TimeSeriesChart> createState() => _TimeSeriesChartState();
+}
+
+class _TimeSeriesChartState extends State<TimeSeriesChart> {
+  final Map<String, bool> showTimeView = {
+    'combined': true,
+    'accelX': true,
+    'accelY': true,
+    'accelZ': true,
+    'humidity': true,
+    'temperature': true,
+  };
+
+  Widget _buildToggleButton(String field) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: SegmentedButton<bool>(
+        segments: const [
+          ButtonSegment<bool>(
+            value: true,
+            label: Text('T'),
+            icon: Icon(Icons.timer_outlined, size: 16),
+          ),
+          ButtonSegment<bool>(
+            value: false,
+            label: Text('F'),
+            icon: Icon(Icons.show_chart, size: 16),
+          ),
+        ],
+        selected: {showTimeView[field]!},
+        onSelectionChanged: (Set<bool> newSelection) {
+          setState(() {
+            showTimeView[field] = newSelection.first;
+          });
+        },
+        style: const ButtonStyle(
+          visualDensity: VisualDensity.compact,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGraphSection(String field) {
+    final isTimeView = showTimeView[field]!;
+    final title = field == 'combined'
+        ? (isTimeView
+            ? 'Combined Sensor Data Over Time'
+            : 'Combined Frequency-Magnitude')
+        : (isTimeView
+            ? '${_capitalize(field)} Over Time'
+            : '${_capitalize(field)} Over Frequency');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _buildSectionTitle(title),
+            ),
+            _buildToggleButton(field),
+          ],
+        ),
+        _buildLineChart(
+          field == 'combined'
+              ? (isTimeView
+                  ? _createCombinedOverTimeData()
+                  : _createCombinedFreqMagnitudeData())
+              : _createLineBarsData(field: field, byTime: isTimeView),
+          isTimeXAxis: isTimeView,
+          isMicroUnits: !isTimeView,
+          field: field,
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (data.result == null) {
+    if (widget.data.result == null) {
       return const Center(child: Text('No data available'));
     }
 
     return SingleChildScrollView(
       child: Column(
         children: [
+          // Combined sensor data
           if (_hasDataForFields(
               ['accelX', 'accelY', 'accelZ', 'humidity', 'temperature']))
-            _buildSectionTitle('Combined Sensor Data Over Time'),
-          if (_hasDataForFields(
-              ['accelX', 'accelY', 'accelZ', 'humidity', 'temperature']))
-            _buildLineChart(
-              _createCombinedOverTimeData(),
-              isTimeXAxis: true,
-              isMicroUnits: false,
-              field: 'combined',
-            ),
-          if (_hasDataForFields(
-              ['accelX', 'accelY', 'accelZ', 'humidity', 'temperature']))
-            _buildSectionTitle('Combined Frequency-Magnitude'),
-          if (_hasDataForFields(
-              ['accelX', 'accelY', 'accelZ', 'humidity', 'temperature']))
-            _buildLineChart(
-              _createCombinedFreqMagnitudeData(),
-              isTimeXAxis: false,
-              isMicroUnits: true,
-              field: 'combined',
-            ),
+            _buildGraphSection('combined'),
+          // Individual sensor data
           for (var field in [
             'accelX',
             'accelY',
             'accelZ',
             'humidity',
             'temperature'
-          ]) ...[
-            if (_hasDataForField(field))
-              _buildSectionTitle('${_capitalize(field)} Over Time'),
-            if (_hasDataForField(field))
-              _buildLineChart(
-                _createLineBarsData(field: field, byTime: true),
-                isTimeXAxis: true,
-                isMicroUnits: false,
-                field: field,
-              ),
-            if (_hasDataForField(field))
-              _buildSectionTitle('${_capitalize(field)} Over Frequency'),
-            if (_hasDataForField(field))
-              _buildLineChart(
-                _createLineBarsData(field: field, byTime: false),
-                isTimeXAxis: false,
-                isMicroUnits: true,
-                field: field,
-              ),
-          ],
+          ])
+            if (_hasDataForField(field)) _buildGraphSection(field),
         ],
       ),
     );
   }
 
   bool _hasDataForField(String field) {
-    final result = data.result;
+    final result = widget.data.result;
     if (result == null) return false;
 
     final dataForField = _getDataForField(result, field);
@@ -88,7 +133,7 @@ class TimeSeriesChart extends StatelessWidget {
     // Optionally, skip if *all* values are zero (or NaN):
     final allZero = dataForField.value!.every((v) => v == 0.0);
     if (allZero) {
-      return false; // or keep true if you want to see a “flat line” at zero
+      return false; // or keep true if you want to see a "flat line" at zero
     }
 
     return true;
@@ -352,7 +397,7 @@ class TimeSeriesChart extends StatelessWidget {
     required String field,
     required bool byTime,
   }) {
-    final result = data.result;
+    final result = widget.data.result;
     if (result == null) return [];
 
     final color = _getColorForField(field);
@@ -393,8 +438,8 @@ class TimeSeriesChart extends StatelessWidget {
             data.time?.map((t) => t.millisecondsSinceEpoch.toDouble()).toList();
       }
     } else {
-      final freqData = data.frequency?[field];
-      final magData = data.magnitude?[field];
+      final freqData = widget.data.frequency?[field];
+      final magData = widget.data.magnitude?[field];
 
       if (freqData != null && magData != null) {
         xValues = freqData;
