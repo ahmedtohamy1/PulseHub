@@ -309,149 +309,104 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
       maxY += 1;
     }
 
-    // Calculate intervals for grid lines
-    double xInterval = (maxX - minX) / 4;
-    double yInterval = (maxY - minY) / 4;
-    if (xInterval <= 0) xInterval = 1;
-    if (yInterval <= 0) yInterval = 1;
-
-    // Build the list of vertical lines for dominant frequencies
-    final verticalLines =
-        _buildDominantFreqLines(isTimeXAxis: isTimeXAxis, field: field);
-
     return SizedBox(
       height: 300,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(8, 20, 16, 12),
-        child: LineChart(
-          LineChartData(
-            lineBarsData: lineBarsData,
-            minX: minX,
-            maxX: maxX,
-            minY: minY,
-            maxY: maxY,
-
-            // Show background grid lines
-            gridData: FlGridData(
-              show: true,
-              drawHorizontalLine: true,
-              drawVerticalLine: true,
-              horizontalInterval: yInterval,
-              verticalInterval: xInterval,
-              getDrawingHorizontalLine: (value) => FlLine(
-                color: Colors.grey.withOpacity(0.1),
-                strokeWidth: 0.5,
-              ),
-              getDrawingVerticalLine: (value) => FlLine(
-                color: Colors.grey.withOpacity(0.1),
-                strokeWidth: 0.5,
-              ),
+      child: LineChart(
+        LineChartData(
+          lineBarsData: lineBarsData,
+          minX: minX,
+          maxX: maxX,
+          minY: minY,
+          maxY: maxY,
+          titlesData: FlTitlesData(
+            show: true,
+            topTitles: AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
             ),
-
-            // Axis titles and labels
-            titlesData: FlTitlesData(
-              bottomTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  reservedSize: 22,
-                  interval: xInterval,
-                  getTitlesWidget: (value, meta) {
-                    if (isTimeXAxis) {
-                      // Convert X-value (ms since epoch) to HH:MM
-                      final date =
-                          DateTime.fromMillisecondsSinceEpoch(value.toInt());
-                      final hh = date.hour.toString().padLeft(2, '0');
-                      final mm = date.minute.toString().padLeft(2, '0');
-                      return Transform.rotate(
-                        angle: -45 * pi / 180,
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 4.0),
-                          child: Text('$hh:$mm',
-                              style: const TextStyle(fontSize: 10)),
-                        ),
-                      );
-                    } else {
-                      // Frequency axis label (e.g., 1e2, 2e3, etc.)
-                      return Transform.rotate(
-                        angle: -45 * pi / 180,
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 4.0),
-                          child: Text(_formatFrequency(value),
-                              style: const TextStyle(fontSize: 10)),
-                        ),
-                      );
-                    }
-                  },
+            rightTitles: AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            bottomTitles: AxisTitles(
+              axisNameWidget: Text(
+                isTimeXAxis ? 'Time' : 'Frequency (Hz)',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              leftTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  reservedSize: 50,
-                  interval: yInterval,
-                  getTitlesWidget: (value, meta) {
-                    // Format Y-values with k suffix or scientific notation
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 30,
+                interval: (maxX - minX) / 5,
+                getTitlesWidget: (value, meta) {
+                  if (isTimeXAxis) {
+                    final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
                     return Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
+                      padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
-                        _formatYAxisLabel(value),
-                        style: const TextStyle(fontSize: 12),
-                        textAlign: TextAlign.right,
+                        '${date.hour}:${date.minute.toString().padLeft(2, '0')}',
+                        style: const TextStyle(fontSize: 10),
                       ),
                     );
-                  },
+                  } else {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        _formatFrequency(value),
+                        style: const TextStyle(fontSize: 10),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+            leftTitles: AxisTitles(
+              axisNameWidget: RotatedBox(
+                quarterTurns: 3,
+                child: Text(
+                  isTimeXAxis ? 'Value' : 'Magnitude',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-              topTitles: const AxisTitles(
-                sideTitles: SideTitles(showTitles: false),
-              ),
-              rightTitles: const AxisTitles(
-                sideTitles: SideTitles(showTitles: false),
-              ),
-            ),
-
-            // Draw a border around the chart
-            borderData: FlBorderData(
-              show: true,
-              border: Border.all(
-                color: Colors.black12,
-                width: 1,
-              ),
-            ),
-
-            // Here is where we set the extra lines (vertical lines for freq)
-            extraLinesData: ExtraLinesData(
-              horizontalLines: [],
-              verticalLines: verticalLines,
-            ),
-
-            // Clip the chart so drawing doesn’t overflow the border
-            clipData: const FlClipData.all(),
-
-            // White background
-            backgroundColor: Colors.white,
-
-            // Enable touches and tooltips
-            lineTouchData: LineTouchData(
-              enabled: true,
-              touchTooltipData: LineTouchTooltipData(
-                getTooltipItems: (List<LineBarSpot> touchedSpots) {
-                  return touchedSpots.map((spot) {
-                    final xValue = isTimeXAxis
-                        ? DateTime.fromMillisecondsSinceEpoch(spot.x.toInt())
-                            .toString()
-                        : _formatFrequency(spot.x);
-                    final yValue = spot.y.toStringAsFixed(2);
-                    return LineTooltipItem(
-                      // Example tooltip text: "accelX\nX: 2023-06-04 12:30:00\nY: 12.34"
-                      '$field\nX: $xValue\nY: $yValue',
-                      const TextStyle(color: Colors.white, fontSize: 12),
-                    );
-                  }).toList();
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 40,
+                interval: (maxY - minY) / 5,
+                getTitlesWidget: (value, meta) {
+                  return Text(
+                    _formatYAxisLabel(value),
+                    style: const TextStyle(fontSize: 10),
+                  );
                 },
-                tooltipPadding: const EdgeInsets.all(8),
-                tooltipRoundedRadius: 8,
               ),
+            ),
+          ),
+          gridData: FlGridData(
+            show: true,
+            drawHorizontalLine: true,
+            drawVerticalLine: true,
+            horizontalInterval: (maxY - minY) / 10,
+            verticalInterval: (maxX - minX) / 10,
+          ),
+          borderData: FlBorderData(
+            show: true,
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          extraLinesData: ExtraLinesData(
+            horizontalLines: [
+              HorizontalLine(
+                y: 0,
+                color: Colors.grey.shade400,
+                strokeWidth: 1,
+                dashArray: [5, 5],
+              ),
+            ],
+            verticalLines: _buildDominantFreqLines(
+              isTimeXAxis: isTimeXAxis,
+              field: field,
             ),
           ),
         ),

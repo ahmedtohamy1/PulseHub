@@ -10,6 +10,7 @@ import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/fie
 import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/number_input.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/submit_button.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/time_db_response_builder.dart';
+import 'package:pulsehub/features/project_dashboard/ui/screens/cloudhub_details_screen.dart';
 
 class GraphDashboardSensors extends StatefulWidget {
   final Dashboard dashboard;
@@ -61,6 +62,10 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
         }
       }
     });
+
+    // Fetch CloudHub data
+    BlocProvider.of<ProjectDashboardCubit>(context)
+        .getCloudhubData(widget.dashboard.project);
   }
 
   final List<String> selectedFields = [];
@@ -236,259 +241,326 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                       ),
                     const SizedBox(height: 16),
                     if (selectedTopic != null)
-                      FieldSelector(
-                        fields: measurements
-                            .firstWhere((m) => m.name == selectedMeasurement)
-                            .topics!
-                            .firstWhere((t) => t.name == selectedTopic)
-                            .fields!
-                            .map((f) => f.name!)
-                            .toList(),
-                        selectedFields: selectedFields,
-                        onFieldSelected: (field, selected) {
-                          setState(() {
-                            if (selected) {
-                              selectedFields.add(field);
-                            } else {
-                              selectedFields.remove(field);
-                            }
-                          });
-                        },
+                      Column(
+                        children: [
+                          FieldSelector(
+                            fields: measurements
+                                .firstWhere((m) => m.name == selectedMeasurement)
+                                .topics!
+                                .firstWhere((t) => t.name == selectedTopic)
+                                .fields!
+                                .map((f) => f.name!)
+                                .toList(),
+                            selectedFields: selectedFields,
+                            onFieldSelected: (field, selected) {
+                              setState(() {
+                                if (selected) {
+                                  selectedFields.add(field);
+                                } else {
+                                  selectedFields.remove(field);
+                                }
+                              });
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
+                            builder: (context, state) {
+                              if (state is ProjectDashboardCloudhubDataSuccess) {
+                                return Card(
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: DataTable(
+                                      columns: const [
+                                        DataColumn(label: Text('CloudHub')),
+                                        DataColumn(label: Text('Last Seen')),
+                                        DataColumn(label: Text('Status')),
+                                      ],
+                                      rows: [
+                                        DataRow(
+                                          onSelectChanged: (_) {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    CloudHubDetailsScreen(
+                                                  cloudHub: state.cloudhubDetails,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          cells: [
+                                            DataCell(Text(state.cloudhubDetails.cloudhub.name)),
+                                            DataCell(Text(state.cloudhubDetails.success ? 'Online' : 'Offline')),
+                                            DataCell(
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(
+                                                  horizontal: 8,
+                                                  vertical: 4,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: state.cloudhubDetails.success
+                                                      ? Colors.green.withOpacity(0.2)
+                                                      : Colors.red.withOpacity(0.2),
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                                child: Text(
+                                                  state.cloudhubDetails.success ? 'online' : 'offline',
+                                                  style: TextStyle(
+                                                    color: state.cloudhubDetails.success
+                                                        ? Colors.green
+                                                        : Colors.red,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            },
+                          ),
+                        ],
                       ),
+                    const SizedBox(height: 16),
+                    NumberInput(
+                      label: 'Window Size',
+                      controller: windowSizeController,
+                      onChanged: (value) {
+                        setState(() {
+                          windowSize = int.tryParse(value) ?? windowSize;
+                        });
+                      },
+                      onIncrement: () {
+                        setState(() {
+                          windowSize++;
+                          windowSizeController.text = windowSize.toString();
+                        });
+                      },
+                      onDecrement: () {
+                        setState(() {
+                          if (windowSize > 1) {
+                            windowSize--;
+                            windowSizeController.text = windowSize.toString();
+                          }
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownSelector<String>(
+                      label: 'Window Period',
+                      value: windowPeriod,
+                      items: const ['5s', '10s', '1m', '5m', '15m', '30m', '1h'],
+                      onChanged: (value) {
+                        setState(() {
+                          windowPeriod = value!;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    NumberInput(
+                      label: 'Deviation Threshold',
+                      controller: deviationController,
+                      onChanged: (value) {
+                        setState(() {
+                          double.tryParse(value) ??
+                              double.parse(deviationController.text);
+                        });
+                      },
+                      onIncrement: () {
+                        setState(() {
+                          final currentValue =
+                              double.tryParse(deviationController.text) ?? 0.0;
+                          deviationController.text =
+                              (currentValue + 0.01).toStringAsFixed(2);
+                        });
+                      },
+                      onDecrement: () {
+                        setState(() {
+                          final currentValue =
+                              double.tryParse(deviationController.text) ?? 0.0;
+                          if (currentValue > 0.01) {
+                            deviationController.text =
+                                (currentValue - 0.01).toStringAsFixed(2);
+                          }
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownSelector<String>(
+                      label: 'Aggregate Function',
+                      value: aggregateFunction,
+                      items: const ['mean', 'sum', 'max', 'min', 'median'],
+                      onChanged: (value) {
+                        setState(() {
+                          aggregateFunction = value!;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownSelector<String>(
+                      label: 'Select Time Range',
+                      value: timeRange,
+                      items: const [
+                        '1m',
+                        '5m',
+                        '15m',
+                        '1h',
+                        '3h',
+                        '6h',
+                        '24h',
+                        '2d',
+                        '7d',
+                        '30d',
+                        'Custom'
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          if (value == 'Custom') {
+                            isCustomRange = true;
+                          } else {
+                            isCustomRange = false;
+                            timeRange = value!;
+                          }
+                        });
+                      },
+                    ),
+                    if (isCustomRange)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: TextField(
+                          controller: customRangeController,
+                          decoration: const InputDecoration(
+                            labelText: 'Enter Custom Range',
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        SubmitButton(onPressed: _submitForm),
+                        const SizedBox(width: 8),
+                        SubmitButton(
+                          onPressed: _submitAnalyze,
+                          isAnalyze: true,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
+                      builder: (context, state) {
+                        if (state is ProjectDashboardAnalyzeSensorDataLoading) {
+                          return const Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(height: 8),
+                                Text('Analyzing sensor data...'),
+                              ],
+                            ),
+                          );
+                        }
+
+                        if (state is ProjectDashboardAnalyzeSensorDataSuccess) {
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Analysis Results',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                MarkdownBody(data: state.aiAnalyzeDataModel.message),
+                              ],
+                            ),
+                          );
+                        }
+
+                        if (state is ProjectDashboardAnalyzeSensorDataFailure) {
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.red[50],
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.red[300]!),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Analysis Error',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  state.message,
+                                  style: const TextStyle(color: Colors.red),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                    TimeDbResponseBuilder(
+                      selectedFields: selectedFields,
+                      onAnalyzeSensor: (field) {
+                        final queryParams = QueryParams(
+                          measurementName: selectedMeasurement!,
+                          topic: selectedTopic!,
+                          fields: selectedFields.join(','),
+                          sensorsToAnalyze: field,
+                          windowSize: windowSize.toString(),
+                          deviationThreshold: deviationController.text,
+                          timeRangeStart:
+                              isCustomRange ? customRangeController.text : timeRange,
+                          aggregateFunc: aggregateFunction,
+                          bucket: 'CloudHub',
+                          org: 'DIC',
+                          windowPeriod: windowPeriod,
+                        );
+                        context.read<ProjectDashboardCubit>().getTimeDb(queryParams);
+                      },
+                      windowSize: windowSize.toString(),
+                      deviationThreshold: deviationController.text,
+                      timeRange: timeRange,
+                      isCustomRange: isCustomRange,
+                      customRangeController: customRangeController,
+                      aggregateFunction: aggregateFunction,
+                      windowPeriod: windowPeriod,
+                      selectedMeasurement: selectedMeasurement,
+                      selectedTopic: selectedTopic,
+                    ),
                   ],
                 );
               }
               return const Center(child: CircularProgressIndicator());
             },
-          ),
-          const SizedBox(height: 16),
-          NumberInput(
-            label: 'Window Size',
-            controller: windowSizeController,
-            onChanged: (value) {
-              setState(() {
-                windowSize = int.tryParse(value) ?? windowSize;
-              });
-            },
-            onIncrement: () {
-              setState(() {
-                windowSize++;
-                windowSizeController.text = windowSize.toString();
-              });
-            },
-            onDecrement: () {
-              setState(() {
-                if (windowSize > 1) {
-                  windowSize--;
-                  windowSizeController.text = windowSize.toString();
-                }
-              });
-            },
-          ),
-          const SizedBox(height: 16),
-          DropdownSelector<String>(
-            label: 'Window Period',
-            value: windowPeriod,
-            items: const ['5s', '10s', '1m', '5m', '15m', '30m', '1h'],
-            onChanged: (value) {
-              setState(() {
-                windowPeriod = value!;
-              });
-            },
-          ),
-          const SizedBox(height: 16),
-          NumberInput(
-            label: 'Deviation Threshold',
-            controller: deviationController,
-            onChanged: (value) {
-              setState(() {
-                double.tryParse(value) ??
-                    double.parse(deviationController.text);
-              });
-            },
-            onIncrement: () {
-              setState(() {
-                final currentValue =
-                    double.tryParse(deviationController.text) ?? 0.0;
-                deviationController.text =
-                    (currentValue + 0.01).toStringAsFixed(2);
-              });
-            },
-            onDecrement: () {
-              setState(() {
-                final currentValue =
-                    double.tryParse(deviationController.text) ?? 0.0;
-                if (currentValue > 0.01) {
-                  deviationController.text =
-                      (currentValue - 0.01).toStringAsFixed(2);
-                }
-              });
-            },
-          ),
-          const SizedBox(height: 16),
-          DropdownSelector<String>(
-            label: 'Aggregate Function',
-            value: aggregateFunction,
-            items: const ['mean', 'sum', 'max', 'min', 'median'],
-            onChanged: (value) {
-              setState(() {
-                aggregateFunction = value!;
-              });
-            },
-          ),
-          const SizedBox(height: 16),
-          DropdownSelector<String>(
-            label: 'Select Time Range',
-            value: timeRange,
-            items: const [
-              '1m',
-              '5m',
-              '15m',
-              '1h',
-              '3h',
-              '6h',
-              '24h',
-              '2d',
-              '7d',
-              '30d',
-              'Custom'
-            ],
-            onChanged: (value) {
-              setState(() {
-                if (value == 'Custom') {
-                  isCustomRange = true;
-                } else {
-                  isCustomRange = false;
-                  timeRange = value!;
-                }
-              });
-            },
-          ),
-          if (isCustomRange)
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: TextField(
-                controller: customRangeController,
-                decoration: const InputDecoration(
-                  labelText: 'Enter Custom Range',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              SubmitButton(onPressed: _submitForm),
-              const SizedBox(width: 8),
-              SubmitButton(
-                onPressed: _submitAnalyze,
-                isAnalyze: true,
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
-            builder: (context, state) {
-              if (state is ProjectDashboardAnalyzeSensorDataLoading) {
-                return const Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 8),
-                      Text('Analyzing sensor data...'),
-                    ],
-                  ),
-                );
-              }
-
-              if (state is ProjectDashboardAnalyzeSensorDataSuccess) {
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey[300]!),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Analysis Results',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      MarkdownBody(data: state.aiAnalyzeDataModel.message),
-                    ],
-                  ),
-                );
-              }
-
-              if (state is ProjectDashboardAnalyzeSensorDataFailure) {
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.red[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red[300]!),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Analysis Error',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Colors.red,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        state.message,
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                    ],
-                  ),
-                );
-              }
-
-              return const SizedBox.shrink();
-            },
-          ),
-          TimeDbResponseBuilder(
-            selectedFields: selectedFields,
-            onAnalyzeSensor: (field) {
-              final queryParams = QueryParams(
-                measurementName: selectedMeasurement!,
-                topic: selectedTopic!,
-                fields: selectedFields.join(','),
-                sensorsToAnalyze: field,
-                windowSize: windowSize.toString(),
-                deviationThreshold: deviationController.text,
-                timeRangeStart:
-                    isCustomRange ? customRangeController.text : timeRange,
-                aggregateFunc: aggregateFunction,
-                bucket: 'CloudHub',
-                org: 'DIC',
-                windowPeriod: windowPeriod,
-              );
-              context.read<ProjectDashboardCubit>().getTimeDb(queryParams);
-            },
-            windowSize: windowSize.toString(),
-            deviationThreshold: deviationController.text,
-            timeRange: timeRange,
-            isCustomRange: isCustomRange,
-            customRangeController: customRangeController,
-            aggregateFunction: aggregateFunction,
-            windowPeriod: windowPeriod,
-            selectedMeasurement: selectedMeasurement,
-            selectedTopic: selectedTopic,
           ),
         ],
       ),
