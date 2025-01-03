@@ -5,14 +5,14 @@ class ChartContainer extends StatelessWidget {
   final String type;
   final dynamic data;
   final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback? onDelete;
 
   const ChartContainer({
     super.key,
     required this.type,
     required this.data,
     required this.onEdit,
-    required this.onDelete,
+    this.onDelete,
   });
 
   @override
@@ -29,19 +29,26 @@ class ChartContainer extends StatelessWidget {
                 Text(
                   _getChartTitle(type),
                   style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Row(
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit),
+                    IconButton.filled(
+                      icon: const Icon(Icons.bar_chart),
                       onPressed: onEdit,
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: onDelete,
-                      color: Colors.red,
-                    ),
+                    const SizedBox(width: 8),
+                    if (onDelete != null)
+                      IconButton.filled(
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: onDelete,
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
                   ],
                 ),
               ],

@@ -446,23 +446,32 @@ Widget buildAreaChart(List<FlSpot> data) {
 }
 
 // Radar Chart
-Widget buildRadarChart(List<RadarEntry> data) {
+Widget buildRadarChart(List<double> data) {
+  final dataSetEntries = data.asMap().entries.map((entry) {
+    return RadarEntry(value: entry.value);
+  }).toList();
+
   return Padding(
     padding: const EdgeInsets.fromLTRB(8, 20, 16, 12),
     child: RadarChart(
       RadarChartData(
         dataSets: [
           RadarDataSet(
+            dataEntries: dataSetEntries,
+            fillColor: Colors.blue.withOpacity(0.2),
             borderColor: Colors.blue,
             borderWidth: 2,
           ),
         ],
+        radarShape: RadarShape.polygon,
         radarBackgroundColor: Colors.transparent,
-        radarBorderData: const BorderSide(color: Colors.black12, width: 1),
-        gridBorderData: const BorderSide(color: Colors.black12, width: 1),
+      gridBorderData: BorderSide(color: Colors.black12, width: 1),
         titleTextStyle: const TextStyle(fontSize: 12, color: Colors.black87),
         tickCount: 5,
         ticksTextStyle: const TextStyle(fontSize: 10, color: Colors.black87),
+        titlePositionPercentageOffset: 0.2,
+        // Add titles for each data point
+        
       ),
     ),
   );

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/special_widgets/chart_container.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/special_widgets/chart_data_editor.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/special_widgets/chart_types.dart';
+import 'package:pulsehub/features/project_dashboard/ui/widgets/special_widgets/widget_type_selector.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class SpecialWidgetsScreen extends StatefulWidget {
@@ -19,16 +20,24 @@ class _SpecialWidgetsScreenState extends State<SpecialWidgetsScreen> {
   final List<Map<String, dynamic>> _charts = [];
 
   @override
+  void initState() {
+    super.initState();
+    // Start with a default line chart
+    _charts.add({
+      'type': 'line',
+      'data': _getDefaultDataForType('line'),
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // Scrollable content
         SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
               children: [
-                // Back button at the top
                 Row(
                   children: [
                     IconButton.filled(
@@ -37,24 +46,21 @@ class _SpecialWidgetsScreenState extends State<SpecialWidgetsScreen> {
                     ),
                   ],
                 ),
-                // Display all selected charts
-                for (var i = 0; i < _charts.length; i++)
-                  ChartContainer(
-                    type: _charts[i]['type'],
-                    data: _charts[i]['data'],
-                    onEdit: () => _editChartData(_charts[i]),
-                    onDelete: () => _removeChart(i),
-                  ),
+                ..._charts.map((chart) => ChartContainer(
+                      type: chart['type'],
+                      data: chart['data'],
+                      onEdit: () => _showEditOptions(chart),
+                      onDelete: () => _removeChart(_charts.indexOf(chart)),
+                    )),
               ],
             ),
           ),
         ),
-        // Floating Action Button (FAB)
         Positioned(
           right: 16,
           bottom: 16,
           child: FloatingActionButton(
-            onPressed: () => _openGraphModalSheet(context),
+            onPressed: () => _openWidgetSelector(context),
             child: const Icon(Icons.add),
           ),
         ),
@@ -98,8 +104,7 @@ class _SpecialWidgetsScreenState extends State<SpecialWidgetsScreen> {
         return List.generate(
             5, (index) => FlSpot(index.toDouble(), Random().nextDouble() * 5));
       case 'radar':
-        return List.generate(
-            5, (index) => RadarEntry(value: Random().nextDouble() * 5));
+        return List.generate(5, (index) => Random().nextDouble() * 5);
       default:
         return [];
     }
@@ -112,7 +117,71 @@ class _SpecialWidgetsScreenState extends State<SpecialWidgetsScreen> {
     });
   }
 
-  // Function to edit chart data
+  void _showEditOptions(Map<String, dynamic> chart) {
+    WoltModalSheet.show(
+      context: context,
+      pageListBuilder: (modalSheetContext) {
+        return [
+          WoltModalSheetPage(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Edit Chart',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ListTile(
+                    leading: const Icon(Icons.edit),
+                    title: const Text('Edit Data'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _editChartData(chart);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.bar_chart),
+                    title: const Text('Change Chart Type'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _openChartTypeSelector(chart);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ];
+      },
+    );
+  }
+
+  void _openChartTypeSelector(Map<String, dynamic> chart) {
+    WoltModalSheet.show(
+      context: context,
+      pageListBuilder: (modalSheetContext) {
+        return [
+          WoltModalSheetPage(
+            child: ChartTypes(
+              onChartSelected: (type) {
+                setState(() {
+                  chart['type'] = type;
+                  chart['data'] = _getDefaultDataForType(type);
+                });
+                Navigator.pop(context);
+              },
+            ),
+          ),
+        ];
+      },
+    );
+  }
+
   void _editChartData(Map<String, dynamic> chart) {
     final type = chart['type'];
     final data = chart['data'];
@@ -131,9 +200,46 @@ class _SpecialWidgetsScreenState extends State<SpecialWidgetsScreen> {
           },
         );
       },
-    ).then((_) {
-      // Ensure the parent widget rebuilds after the dialog is closed
-      setState(() {});
-    });
+    );
+  }
+
+  void _openWidgetSelector(BuildContext context) {
+    WoltModalSheet.show(
+      context: context,
+      pageListBuilder: (modalSheetContext) {
+        return [
+          WoltModalSheetPage(
+            child: WidgetTypeSelector(
+              onTypeSelected: (type) {
+                Navigator.pop(context);
+                if (type == 'chart') {
+                  WoltModalSheet.show(
+                    context: context,
+                    pageListBuilder: (modalSheetContext) {
+                      return [
+                        WoltModalSheetPage(
+                          child: ChartTypes(
+                            onChartSelected: (selectedType) {
+                              setState(() {
+                                _charts.add({
+                                  'type': selectedType,
+                                  'data': _getDefaultDataForType(selectedType),
+                                });
+                              });
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
+                      ];
+                    },
+                  );
+                }
+                // Handle table type here when implemented
+              },
+            ),
+          ),
+        ];
+      },
+    );
   }
 }
