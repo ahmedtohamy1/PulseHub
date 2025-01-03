@@ -90,7 +90,7 @@ final class ProjectDashboardCreateDashFailure extends ProjectDashboardState {
   List<Object> get props => [message];
 }
 
-final class ProjectDashboardMonitoringLoading extends ProjectDashboardState {}  
+final class ProjectDashboardMonitoringLoading extends ProjectDashboardState {}
 
 final class ProjectDashboardMonitoringSuccess extends ProjectDashboardState {
   final MonitoringResponse monitoringResponse;
@@ -104,7 +104,31 @@ final class ProjectDashboardMonitoringSuccess extends ProjectDashboardState {
 final class ProjectDashboardMonitoringFailure extends ProjectDashboardState {
   final String message;
 
-  const ProjectDashboardMonitoringFailure(this.message);  
+  const ProjectDashboardMonitoringFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
+final class ProjectDashboardMonitoringCloudHubLoading
+    extends ProjectDashboardState {}
+
+final class ProjectDashboardMonitoringCloudHubSuccess
+    extends ProjectDashboardState {
+  final MonitoringCloudHubResponse monitoringCloudHubResponse;
+
+  const ProjectDashboardMonitoringCloudHubSuccess(
+      this.monitoringCloudHubResponse);
+
+  @override
+  List<Object> get props => [monitoringCloudHubResponse];
+}
+
+final class ProjectDashboardMonitoringCloudHubFailure
+    extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardMonitoringCloudHubFailure(this.message);
 
   @override
   List<Object> get props => [message];

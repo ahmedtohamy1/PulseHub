@@ -4,6 +4,7 @@ import 'package:pulsehub/core/networking/end_points.dart';
 import 'package:pulsehub/core/networking/my_api.dart';
 import 'package:pulsehub/core/networking/status_code.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/cloudhub_model.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_model.dart';
 
 import 'package:pulsehub/features/project_dashboard/data/models/project_dashboards.dart';
@@ -128,6 +129,27 @@ class DashRepoImpl extends DashRepository {
               response.statusCode == StatusCode.ok) &&
           response.data['success']) {
         return Right(MonitoringResponse.fromJson(response.data));
+      } else {
+        return Left('Failed to get monitoring: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
+  Future<Either<String, MonitoringCloudHubResponse>> getMonitoringCloudHub(
+      String token) async {
+    try {
+      final response = await myApiService.get(
+        EndPoints.getMonitoringCloudHub,
+        token: token,
+      );
+
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return Right(MonitoringCloudHubResponse.fromJson(response.data));
       } else {
         return Left('Failed to get monitoring: ${response.statusCode}');
       }

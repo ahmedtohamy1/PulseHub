@@ -1,5 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/cloudhub_model.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/project_dashboards.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/timedb_response.dart';
@@ -16,4 +17,6 @@ abstract class DashRepository {
       String description, String group, int projectId);
   Future<Either<String, MonitoringResponse>> getMonitoring(
       String token, int projectId);
+  Future<Either<String, MonitoringCloudHubResponse>> getMonitoringCloudHub(
+      String token);
 }
