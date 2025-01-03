@@ -247,6 +247,13 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     }
   }
 
+  String _formatFrequency(double value) {
+    if (value == 0) return '0e0';
+    final exp = (log(value.abs()) / ln10).floor();
+    final mantissa = (value / pow(10, exp)).floor();
+    return '${mantissa}e$exp';
+  }
+
   Widget _buildLineChart(
     List<LineChartBarData> lineBarsData, {
     required bool isTimeXAxis,
@@ -338,7 +345,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                         child: Padding(
                           padding: const EdgeInsets.only(top: 4.0),
                           child: Text(
-                            value.toStringAsFixed(0),
+                            _formatFrequency(value),
                             style: const TextStyle(fontSize: 10),
                           ),
                         ),
@@ -392,7 +399,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                     final xValue = isTimeXAxis
                         ? DateTime.fromMillisecondsSinceEpoch(spot.x.toInt())
                             .toString()
-                        : spot.x.toStringAsFixed(2);
+                        : _formatFrequency(spot.x);
                     final yValue = spot.y.toStringAsFixed(2);
                     return LineTooltipItem(
                       '$field\nX: $xValue\nY: $yValue',
