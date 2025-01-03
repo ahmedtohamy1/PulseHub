@@ -10,9 +10,21 @@ import 'package:pulsehub/features/project_dashboard/ui/widgets/dashboard_card.da
 import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/section_title.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
-class AnalyseScreen extends StatelessWidget {
+class AnalyseScreen extends StatefulWidget {
   const AnalyseScreen({super.key, required this.projectId});
   final int projectId;
+
+  @override
+  State<AnalyseScreen> createState() => _AnalyseScreenState();
+}
+
+class _AnalyseScreenState extends State<AnalyseScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<ProjectDashboardCubit>().getDashs(widget.projectId);
+  }
+
   _onAdd(BuildContext context) {
     final titleController = TextEditingController();
     final descController = TextEditingController();
@@ -81,7 +93,7 @@ class AnalyseScreen extends StatelessWidget {
                                         titleController.text,
                                         descController.text,
                                         'analyse',
-                                        projectId);
+                                        widget.projectId);
                               },
                               style: ElevatedButton.styleFrom(
                                 foregroundColor: Colors.white,

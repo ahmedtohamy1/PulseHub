@@ -47,8 +47,7 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
               ),
             ),
             BlocProvider(
-              create: (context) =>
-                  sl<ProjectDashboardCubit>()..getDashs(project.projectId!),
+              create: (context) => sl<ProjectDashboardCubit>(),
               child: AnalyseScreen(
                 projectId: project.projectId!,
               ),

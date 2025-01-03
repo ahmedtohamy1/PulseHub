@@ -10,9 +10,21 @@ import 'package:pulsehub/features/project_dashboard/ui/widgets/dashboard_card.da
 import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/section_title.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
-class VisualiseScreen extends StatelessWidget {
+class VisualiseScreen extends StatefulWidget {
   const VisualiseScreen({super.key, required this.projectId});
   final int projectId;
+
+  @override
+  State<VisualiseScreen> createState() => _VisualiseScreenState();
+}
+
+class _VisualiseScreenState extends State<VisualiseScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<ProjectDashboardCubit>().getDashs(widget.projectId);
+  }
+
   _onAdd(BuildContext context) {
     final titleController = TextEditingController();
     final descController = TextEditingController();
@@ -81,7 +93,7 @@ class VisualiseScreen extends StatelessWidget {
                                         titleController.text,
                                         descController.text,
                                         'visualise',
-                                        projectId);
+                                        widget.projectId);
                               },
                               style: ElevatedButton.styleFrom(
                                 foregroundColor: Colors.white,
