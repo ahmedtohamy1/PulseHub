@@ -155,6 +155,16 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     );
   }
 
+  String _formatYAxisLabel(double value) {
+    if (value.abs() >= 1000) {
+      return '${(value / 1000).toStringAsFixed(1)}k';
+    } else if (value.abs() < 0.01) {
+      return value.toStringAsExponential(1);
+    } else {
+      return value.toStringAsFixed(1);
+    }
+  }
+
   Widget _buildLineChart(
     List<LineChartBarData> lineBarsData, {
     required bool isTimeXAxis,
@@ -228,17 +238,23 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                           DateTime.fromMillisecondsSinceEpoch(value.toInt());
                       final hh = date.hour.toString().padLeft(2, '0');
                       final mm = date.minute.toString().padLeft(2, '0');
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 4.0),
-                        child: Text('$hh:$mm',
-                            style: const TextStyle(fontSize: 10)),
+                      return Transform.rotate(
+                        angle: -45 * pi / 180,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: Text('$hh:$mm',
+                              style: const TextStyle(fontSize: 10)),
+                        ),
                       );
                     } else {
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 4.0),
-                        child: Text(
-                          value.toStringAsFixed(0),
-                          style: const TextStyle(fontSize: 10),
+                      return Transform.rotate(
+                        angle: -45 * pi / 180,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: Text(
+                            value.toStringAsFixed(0),
+                            style: const TextStyle(fontSize: 10),
+                          ),
                         ),
                       );
                     }
@@ -248,23 +264,15 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
               leftTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
-                  reservedSize: 40,
+                  reservedSize: 50,
                   interval: yInterval,
                   getTitlesWidget: (value, meta) {
-                    final formattedValue = _formatValue(
-                      value,
-                      isTimeXAxis,
-                      isMicroUnits,
-                      field,
-                    );
                     return Padding(
                       padding: const EdgeInsets.only(right: 8.0),
-                      child: SideTitleWidget(
-                        axisSide: meta.axisSide,
-                        child: Text(
-                          formattedValue + (isMicroUnits ? ' µ' : ''),
-                          style: const TextStyle(fontSize: 12),
-                        ),
+                      child: Text(
+                        _formatYAxisLabel(value),
+                        style: const TextStyle(fontSize: 12),
+                        textAlign: TextAlign.right,
                       ),
                     );
                   },
@@ -360,19 +368,6 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     }
 
     return (minX, maxX, minY, maxY);
-  }
-
-  String _formatValue(
-      double value, bool isTimeXAxis, bool isMicroUnits, String? field) {
-    if (!isTimeXAxis && isMicroUnits) {
-      return value.toStringAsFixed(1);
-    } else if (isTimeXAxis && field?.startsWith('accel') == true) {
-      return value.toStringAsFixed(4);
-    } else if (isTimeXAxis) {
-      return value.toStringAsFixed(2);
-    } else {
-      return value.toStringAsFixed(1);
-    }
   }
 
   List<LineChartBarData> _createCombinedOverTimeData() {
