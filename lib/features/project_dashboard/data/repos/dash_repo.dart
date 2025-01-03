@@ -19,4 +19,6 @@ abstract class DashRepository {
       String token, int projectId);
   Future<Either<String, MonitoringCloudHubResponse>> getMonitoringCloudHub(
       String token);
+  Future<Either<String, SensorDataResponse>> getSensorData(
+      String token, int sensorId);
 }

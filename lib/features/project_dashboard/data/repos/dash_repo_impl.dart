@@ -157,6 +157,28 @@ class DashRepoImpl extends DashRepository {
       return Left('Exception occurred: $error');
     }
   }
+
+  @override
+  Future<Either<String, SensorDataResponse>> getSensorData(
+      String token, int sensorId) async {
+    try {
+      final response = await myApiService.get(
+        EndPoints.getSensorData,
+        token: token,
+        queryParameters: {'sensor_id': sensorId},
+      );
+
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return Right(SensorDataResponse.fromJson(response.data));
+      } else {
+        return Left('Failed to get sensor data: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
 }
 
 class QueryParams {

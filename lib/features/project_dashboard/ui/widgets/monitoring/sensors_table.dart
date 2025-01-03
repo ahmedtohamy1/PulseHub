@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_model.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/sensor_data_model.dart';
+import 'package:pulsehub/features/project_dashboard/ui/screens/sensor_details_screen.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/sensor_data_model.dart'
+    as sdm;
 
 class MonitoringTableWidget extends StatelessWidget {
   final Monitoring monitoring;
@@ -34,9 +38,9 @@ class MonitoringTableWidget extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: DataTable(
+            showCheckboxColumn: false,
             headingRowColor: WidgetStateColor.resolveWith(
-              (states) => Theme.of(context).primaryColor,
-            ),
+                (states) => Theme.of(context).colorScheme.primary),
             columns: const [
               DataColumn(
                   label:
@@ -79,6 +83,39 @@ class MonitoringTableWidget extends StatelessWidget {
                 globalIndex++;
 
                 return DataRow(
+                  onSelectChanged: (_) => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SensorDetailsScreen(
+                        sensor: sdm.Sensor(
+                          sensorId: sensor.sensorId,
+                          name: sensor.name,
+                          uuid: sensor.uuid,
+                          usedSensor: sensor.usedSensor,
+                          cloudHub: sensor.cloudHub,
+                          installDate: sensor.installDate,
+                          typeId: sensor.typeId,
+                          dataSource: sensor.dataSource,
+                          readingsPerDay: sensor.readingsPerDay,
+                          active: sensor.active,
+                          coordinateX: sensor.coordinateX,
+                          coordinateY: sensor.coordinateY,
+                          coordinateZ: sensor.coordinateZ,
+                          longitude: sensor.longitude,
+                          latitude: sensor.latitude,
+                          calibrated: sensor.calibrated,
+                          calibrationDate: sensor.calibrationDate,
+                          calibrationComments: sensor.calibrationComments,
+                          event: sensor.event ?? 'N/A',
+                          eventLastStatus: sensor.eventLastStatus ?? 'N/A',
+                          status: sensor.status,
+                          cloudHubTime: sensor.cloudHubTime,
+                          sendTime: sensor.sendTime,
+                        ),
+                      ),
+                    ),
+                  ),
+                  selected: false,
                   color: WidgetStateColor.resolveWith((states) => rowColor),
                   cells: [
                     DataCell(Text(usedSensor.name)),

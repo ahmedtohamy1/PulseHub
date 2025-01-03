@@ -28,6 +28,8 @@ class EndPoints {
   static const String createDash = "/project/dashboard/";
   static const String getMonitoring = "/project/monitoring/";
   static const String getMonitoringCloudHub = "/project/cloudhub/";
+  static const String getSensorData = "/project/sensor/";
+
   // imgs
   static String imageUrl(String path) => '$baseUrl$path';
 }
