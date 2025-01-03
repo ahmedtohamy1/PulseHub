@@ -76,30 +76,6 @@ class _SpecialWidgetsScreenState extends State<SpecialWidgetsScreen> {
     );
   }
 
-  // Function to open Wolt Modal Sheet with chart type options
-  void _openGraphModalSheet(BuildContext context) {
-    WoltModalSheet.show(
-      context: context,
-      pageListBuilder: (modalSheetContext) {
-        return [
-          WoltModalSheetPage(
-            child: ChartTypes(
-              onChartSelected: (type) {
-                setState(() {
-                  _charts.add({
-                    'type': type,
-                    'data': _getDefaultDataForType(type),
-                  });
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-          ),
-        ];
-      },
-    );
-  }
-
   // Function to get default data for a chart type
   dynamic _getDefaultDataForType(String type) {
     switch (type) {

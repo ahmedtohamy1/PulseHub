@@ -26,6 +26,7 @@ class EndPoints {
   static const String getDashDetails = "/project/timedb-schema/";
   static const String timeDbData = "/project/timedb/";
   static const String createDash = "/project/dashboard/";
+  static const String getMonitoring = "/project/monitoring/";
   // imgs
   static String imageUrl(String path) => '$baseUrl$path';
 }

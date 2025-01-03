@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_material_design_icons/flutter_material_design_icons.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/features/ai_report/cubit/ai_report_cubit.dart';
 import 'package:pulsehub/features/ai_report/ui/ai_screen.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/ui/screens/analyse_screen.dart';
+import 'package:pulsehub/features/project_dashboard/ui/screens/monitoring_screen.dart';
 import 'package:pulsehub/features/project_dashboard/ui/screens/visualise_screen.dart';
-import 'package:pulsehub/features/projects/cubit/cubit/projects_cubit.dart';
+import 'package:pulsehub/features/projects/cubit/projects_cubit.dart';
 import 'package:pulsehub/features/projects/data/models/project_response.dart';
 
 class ProjectDetailsScreen extends StatefulWidget {
@@ -54,6 +56,10 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
             BlocProvider(
               create: (context) => sl<AiReportCubit>(),
               child: const AiScreen(),
+            ),
+            BlocProvider(
+              create: (context) => sl<ProjectDashboardCubit>(),
+              child: MonitoringScreen(projectId: project.projectId!),
             ),
           ];
 
@@ -108,6 +114,7 @@ class HeaderIcons extends StatelessWidget {
       Icons.map_sharp,
       LucideIcons.gauge,
       LucideIcons.fileText,
+      MdiIcons.monitorEye
     ];
 
     return Row(

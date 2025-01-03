@@ -4,6 +4,7 @@ import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/utils/shared_pref_helper.dart';
 import 'package:pulsehub/core/utils/shared_pref_keys.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/cloudhub_model.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/monitoring_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/project_dashboards.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/timedb_response.dart';
 import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo.dart';
@@ -65,6 +66,16 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
     res.fold(
       (failure) => emit(ProjectDashboardCreateDashFailure(failure)),
       (response) => emit(ProjectDashboardCreateDashSuccess(response)),
+    );
+  }
+
+  Future<void> getMonitoring(int projectId) async {
+    emit(ProjectDashboardMonitoringLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res = await _repository.getMonitoring(token, projectId);
+    res.fold(
+      (failure) => emit(ProjectDashboardMonitoringFailure(failure)),
+      (response) => emit(ProjectDashboardMonitoringSuccess(response)),
     );
   }
 }

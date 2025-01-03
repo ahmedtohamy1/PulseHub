@@ -27,7 +27,7 @@ import '../../features/project_dashboard/cubit/project_dashboard_cubit.dart'
 import '../../features/project_dashboard/data/repos/dash_repo.dart' as _i346;
 import '../../features/project_dashboard/data/repos/dash_repo_impl.dart'
     as _i503;
-import '../../features/projects/cubit/cubit/projects_cubit.dart' as _i616;
+import '../../features/projects/cubit/projects_cubit.dart' as _i438;
 import '../../features/projects/data/repos/proects_repo_impl.dart' as _i12;
 import '../../features/projects/data/repos/projects_repo.dart' as _i234;
 import '../../features/settings/cubit/settings_cubit.dart' as _i960;
@@ -74,8 +74,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i90.DicRepository>(),
           gh<_i878.SettingsRepository>(),
         ));
-    gh.factory<_i616.ProjectsCubit>(
-        () => _i616.ProjectsCubit(gh<_i234.ProjectsRepository>()));
+    gh.factory<_i438.ProjectsCubit>(
+        () => _i438.ProjectsCubit(gh<_i234.ProjectsRepository>()));
     return this;
   }
 }

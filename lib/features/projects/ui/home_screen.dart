@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pulsehub/features/projects/cubit/cubit/projects_cubit.dart';
+import 'package:pulsehub/features/projects/cubit/projects_cubit.dart';
 import 'package:pulsehub/features/projects/ui/widgets/projects_view.dart';
 
 class HomeScreen extends StatelessWidget {

@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/core/routing/routes.dart';
 import 'package:pulsehub/core/utils/user_manager.dart';
-import 'package:pulsehub/features/projects/cubit/cubit/projects_cubit.dart';
+import 'package:pulsehub/features/projects/cubit/projects_cubit.dart';
 import 'package:pulsehub/features/projects/data/models/get_projects_response.dart';
 
 class ProjectCard extends StatefulWidget {

@@ -89,3 +89,23 @@ final class ProjectDashboardCreateDashFailure extends ProjectDashboardState {
   @override
   List<Object> get props => [message];
 }
+
+final class ProjectDashboardMonitoringLoading extends ProjectDashboardState {}  
+
+final class ProjectDashboardMonitoringSuccess extends ProjectDashboardState {
+  final MonitoringResponse monitoringResponse;
+
+  const ProjectDashboardMonitoringSuccess(this.monitoringResponse);
+
+  @override
+  List<Object> get props => [monitoringResponse];
+}
+
+final class ProjectDashboardMonitoringFailure extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardMonitoringFailure(this.message);  
+
+  @override
+  List<Object> get props => [message];
+}

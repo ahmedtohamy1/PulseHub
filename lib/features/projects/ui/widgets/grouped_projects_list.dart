@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pulsehub/features/projects/cubit/cubit/projects_cubit.dart';
+import 'package:pulsehub/features/projects/cubit/projects_cubit.dart';
 import 'package:pulsehub/features/projects/data/models/get_projects_response.dart';
 import 'package:pulsehub/features/projects/ui/widgets/project_card.dart';
 
@@ -128,8 +128,7 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
                             child: Row(
                               children: [
                                 CircleAvatar(
-                                  backgroundImage:
-                                      NetworkImage(owner.logoUrl),
+                                  backgroundImage: NetworkImage(owner.logoUrl),
                                   radius: 20,
                                   onBackgroundImageError: (_, __) =>
                                       const Icon(Icons.person),
