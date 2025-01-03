@@ -1,4 +1,5 @@
 import 'package:fpdart/fpdart.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/ai_analyze_data_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/cloudhub_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_model.dart';
@@ -21,4 +22,7 @@ abstract class DashRepository {
       String token);
   Future<Either<String, SensorDataResponse>> getSensorData(
       String token, int sensorId);
+
+  Future<Either<String, AiAnalyzeDataModel>> analyzeSensorData(
+      String token, QueryParams queryParams, String projectId);
 }

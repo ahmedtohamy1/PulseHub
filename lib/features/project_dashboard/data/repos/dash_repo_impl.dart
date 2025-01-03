@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/networking/end_points.dart';
 import 'package:pulsehub/core/networking/my_api.dart';
 import 'package:pulsehub/core/networking/status_code.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/ai_analyze_data_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/cloudhub_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_model.dart';
@@ -172,6 +173,31 @@ class DashRepoImpl extends DashRepository {
               response.statusCode == StatusCode.ok) &&
           response.data['success']) {
         return Right(SensorDataResponse.fromJson(response.data));
+      } else {
+        return Left('Failed to get sensor data: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
+  Future<Either<String, AiAnalyzeDataModel>> analyzeSensorData(
+      String token, QueryParams queryParams, String projectId) async {
+    try {
+      final response = await myApiService.get(
+        EndPoints.analyzeSensorData,
+        token: token,
+        queryParameters: {
+          ...queryParams.toJson(),
+          'project_id': projectId,
+        },
+      );
+
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return Right(AiAnalyzeDataModel.fromJson(response.data));
       } else {
         return Left('Failed to get sensor data: ${response.statusCode}');
       }

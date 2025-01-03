@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/project_dashboards.dart';
 import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo_impl.dart';
@@ -47,7 +48,8 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
             if (defaultTopic.fields != null &&
                 defaultTopic.fields!.isNotEmpty) {
               // Select all fields
-              const allFields = ['all'];
+              final allFields =
+                  defaultTopic.fields!.map((f) => f.name!).toList();
               setState(() {
                 selectedMeasurement = mqttConsumer.name;
                 selectedTopic = defaultTopic.name;
@@ -112,6 +114,42 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
     );
 
     context.read<ProjectDashboardCubit>().getTimeDb(queryParams);
+  }
+
+  void _submitAnalyze() {
+    if (selectedMeasurement == null ||
+        selectedTopic == null ||
+        selectedFields.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text('Please select measurement, topic, and at least one field'),
+        ),
+      );
+      return;
+    }
+
+    // Construct query parameters and submit
+    final queryParams = QueryParams(
+      measurementName: selectedMeasurement,
+      topic: selectedTopic,
+      fields: selectedFields.join(','),
+      sensorsToAnalyze: selectedFields.join(','),
+      windowSize:
+          List.filled(selectedFields.length, windowSize.toString()).join(','),
+      deviationThreshold:
+          List.filled(selectedFields.length, deviationController.text)
+              .join(','),
+      timeRangeStart: isCustomRange ? customRangeController.text : timeRange,
+      aggregateFunc: aggregateFunction,
+      bucket: 'CloudHub',
+      org: 'DIC',
+      windowPeriod: windowPeriod,
+    );
+
+    context
+        .read<ProjectDashboardCubit>()
+        .analyzeSensorData(queryParams, widget.dashboard.project.toString());
   }
 
   @override
@@ -308,8 +346,91 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
               ),
             ),
           const SizedBox(height: 16),
-          SubmitButton(onPressed: _submitForm),
+          Row(
+            children: [
+              SubmitButton(onPressed: _submitForm),
+              const SizedBox(width: 8),
+              SubmitButton(
+                onPressed: _submitAnalyze,
+                isAnalyze: true,
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
+          BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
+            builder: (context, state) {
+              if (state is ProjectDashboardAnalyzeSensorDataLoading) {
+                return const Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 8),
+                      Text('Analyzing sensor data...'),
+                    ],
+                  ),
+                );
+              }
+
+              if (state is ProjectDashboardAnalyzeSensorDataSuccess) {
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[300]!),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Analysis Results',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      MarkdownBody(data: state.aiAnalyzeDataModel.message),
+                    ],
+                  ),
+                );
+              }
+
+              if (state is ProjectDashboardAnalyzeSensorDataFailure) {
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.red[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.red[300]!),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Analysis Error',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.red,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        state.message,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return const SizedBox.shrink();
+            },
+          ),
           TimeDbResponseBuilder(selectedFields: selectedFields),
         ],
       ),

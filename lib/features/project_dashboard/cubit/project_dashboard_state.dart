@@ -153,3 +153,26 @@ final class ProjectDashboardSensorDataFailure extends ProjectDashboardState {
   @override
   List<Object> get props => [message];
 }
+
+final class ProjectDashboardAnalyzeSensorDataLoading
+    extends ProjectDashboardState {}
+
+final class ProjectDashboardAnalyzeSensorDataSuccess
+    extends ProjectDashboardState {
+  final AiAnalyzeDataModel aiAnalyzeDataModel;
+
+  const ProjectDashboardAnalyzeSensorDataSuccess(this.aiAnalyzeDataModel);
+
+  @override
+  List<Object> get props => [aiAnalyzeDataModel];
+}
+
+final class ProjectDashboardAnalyzeSensorDataFailure
+    extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardAnalyzeSensorDataFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}

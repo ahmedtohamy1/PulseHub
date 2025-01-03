@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/utils/shared_pref_helper.dart';
 import 'package:pulsehub/core/utils/shared_pref_keys.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/ai_analyze_data_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/cloudhub_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_model.dart';
@@ -30,6 +31,8 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
   }
 
   CloudHubResponse? cloudHubResponse;
+  SensorDataResponse? lastTimeDbResponse;
+
   getDashDetails(int projectId) async {
     emit(ProjectDashboardDetailsLoading());
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
@@ -50,7 +53,21 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
     final res = await _repository.getTimeDb(token, queryParams);
     res.fold(
       (failure) => emit(ProjectDashboardDetailsTimeDbFailure(failure)),
-      (response) => emit(ProjectDashboardDetailsTimeDbSuccess(response)),
+      (response) {
+        lastTimeDbResponse = response;
+        emit(ProjectDashboardDetailsTimeDbSuccess(response));
+      },
+    );
+  }
+
+  analyzeSensorData(QueryParams queryParams, String projectId) async {
+    emit(ProjectDashboardAnalyzeSensorDataLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res =
+        await _repository.analyzeSensorData(token, queryParams, projectId);
+    res.fold(
+      (failure) => emit(ProjectDashboardAnalyzeSensorDataFailure(failure)),
+      (response) => emit(ProjectDashboardAnalyzeSensorDataSuccess(response)),
     );
   }
 

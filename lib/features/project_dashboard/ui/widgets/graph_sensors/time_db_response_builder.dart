@@ -14,6 +14,10 @@ class TimeDbResponseBuilder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
+      buildWhen: (previous, current) => 
+        current is ProjectDashboardDetailsTimeDbLoading ||
+        current is ProjectDashboardDetailsTimeDbSuccess ||
+        current is ProjectDashboardDetailsTimeDbFailure,
       builder: (context, state) {
         if (state is ProjectDashboardDetailsTimeDbLoading) {
           return const Center(
@@ -44,9 +48,17 @@ class TimeDbResponseBuilder extends StatelessWidget {
                   Text('No sensor data available for the selected time range'),
             );
           }
-          print(state.sensorDataResponse.dominate_frequencies);
           return TimeSeriesChart(
             data: state.sensorDataResponse,
+            selectedFields: selectedFields,
+          );
+        }
+
+        // Keep showing the previous chart if state is not related to TimeDb
+        final cubit = context.read<ProjectDashboardCubit>();
+        if (cubit.lastTimeDbResponse != null) {
+          return TimeSeriesChart(
+            data: cubit.lastTimeDbResponse!,
             selectedFields: selectedFields,
           );
         }
