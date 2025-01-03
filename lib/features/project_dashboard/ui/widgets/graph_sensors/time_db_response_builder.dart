@@ -44,7 +44,7 @@ class TimeDbResponseBuilder extends StatelessWidget {
                   Text('No sensor data available for the selected time range'),
             );
           }
-
+          print(state.sensorDataResponse.dominate_frequencies);
           return TimeSeriesChart(
             data: state.sensorDataResponse,
             selectedFields: selectedFields,

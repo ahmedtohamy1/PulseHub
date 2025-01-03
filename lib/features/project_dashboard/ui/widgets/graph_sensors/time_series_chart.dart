@@ -254,49 +254,56 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     return '${mantissa}e$exp';
   }
 
+  /// Creates the main line chart widget.
+  /// Draws extra vertical lines for each dominant frequency when not in time mode.
   Widget _buildLineChart(
     List<LineChartBarData> lineBarsData, {
     required bool isTimeXAxis,
     required bool isMicroUnits,
-    String? field,
+    required String field,
   }) {
+    // Early exit if there's no data to show
     if (lineBarsData.isEmpty) {
       return const SizedBox.shrink();
     }
 
+    // Scale the Y-values if needed (e.g., convert raw acceleration to micro units)
     final yScaleFactor = isMicroUnits ? 1e6 : 1.0;
     lineBarsData = _scaleLineBarsData(lineBarsData, yScaleFactor);
 
-    // Calculate axis limits from the data
+    // Calculate axis limits (min/max X/Y)
     var (minX, maxX, minY, maxY) =
         _calculateAxisLimits(lineBarsData, isTimeXAxis);
 
+    // Force minY=0 for frequency-based charts
     if (!isTimeXAxis) {
       minY = 0;
     }
 
+    // If we failed to calculate valid axis limits, return a fallback
     if (minX == null || maxX == null || minY == null || maxY == null) {
       return const Center(child: Text('No valid data to display'));
     }
 
-    // --- FIX 1: If we have a zero range (single point or constant data),
-    //            force a minimal range so intervals won't be zero.
+    // If the data is flat (single point), expand axes slightly
     if (minX == maxX) {
-      minX = minX - 1;
-      maxX = maxX + 1;
+      minX -= 1;
+      maxX += 1;
     }
     if (minY == maxY) {
-      minY = minY - 1;
-      maxY = maxY + 1;
+      minY -= 1;
+      maxY += 1;
     }
 
-    // Now we can safely compute intervals
+    // Calculate intervals for grid lines
     double xInterval = (maxX - minX) / 4;
     double yInterval = (maxY - minY) / 4;
-
-    // --- FIX 2: Just in case, avoid passing an interval of 0.0 to FLChart
     if (xInterval <= 0) xInterval = 1;
     if (yInterval <= 0) yInterval = 1;
+
+    // Build the list of vertical lines for dominant frequencies
+    final verticalLines =
+        _buildDominantFreqLines(isTimeXAxis: isTimeXAxis, field: field);
 
     return SizedBox(
       height: 300,
@@ -304,6 +311,13 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
         padding: const EdgeInsets.fromLTRB(8, 20, 16, 12),
         child: LineChart(
           LineChartData(
+            lineBarsData: lineBarsData,
+            minX: minX,
+            maxX: maxX,
+            minY: minY,
+            maxY: maxY,
+
+            // Show background grid lines
             gridData: FlGridData(
               show: true,
               drawHorizontalLine: true,
@@ -319,6 +333,8 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                 strokeWidth: 0.5,
               ),
             ),
+
+            // Axis titles and labels
             titlesData: FlTitlesData(
               bottomTitles: AxisTitles(
                 sideTitles: SideTitles(
@@ -327,6 +343,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                   interval: xInterval,
                   getTitlesWidget: (value, meta) {
                     if (isTimeXAxis) {
+                      // Convert X-value (ms since epoch) to HH:MM
                       final date =
                           DateTime.fromMillisecondsSinceEpoch(value.toInt());
                       final hh = date.hour.toString().padLeft(2, '0');
@@ -340,14 +357,13 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                         ),
                       );
                     } else {
+                      // Frequency axis label (e.g., 1e2, 2e3, etc.)
                       return Transform.rotate(
                         angle: -45 * pi / 180,
                         child: Padding(
                           padding: const EdgeInsets.only(top: 4.0),
-                          child: Text(
-                            _formatFrequency(value),
-                            style: const TextStyle(fontSize: 10),
-                          ),
+                          child: Text(_formatFrequency(value),
+                              style: const TextStyle(fontSize: 10)),
                         ),
                       );
                     }
@@ -360,6 +376,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                   reservedSize: 50,
                   interval: yInterval,
                   getTitlesWidget: (value, meta) {
+                    // Format Y-values with k suffix or scientific notation
                     return Padding(
                       padding: const EdgeInsets.only(right: 8.0),
                       child: Text(
@@ -371,11 +388,15 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                   },
                 ),
               ),
-              topTitles:
-                  const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-              rightTitles:
-                  const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              topTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              rightTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
             ),
+
+            // Draw a border around the chart
             borderData: FlBorderData(
               show: true,
               border: Border.all(
@@ -383,14 +404,20 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                 width: 1,
               ),
             ),
-            lineBarsData: lineBarsData,
-            // Use the possibly adjusted axis values
-            minX: minX,
-            maxX: maxX,
-            minY: minY,
-            maxY: maxY,
+
+            // Here is where we set the extra lines (vertical lines for freq)
+            extraLinesData: ExtraLinesData(
+              horizontalLines: [],
+              verticalLines: verticalLines,
+            ),
+
+            // Clip the chart so drawing doesn’t overflow the border
             clipData: const FlClipData.all(),
+
+            // White background
             backgroundColor: Colors.white,
+
+            // Enable touches and tooltips
             lineTouchData: LineTouchData(
               enabled: true,
               touchTooltipData: LineTouchTooltipData(
@@ -402,6 +429,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                         : _formatFrequency(spot.x);
                     final yValue = spot.y.toStringAsFixed(2);
                     return LineTooltipItem(
+                      // Example tooltip text: "accelX\nX: 2023-06-04 12:30:00\nY: 12.34"
                       '$field\nX: $xValue\nY: $yValue',
                       const TextStyle(color: Colors.white, fontSize: 12),
                     );
@@ -415,6 +443,34 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
         ),
       ),
     );
+  }
+
+  /// Builds a list of [VerticalLine] objects for each of the field's dominant frequencies.
+  ///
+  /// Only applies if we're NOT in time mode (`!isTimeXAxis`).
+  List<VerticalLine> _buildDominantFreqLines({
+    required bool isTimeXAxis,
+    required String field,
+  }) {
+    final verticalLines = <VerticalLine>[];
+
+    // Only draw vertical lines for frequency-based chart
+    if (!isTimeXAxis && widget.data.dominate_frequencies != null) {
+      final freqList = widget.data.dominate_frequencies![field] ?? [];
+      for (final freq in freqList) {
+        verticalLines.add(
+          VerticalLine(
+            x: freq,
+            color: Colors.red,
+            
+            strokeWidth: 1,
+            dashArray: [5, 5], // dotted line style
+          ),
+        );
+      }
+    }
+
+    return verticalLines;
   }
 
   List<LineChartBarData> _scaleLineBarsData(
@@ -574,4 +630,35 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
         return Colors.grey;
     }
   }
+
+  Widget _buildTriangleMarker(double size, Color color) {
+    return CustomPaint(
+      size: Size(size, size),
+      painter: TrianglePainter(color: color),
+    );
+  }
+}
+
+class TrianglePainter extends CustomPainter {
+  final Color color;
+
+  TrianglePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final path = Path()
+      ..moveTo(size.width / 2, 0)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
