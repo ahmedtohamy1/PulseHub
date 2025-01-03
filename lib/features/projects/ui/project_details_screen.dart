@@ -201,13 +201,82 @@ class ProjectDetailsContent extends StatelessWidget {
         children: [
           SectionTitle(title: 'Project: ${project.title}'),
           const SizedBox(height: 8),
-          if (project.owner != null) ProjectOwner(owner: project.owner),
-          const SizedBox(
-            height: 3,
-          ),
-          Image.network(
-            project.pictureUrl ?? '',
-            fit: BoxFit.cover,
+          Stack(
+            children: [
+              AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Image.network(
+                  project.pictureUrl ?? '',
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.8),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          color: Colors.white.withOpacity(0.99),
+                        ),
+                        child: project.owner?.logoUrl != null
+                            ? Image.network(
+                                project.owner!.logoUrl!,
+                                fit: BoxFit.contain,
+                              )
+                            : const Icon(Icons.broken_image,
+                                color: Colors.white),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              project.title ?? 'Untitled Project',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              project.owner?.name ?? 'Unknown',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(color: Colors.white70),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 24),
           const SectionTitle(title: 'Overview'),
@@ -231,22 +300,45 @@ class ProjectOwner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        CircleAvatar(
-          backgroundImage:
-              owner.logoUrl != null ? NetworkImage(owner.logoUrl!) : null,
-          radius: 30,
-          child: owner.logoUrl == null ? const Icon(Icons.broken_image) : null,
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            owner.name ?? 'Unknown',
-            style: Theme.of(context).textTheme.bodyLarge,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundImage:
+                owner.logoUrl != null ? NetworkImage(owner.logoUrl!) : null,
+            radius: 30,
+            child:
+                owner.logoUrl == null ? const Icon(Icons.broken_image) : null,
           ),
-        ),
-      ],
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Project Owner',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  owner.name ?? 'Unknown',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

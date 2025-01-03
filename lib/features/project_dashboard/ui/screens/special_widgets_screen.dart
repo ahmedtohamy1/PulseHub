@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/special_widgets/chart_container.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/special_widgets/chart_data_editor.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/special_widgets/chart_types.dart';
+import 'package:pulsehub/features/project_dashboard/ui/widgets/special_widgets/table_container.dart';
+import 'package:pulsehub/features/project_dashboard/ui/widgets/special_widgets/table_data_editor.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/special_widgets/widget_type_selector.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
@@ -18,6 +20,7 @@ class SpecialWidgetsScreen extends StatefulWidget {
 class _SpecialWidgetsScreenState extends State<SpecialWidgetsScreen> {
   // List to store the selected charts and their data
   final List<Map<String, dynamic>> _charts = [];
+  final List<List<List<String>>> _tables = [];
 
   @override
   void initState() {
@@ -51,6 +54,11 @@ class _SpecialWidgetsScreenState extends State<SpecialWidgetsScreen> {
                       data: chart['data'],
                       onEdit: () => _showEditOptions(chart),
                       onDelete: () => _removeChart(_charts.indexOf(chart)),
+                    )),
+                ..._tables.asMap().entries.map((entry) => TableContainer(
+                      data: entry.value,
+                      onEdit: () => _editTableData(entry.key),
+                      onDelete: () => _removeTable(entry.key),
                     )),
               ],
             ),
@@ -203,6 +211,36 @@ class _SpecialWidgetsScreenState extends State<SpecialWidgetsScreen> {
     );
   }
 
+  void _editTableData(int index) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return TableDataEditor(
+          initialData: _tables[index],
+          onSave: (newData) {
+            setState(() {
+              _tables[index] = newData;
+            });
+          },
+        );
+      },
+    );
+  }
+
+  void _removeTable(int index) {
+    setState(() {
+      _tables.removeAt(index);
+    });
+  }
+
+  List<List<String>> _getDefaultTableData() {
+    return [
+      ['Header 1', 'Header 2', 'Header 3'],
+      ['Row 1, Cell 1', 'Row 1, Cell 2', 'Row 1, Cell 3'],
+      ['Row 2, Cell 1', 'Row 2, Cell 2', 'Row 2, Cell 3'],
+    ];
+  }
+
   void _openWidgetSelector(BuildContext context) {
     WoltModalSheet.show(
       context: context,
@@ -233,8 +271,11 @@ class _SpecialWidgetsScreenState extends State<SpecialWidgetsScreen> {
                       ];
                     },
                   );
+                } else if (type == 'table') {
+                  setState(() {
+                    _tables.add(_getDefaultTableData());
+                  });
                 }
-                // Handle table type here when implemented
               },
             ),
           ),
