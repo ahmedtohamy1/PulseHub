@@ -48,8 +48,7 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
             if (defaultTopic.fields != null &&
                 defaultTopic.fields!.isNotEmpty) {
               // Select all fields
-              final allFields =
-                  defaultTopic.fields!.map((f) => f.name!).toList();
+              final allFields = ['all'];
               setState(() {
                 selectedMeasurement = mqttConsumer.name;
                 selectedTopic = defaultTopic.name;
