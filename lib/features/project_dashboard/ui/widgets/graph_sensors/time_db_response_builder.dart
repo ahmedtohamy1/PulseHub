@@ -1,15 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
+import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo_impl.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/time_series_chart.dart';
 
 class TimeDbResponseBuilder extends StatelessWidget {
   const TimeDbResponseBuilder({
     super.key,
     required this.selectedFields,
+    required this.onAnalyzeSensor,
+    required this.windowSize,
+    required this.deviationThreshold,
+    required this.timeRange,
+    required this.isCustomRange,
+    required this.customRangeController,
+    required this.aggregateFunction,
+    required this.windowPeriod,
+    required this.selectedMeasurement,
+    required this.selectedTopic,
   });
 
   final List<String> selectedFields;
+  final String windowSize;
+  final String deviationThreshold;
+  final String timeRange;
+  final bool isCustomRange;
+  final TextEditingController customRangeController;
+  final String aggregateFunction;
+  final String windowPeriod;
+  final String? selectedMeasurement;
+  final String? selectedTopic;
+  final Function(String field) onAnalyzeSensor;
+
+  void _analyzeSensor(BuildContext context, String field) {
+    if (selectedMeasurement == null || selectedTopic == null) return;
+
+    final queryParams = QueryParams(
+      measurementName: selectedMeasurement!,
+      topic: selectedTopic!,
+      fields: selectedFields.join(','),
+      sensorsToAnalyze: field,
+      windowSize: windowSize,
+      deviationThreshold: deviationThreshold,
+      timeRangeStart: isCustomRange ? customRangeController.text : timeRange,
+      aggregateFunc: aggregateFunction,
+      bucket: 'CloudHub',
+      org: 'DIC',
+      windowPeriod: windowPeriod,
+    );
+
+    onAnalyzeSensor(field);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,15 +92,16 @@ class TimeDbResponseBuilder extends StatelessWidget {
           return TimeSeriesChart(
             data: state.sensorDataResponse,
             selectedFields: selectedFields,
+            onAnalyze: (field) => _analyzeSensor(context, field),
           );
         }
 
-        // Keep showing the previous chart if state is not related to TimeDb
         final cubit = context.read<ProjectDashboardCubit>();
         if (cubit.lastTimeDbResponse != null) {
           return TimeSeriesChart(
             data: cubit.lastTimeDbResponse!,
             selectedFields: selectedFields,
+            onAnalyze: (field) => _analyzeSensor(context, field),
           );
         }
 

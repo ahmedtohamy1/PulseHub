@@ -56,7 +56,7 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                 selectedFields.addAll(allFields);
               });
               // Submit form with default values
-              _submitForm();
+              _submitFormAll();
             }
           }
         }
@@ -82,7 +82,7 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
   String? selectedMeasurement;
   String? selectedTopic;
 
-  void _submitForm() {
+  void _submitFormAll() {
     if (selectedMeasurement == null ||
         selectedTopic == null ||
         selectedFields.isEmpty) {
@@ -106,6 +106,37 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
       deviationThreshold:
           List.filled(selectedFields.length, deviationController.text)
               .join(','),
+      timeRangeStart: isCustomRange ? customRangeController.text : timeRange,
+      aggregateFunc: aggregateFunction,
+      bucket: 'CloudHub',
+      org: 'DIC',
+      windowPeriod: windowPeriod,
+    );
+
+    context.read<ProjectDashboardCubit>().getTimeDb(queryParams);
+  }
+
+  void _submitForm() {
+    if (selectedMeasurement == null ||
+        selectedTopic == null ||
+        selectedFields.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text('Please select measurement, topic, and at least one field'),
+        ),
+      );
+      return;
+    }
+
+    // Construct query parameters and submit
+    final queryParams = QueryParams(
+      measurementName: selectedMeasurement,
+      topic: selectedTopic,
+      fields: selectedFields.join(','),
+      sensorsToAnalyze: null,
+      windowSize: windowSize.toString(),
+      deviationThreshold: deviationController.text,
       timeRangeStart: isCustomRange ? customRangeController.text : timeRange,
       aggregateFunc: aggregateFunction,
       bucket: 'CloudHub',
@@ -431,7 +462,35 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
               return const SizedBox.shrink();
             },
           ),
-          TimeDbResponseBuilder(selectedFields: selectedFields),
+          TimeDbResponseBuilder(
+            selectedFields: selectedFields,
+            onAnalyzeSensor: (field) {
+              final queryParams = QueryParams(
+                measurementName: selectedMeasurement!,
+                topic: selectedTopic!,
+                fields: selectedFields.join(','),
+                sensorsToAnalyze: field,
+                windowSize: windowSize.toString(),
+                deviationThreshold: deviationController.text,
+                timeRangeStart:
+                    isCustomRange ? customRangeController.text : timeRange,
+                aggregateFunc: aggregateFunction,
+                bucket: 'CloudHub',
+                org: 'DIC',
+                windowPeriod: windowPeriod,
+              );
+              context.read<ProjectDashboardCubit>().getTimeDb(queryParams);
+            },
+            windowSize: windowSize.toString(),
+            deviationThreshold: deviationController.text,
+            timeRange: timeRange,
+            isCustomRange: isCustomRange,
+            customRangeController: customRangeController,
+            aggregateFunction: aggregateFunction,
+            windowPeriod: windowPeriod,
+            selectedMeasurement: selectedMeasurement,
+            selectedTopic: selectedTopic,
+          ),
         ],
       ),
     );

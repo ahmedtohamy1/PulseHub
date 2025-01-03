@@ -12,11 +12,13 @@ import 'dart:io';
 class TimeSeriesChart extends StatefulWidget {
   final SensorDataResponse data;
   final List<String> selectedFields;
+  final Function(String field)? onAnalyze;
 
   const TimeSeriesChart({
     super.key,
     required this.data,
     required this.selectedFields,
+    this.onAnalyze,
   });
 
   @override
@@ -138,6 +140,18 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
           onPressed: () => _saveChartAsPng(field),
           tooltip: 'Save as PNG',
         ),
+        if (widget.onAnalyze != null && field != 'combined')
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: IconButton(
+              icon: const Icon(Icons.analytics_outlined, size: 16),
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              onPressed: () => widget.onAnalyze!(field),
+              tooltip: 'Analyze Sensor',
+            ),
+          ),
       ],
     );
   }
@@ -462,7 +476,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
           VerticalLine(
             x: freq,
             color: Colors.red,
-            
+
             strokeWidth: 1,
             dashArray: [5, 5], // dotted line style
           ),
