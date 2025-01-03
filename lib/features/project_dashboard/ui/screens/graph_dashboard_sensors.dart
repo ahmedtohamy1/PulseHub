@@ -24,7 +24,43 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
   void initState() {
     super.initState();
     BlocProvider.of<ProjectDashboardCubit>(context)
-        .getDashDetails(widget.dashboard.project);
+        .getDashDetails(widget.dashboard.project)
+        .then((_) {
+      // Get the CloudHub response
+      final cloudHubResponse = context.read<ProjectDashboardCubit>().cloudHubResponse;
+      if (cloudHubResponse != null && cloudHubResponse.buckets!.isNotEmpty) {
+        final measurements = cloudHubResponse.buckets!.first.measurements;
+        if (measurements != null && measurements.isNotEmpty) {
+          // Set default measurement (mqtt_consumer)
+          final mqttConsumer = measurements.firstWhere(
+            (m) => m.name == 'mqtt_consumer',
+            orElse: () => measurements.first,
+          );
+
+          if (mqttConsumer.topics != null && mqttConsumer.topics!.isNotEmpty) {
+            // Set default topic (CloudHub_1001HME)
+            final defaultTopic = mqttConsumer.topics!.firstWhere(
+              (t) => t.name == 'CloudHub_1001HME',
+              orElse: () => mqttConsumer.topics!.first,
+            );
+
+            if (defaultTopic.fields != null && defaultTopic.fields!.isNotEmpty) {
+              // Select all fields
+              final allFields = defaultTopic.fields!.map((f) => f.name!).toList();
+
+              setState(() {
+                selectedMeasurement = mqttConsumer.name;
+                selectedTopic = defaultTopic.name;
+                selectedFields.addAll(allFields);
+              });
+
+              // Submit form with default values
+              _submitForm();
+            }
+          }
+        }
+      }
+    });
   }
 
   final List<String> selectedFields = [];
