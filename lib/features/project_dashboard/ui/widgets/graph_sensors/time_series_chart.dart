@@ -1,7 +1,13 @@
 import 'dart:math';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/timedb_response.dart';
+import 'package:share_plus/share_plus.dart';
+import 'dart:io';
 
 class TimeSeriesChart extends StatefulWidget {
   final SensorDataResponse data;
@@ -18,42 +24,121 @@ class TimeSeriesChart extends StatefulWidget {
 }
 
 class _TimeSeriesChartState extends State<TimeSeriesChart> {
-  final Map<String, bool> showTimeView = {
-    'combined': true,
-    'accelX': true,
-    'accelY': true,
-    'accelZ': true,
-    'humidity': true,
-    'temperature': true,
-  };
+  late final Map<String, bool> showTimeView;
+  late final Map<String, GlobalKey> chartKeys;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeMaps();
+  }
+
+  List<String> _getAvailableFields() {
+    final result = widget.data.result;
+    if (result == null) return [];
+
+    return [
+      if (result.accelX?.value != null) 'accelX',
+      if (result.accelY?.value != null) 'accelY',
+      if (result.accelZ?.value != null) 'accelZ',
+      if (result.humidity?.value != null) 'humidity',
+      if (result.temperature?.value != null) 'temperature',
+    ];
+  }
+
+  void _initializeMaps() {
+    final availableFields = _getAvailableFields();
+    showTimeView = {
+      if (availableFields.isNotEmpty) 'combined': true,
+      for (var field in availableFields) field: true,
+    };
+    chartKeys = {
+      if (availableFields.isNotEmpty) 'combined': GlobalKey(),
+      for (var field in availableFields) field: GlobalKey(),
+    };
+  }
+
+  Future<void> _saveChartAsPng(String field) async {
+    try {
+      final boundary = chartKeys[field]!.currentContext!.findRenderObject()
+          as RenderRepaintBoundary;
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      final pngBytes = byteData!.buffer.asUint8List();
+
+      final tempDir = await getTemporaryDirectory();
+      final now = DateTime.now();
+      final fileName =
+          'pulsehub_${field}_${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}.png';
+      final tempFile = File('${tempDir.path}\\$fileName');
+      await tempFile.writeAsBytes(pngBytes);
+
+      if (context.mounted) {
+        final box = context.findRenderObject() as RenderBox?;
+        final position = box!.localToGlobal(Offset.zero);
+        final size = box.size;
+
+        await Share.shareXFiles(
+          [XFile(tempFile.path)],
+          subject: 'PulseHub Chart',
+          sharePositionOrigin: Rect.fromLTWH(
+            position.dx,
+            position.dy,
+            size.width,
+            size.height / 2,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to share chart: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   Widget _buildToggleButton(String field) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: SegmentedButton<bool>(
-        segments: const [
-          ButtonSegment<bool>(
-            value: true,
-            label: Text('T'),
-            icon: Icon(Icons.timer_outlined, size: 16),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SegmentedButton<bool>(
+          segments: const [
+            ButtonSegment<bool>(
+              value: true,
+              label: Text('T'),
+              icon: Icon(Icons.timer_outlined, size: 16),
+            ),
+            ButtonSegment<bool>(
+              value: false,
+              label: Text('F'),
+              icon: Icon(Icons.show_chart, size: 16),
+            ),
+          ],
+          selected: {showTimeView[field]!},
+          onSelectionChanged: (Set<bool> newSelection) {
+            setState(() {
+              showTimeView[field] = newSelection.first;
+            });
+          },
+          style: const ButtonStyle(
+            visualDensity: VisualDensity.compact,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
-          ButtonSegment<bool>(
-            value: false,
-            label: Text('F'),
-            icon: Icon(Icons.show_chart, size: 16),
-          ),
-        ],
-        selected: {showTimeView[field]!},
-        onSelectionChanged: (Set<bool> newSelection) {
-          setState(() {
-            showTimeView[field] = newSelection.first;
-          });
-        },
-        style: const ButtonStyle(
-          visualDensity: VisualDensity.compact,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
-      ),
+        const SizedBox(width: 8),
+        IconButton(
+          icon: const Icon(Icons.save_alt, size: 16),
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+          onPressed: () => _saveChartAsPng(field),
+          tooltip: 'Save as PNG',
+        ),
+      ],
     );
   }
 
@@ -78,15 +163,18 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
             _buildToggleButton(field),
           ],
         ),
-        _buildLineChart(
-          field == 'combined'
-              ? (isTimeView
-                  ? _createCombinedOverTimeData()
-                  : _createCombinedFreqMagnitudeData())
-              : _createLineBarsData(field: field, byTime: isTimeView),
-          isTimeXAxis: isTimeView,
-          isMicroUnits: !isTimeView,
-          field: field,
+        RepaintBoundary(
+          key: chartKeys[field],
+          child: _buildLineChart(
+            field == 'combined'
+                ? (isTimeView
+                    ? _createCombinedOverTimeData()
+                    : _createCombinedFreqMagnitudeData())
+                : _createLineBarsData(field: field, byTime: isTimeView),
+            isTimeXAxis: isTimeView,
+            isMicroUnits: !isTimeView,
+            field: field,
+          ),
         ),
       ],
     );
@@ -98,21 +186,15 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
       return const Center(child: Text('No data available'));
     }
 
+    final availableFields = _getAvailableFields();
+
     return SingleChildScrollView(
       child: Column(
         children: [
           // Combined sensor data
-          if (_hasDataForFields(
-              ['accelX', 'accelY', 'accelZ', 'humidity', 'temperature']))
-            _buildGraphSection('combined'),
+          if (availableFields.length > 1) _buildGraphSection('combined'),
           // Individual sensor data
-          for (var field in [
-            'accelX',
-            'accelY',
-            'accelZ',
-            'humidity',
-            'temperature'
-          ])
+          for (var field in availableFields)
             if (_hasDataForField(field)) _buildGraphSection(field),
         ],
       ),
@@ -123,7 +205,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     final result = widget.data.result;
     if (result == null) return false;
 
-    final dataForField = _getDataForField(result, field);
+    final dataForField = _getDataForField(field);
     if (dataForField == null ||
         dataForField.value == null ||
         dataForField.value!.isEmpty) {
@@ -181,6 +263,10 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     // Calculate axis limits from the data
     var (minX, maxX, minY, maxY) =
         _calculateAxisLimits(lineBarsData, isTimeXAxis);
+
+    if (!isTimeXAxis) {
+      minY = 0;
+    }
 
     if (minX == null || maxX == null || minY == null || maxY == null) {
       return const Center(child: Text('No valid data to display'));
@@ -371,20 +457,20 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
   }
 
   List<LineChartBarData> _createCombinedOverTimeData() {
-    return ['accelX', 'accelY', 'accelZ', 'humidity', 'temperature']
+    return _getAvailableFields()
         .map((f) => _createLineBarsData(field: f, byTime: true))
         .expand((list) => list)
         .toList()
-        .reversed
+        .take(6)
         .toList();
   }
 
   List<LineChartBarData> _createCombinedFreqMagnitudeData() {
-    return ['accelX', 'accelY', 'accelZ', 'humidity', 'temperature']
+    return _getAvailableFields()
         .map((f) => _createLineBarsData(field: f, byTime: false))
         .expand((list) => list)
         .toList()
-        .reversed
+        .take(6)
         .toList();
   }
 
@@ -426,7 +512,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     if (result == null) return ([], []);
 
     if (byTime) {
-      final data = _getDataForField(result, field);
+      final data = _getDataForField(field);
       if (data != null) {
         yValues = data.value;
         xValues =
@@ -445,7 +531,10 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     return (xValues ?? [], yValues ?? []);
   }
 
-  Data? _getDataForField(Result result, String field) {
+  Data? _getDataForField(String field) {
+    final result = widget.data.result;
+    if (result == null) return null;
+
     switch (field) {
       case 'accelX':
         return result.accelX;
