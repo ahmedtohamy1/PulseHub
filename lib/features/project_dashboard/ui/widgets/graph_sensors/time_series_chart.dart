@@ -200,26 +200,20 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
         ),
-        const SizedBox(width: 8),
         IconButton(
-          icon: const Icon(Icons.save_alt, size: 16),
-          visualDensity: VisualDensity.compact,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(),
+          icon: const Icon(
+            Icons.save_alt,
+          ),
           onPressed: () => _saveChartAsPng(field),
           tooltip: 'Save as PNG',
         ),
         if (widget.onAnalyze != null && field != 'combined')
-          Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: IconButton(
-              icon: const Icon(Icons.analytics_outlined, size: 16),
-              visualDensity: VisualDensity.compact,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              onPressed: () => widget.onAnalyze!(field),
-              tooltip: 'Analyze Sensor',
+          IconButton(
+            icon: const Icon(
+              Icons.analytics_outlined,
             ),
+            onPressed: () => widget.onAnalyze!(field),
+            tooltip: 'Analyze Sensor',
           ),
       ],
     );
@@ -235,6 +229,9 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
             ? '${_capitalize(field)} Over Time'
             : '${_capitalize(field)} Over Frequency');
 
+    // Check if ticket exists for this field
+    final hasTicket = widget.data.ticket?[field] != null;
+
     return Column(
       key: ValueKey('graph_section_$field'),
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,7 +239,18 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
         Row(
           children: [
             Expanded(
-              child: _buildSectionTitle(title),
+              child: Row(
+                children: [
+                  Expanded(child: _buildSectionTitle(title)),
+                  if (hasTicket)
+                    IconButton(
+                      icon: const Icon(Icons.warning_amber_rounded,
+                          color: Colors.red),
+                      onPressed: () => _showTicketDetails(context, field),
+                      tooltip: 'Show Ticket Details',
+                    ),
+                ],
+              ),
             ),
             _buildToggleButton(field),
           ],
@@ -261,6 +269,95 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
           ),
         ),
       ],
+    );
+  }
+
+  void _showTicketDetails(BuildContext context, String field) {
+    final ticket = widget.data.ticket?[field];
+    if (ticket == null) return;
+
+    final createdAt = DateTime.parse(ticket['created_at'].toString());
+    final formattedDate =
+        '${createdAt.day}/${createdAt.month}/${createdAt.year}, ${createdAt.hour}:${createdAt.minute.toString().padLeft(2, '0')}:${createdAt.second.toString().padLeft(2, '0')} ${createdAt.hour >= 12 ? 'PM' : 'AM'}';
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.red),
+            SizedBox(width: 8),
+            Text(
+              'Ticket Details',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text.rich(
+              TextSpan(
+                text: 'Name: ',
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                children: [
+                  TextSpan(
+                    text: ticket['name'].toString(),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.normal, color: Colors.black87),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text.rich(
+              TextSpan(
+                text: 'Description: ',
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                children: [
+                  TextSpan(
+                    text: ticket['description'].toString(),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.normal, color: Colors.black87),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text.rich(
+              TextSpan(
+                text: 'Created At: ',
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                children: [
+                  TextSpan(
+                    text: formattedDate,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.normal, color: Colors.black87),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text(
+              'Close',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
