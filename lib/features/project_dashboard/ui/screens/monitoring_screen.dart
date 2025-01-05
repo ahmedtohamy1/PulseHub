@@ -57,9 +57,7 @@ class _MonitoringScreenState extends State<MonitoringScreen>
         children: [
           BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
             builder: (context, state) {
-              if (state is ProjectDashboardMonitoringLoading) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (state is ProjectDashboardMonitoringSuccess) {
+              if (state is ProjectDashboardMonitoringSuccess) {
                 final monitorings = state.monitoringResponse.monitorings ?? [];
                 if (monitorings.isNotEmpty &&
                     (selectedMonitoring == null ||
@@ -102,25 +100,31 @@ class _MonitoringScreenState extends State<MonitoringScreen>
                     style: const TextStyle(color: Colors.red),
                   ),
                 );
-              } else {
-                return const SizedBox.shrink();
               }
+              return const SizedBox.shrink();
             },
           ),
           _buildTabs(),
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                SensorsTab(
-                  projectId: widget.projectId,
-                  selectedFilter: selectedFilter,
-                  selectedMonitoring: selectedMonitoring,
-                ),
-                const CloudHubTab(),
-                const Center(child: Text("Alarms content")),
-                const Center(child: Text("Data Source content")),
-              ],
+            child: BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
+              builder: (context, state) {
+                if (state is ProjectDashboardMonitoringLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                return TabBarView(
+                  controller: _tabController,
+                  children: [
+                    SensorsTab(
+                      projectId: widget.projectId,
+                      selectedFilter: selectedFilter,
+                      selectedMonitoring: selectedMonitoring,
+                    ),
+                    const CloudHubTab(),
+                    const Center(child: Text("Alarms content")),
+                    const Center(child: Text("Data Source content")),
+                  ],
+                );
+              },
             ),
           ),
         ],
@@ -170,9 +174,7 @@ class _SensorsTabState extends State<SensorsTab>
     super.build(context); // Required for AutomaticKeepAliveClientMixin
     return BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
       builder: (context, state) {
-        if (state is ProjectDashboardMonitoringLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is ProjectDashboardMonitoringSuccess) {
+        if (state is ProjectDashboardMonitoringSuccess) {
           final monitorings = state.monitoringResponse.monitorings ?? [];
           if (monitorings.isEmpty) {
             return const Center(child: Text("No sensors available."));
