@@ -10,7 +10,6 @@ import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/fie
 import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/number_input.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/submit_button.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/time_db_response_builder.dart';
-import 'package:pulsehub/features/project_dashboard/ui/screens/cloudhub_details_screen.dart';
 
 class GraphDashboardSensors extends StatefulWidget {
   final Dashboard dashboard;

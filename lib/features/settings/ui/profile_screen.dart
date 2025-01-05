@@ -67,7 +67,9 @@ class ProfileScreenState extends State<ProfileScreen> {
           _selectedImage = image;
         });
       }
-    } catch (e) {}
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override

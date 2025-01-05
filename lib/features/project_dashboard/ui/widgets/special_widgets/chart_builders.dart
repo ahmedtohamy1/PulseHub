@@ -465,7 +465,7 @@ Widget buildRadarChart(List<double> data) {
         ],
         radarShape: RadarShape.polygon,
         radarBackgroundColor: Colors.transparent,
-        gridBorderData: BorderSide(color: Colors.black12, width: 1),
+        gridBorderData: const BorderSide(color: Colors.black12, width: 1),
         titleTextStyle: const TextStyle(fontSize: 12, color: Colors.black87),
         tickCount: 5,
         ticksTextStyle: const TextStyle(fontSize: 10, color: Colors.black87),

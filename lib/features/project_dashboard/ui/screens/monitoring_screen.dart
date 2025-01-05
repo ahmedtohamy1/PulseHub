@@ -200,7 +200,7 @@ class _MonitoringScreenState extends State<MonitoringScreen>
                 return DataRow(
                   color: WidgetStateColor.resolveWith((states) => rowColor),
                   cells: [
-                    DataCell(Text(cloudHub.name ?? 'N/A')),
+                    DataCell(Text(cloudHub.name)),
                     DataCell(Text(cloudHub.notes ?? 'N/A')),
                     DataCell(Text(cloudHub.code ?? 'N/A')),
                   ],

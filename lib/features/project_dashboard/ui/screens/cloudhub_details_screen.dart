@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_details.dart';
-import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_model.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class CloudHubDetailsScreen extends StatelessWidget {
@@ -13,46 +12,44 @@ class CloudHubDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('CloudHub Details'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildInfoSection(
-              title: 'Basic Information',
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildInfoSection(
+            title: 'Basic Information',
+            children: [
+              _buildInfoRow('CloudHub Name', cloudHub.cloudhub.name),
+              _buildInfoRow('Wi-Fi SSID', cloudHub.cloudhub.wifiSsid),
+              _buildInfoRow(
+                  'Wi-Fi Password', cloudHub.cloudhub.wifiPassword ?? 'N/A'),
+              _buildInfoRow('Protocol', cloudHub.cloudhub.protocol ?? 'N/A'),
+              _buildInfoRow(
+                  'Timedb Server', cloudHub.cloudhub.timedbServer ?? 'N/A'),
+              _buildInfoRow('Timedb Port',
+                  cloudHub.cloudhub.timedbPort?.toString() ?? 'N/A'),
+              _buildInfoRow('Notes', cloudHub.cloudhub.notes),
+            ],
+          ),
+          const SizedBox(height: 32),
+          Center(
+            child: Column(
               children: [
-                _buildInfoRow('CloudHub Name', cloudHub.cloudhub.name),
-                _buildInfoRow('Wi-Fi SSID', cloudHub.cloudhub.wifiSsid),
-                _buildInfoRow('Wi-Fi Password', cloudHub.cloudhub.wifiPassword ?? 'N/A'),
-                _buildInfoRow('Protocol', cloudHub.cloudhub.protocol ?? 'N/A'),
-                _buildInfoRow('Timedb Server', cloudHub.cloudhub.timedbServer ?? 'N/A'),
-                _buildInfoRow('Timedb Port', cloudHub.cloudhub.timedbPort?.toString() ?? 'N/A'),
-                _buildInfoRow('Notes', cloudHub.cloudhub.notes ?? 'N/A'),
+                Text(
+                  'CloudHub QR Code',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 16),
+                QrImageView(
+                  data: _generateQrData(),
+                  version: QrVersions.auto,
+                  size: 200.0,
+                ),
               ],
             ),
-            const SizedBox(height: 32),
-            Center(
-              child: Column(
-                children: [
-                  Text(
-                    'CloudHub QR Code',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 16),
-                  QrImageView(
-                    data: _generateQrData(),
-                    version: QrVersions.auto,
-                    size: 200.0,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

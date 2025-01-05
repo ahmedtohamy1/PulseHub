@@ -133,9 +133,11 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(
                                         6), // Rounded corners
-                                    color: Colors.white.withOpacity(
-                                        0.99), // White background with opacity
+                                    color: Colors.white.withValues(
+                                        alpha:
+                                            0.99), // White background with opacity
                                   ),
+                                  // ignore: unnecessary_null_comparison
                                   child: owner.logoUrl != null
                                       ? ClipRRect(
                                           borderRadius: BorderRadius.circular(

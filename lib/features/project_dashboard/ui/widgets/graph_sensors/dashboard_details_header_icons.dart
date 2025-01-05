@@ -230,7 +230,9 @@ class DashboardDetailsheaderIcons extends StatelessWidget {
       ).then((_) {}).catchError((error) {
         Share.share(csvData, subject: 'Exported CSV File');
       });
-    } catch (e) {}
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override

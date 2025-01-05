@@ -1,5 +1,5 @@
 import 'dart:math';
-import 'dart:typed_data';
+
 import 'dart:ui' as ui;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -235,10 +235,6 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     return true;
   }
 
-  bool _hasDataForFields(List<String> fields) {
-    return fields.any((field) => _hasDataForField(field));
-  }
-
   String _capitalize(String s) => s[0].toUpperCase() + s.substring(1);
 
   Widget _buildSectionTitle(String title) {
@@ -320,10 +316,10 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
           maxY: maxY,
           titlesData: FlTitlesData(
             show: true,
-            topTitles: AxisTitles(
+            topTitles: const AxisTitles(
               sideTitles: SideTitles(showTitles: false),
             ),
-            rightTitles: AxisTitles(
+            rightTitles: const AxisTitles(
               sideTitles: SideTitles(showTitles: false),
             ),
             bottomTitles: AxisTitles(
@@ -340,7 +336,8 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                 interval: (maxX - minX) / 5,
                 getTitlesWidget: (value, meta) {
                   if (isTimeXAxis) {
-                    final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
+                    final date =
+                        DateTime.fromMillisecondsSinceEpoch(value.toInt());
                     return Padding(
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
@@ -598,13 +595,6 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
       default:
         return Colors.grey;
     }
-  }
-
-  Widget _buildTriangleMarker(double size, Color color) {
-    return CustomPaint(
-      size: Size(size, size),
-      painter: TrianglePainter(color: color),
-    );
   }
 }
 

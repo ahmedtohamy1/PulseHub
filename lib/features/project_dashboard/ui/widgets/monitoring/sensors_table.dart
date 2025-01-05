@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_model.dart';
-import 'package:pulsehub/features/project_dashboard/data/models/sensor_data_model.dart';
 import 'package:pulsehub/features/project_dashboard/ui/screens/sensor_details_screen.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/sensor_data_model.dart'
     as sdm;

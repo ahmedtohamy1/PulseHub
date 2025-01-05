@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
-import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo_impl.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/time_series_chart.dart';
 
 class TimeDbResponseBuilder extends StatelessWidget {
@@ -35,30 +34,16 @@ class TimeDbResponseBuilder extends StatelessWidget {
   void _analyzeSensor(BuildContext context, String field) {
     if (selectedMeasurement == null || selectedTopic == null) return;
 
-    final queryParams = QueryParams(
-      measurementName: selectedMeasurement!,
-      topic: selectedTopic!,
-      fields: selectedFields.join(','),
-      sensorsToAnalyze: field,
-      windowSize: windowSize,
-      deviationThreshold: deviationThreshold,
-      timeRangeStart: isCustomRange ? customRangeController.text : timeRange,
-      aggregateFunc: aggregateFunction,
-      bucket: 'CloudHub',
-      org: 'DIC',
-      windowPeriod: windowPeriod,
-    );
-
     onAnalyzeSensor(field);
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
-      buildWhen: (previous, current) => 
-        current is ProjectDashboardDetailsTimeDbLoading ||
-        current is ProjectDashboardDetailsTimeDbSuccess ||
-        current is ProjectDashboardDetailsTimeDbFailure,
+      buildWhen: (previous, current) =>
+          current is ProjectDashboardDetailsTimeDbLoading ||
+          current is ProjectDashboardDetailsTimeDbSuccess ||
+          current is ProjectDashboardDetailsTimeDbFailure,
       builder: (context, state) {
         if (state is ProjectDashboardDetailsTimeDbLoading) {
           return const Center(
