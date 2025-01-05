@@ -239,32 +239,6 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                         },
                       ),
                     const SizedBox(height: 16),
-                    if (selectedTopic != null)
-                      Column(
-                        children: [
-                          FieldSelector(
-                            fields: measurements
-                                .firstWhere(
-                                    (m) => m.name == selectedMeasurement)
-                                .topics!
-                                .firstWhere((t) => t.name == selectedTopic)
-                                .fields!
-                                .map((f) => f.name!)
-                                .toList(),
-                            selectedFields: selectedFields,
-                            onFieldSelected: (field, selected) {
-                              setState(() {
-                                if (selected) {
-                                  selectedFields.add(field);
-                                } else {
-                                  selectedFields.remove(field);
-                                }
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                    const SizedBox(height: 16),
                     // Two-column layout for input fields and dropdowns
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -420,6 +394,33 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                       ],
                     ),
                     const SizedBox(height: 16),
+
+                    if (selectedTopic != null)
+                      Column(
+                        children: [
+                          FieldSelector(
+                            fields: measurements
+                                .firstWhere(
+                                    (m) => m.name == selectedMeasurement)
+                                .topics!
+                                .firstWhere((t) => t.name == selectedTopic)
+                                .fields!
+                                .map((f) => f.name!)
+                                .toList(),
+                            selectedFields: selectedFields,
+                            onFieldSelected: (field, selected) {
+                              setState(() {
+                                if (selected) {
+                                  selectedFields.add(field);
+                                } else {
+                                  selectedFields.remove(field);
+                                }
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+
                     Row(
                       children: [
                         SubmitButton(onPressed: _submitForm),
@@ -431,6 +432,7 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                       ],
                     ),
                     const SizedBox(height: 16),
+
                     BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
                       builder: (context, state) {
                         if (state is ProjectDashboardAnalyzeSensorDataLoading) {
@@ -506,6 +508,7 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                         return const SizedBox.shrink();
                       },
                     ),
+
                     TimeDbResponseBuilder(
                       selectedFields: selectedFields,
                       onAnalyzeSensor: (field) {
