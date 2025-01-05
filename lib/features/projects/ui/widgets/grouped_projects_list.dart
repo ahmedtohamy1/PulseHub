@@ -165,49 +165,56 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
                                 const Spacer(),
                                 ReorderableDragStartListener(
                                   index: owners.indexOf(owner),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: List.generate(3, (index) {
-                                          return Container(
-                                            width:
-                                                4, // Adjust the size of the dots
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.0),
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: List.generate(3, (index) {
+                                            return Container(
+                                              width:
+                                                  4, // Adjust the size of the dots
+                                              height:
+                                                  4, // Adjust the size of the dots
+                                              margin: const EdgeInsets.all(
+                                                  2), // Adjust spacing between dots
+                                              decoration: const BoxDecoration(
+                                                color: Colors.grey, // Dot color
+                                                shape: BoxShape.circle,
+                                              ),
+                                            );
+                                          }),
+                                        ),
+                                        const SizedBox(
                                             height:
-                                                4, // Adjust the size of the dots
-                                            margin: const EdgeInsets.all(
-                                                2), // Adjust spacing between dots
-                                            decoration: const BoxDecoration(
-                                              color: Colors.grey, // Dot color
-                                              shape: BoxShape.circle,
-                                            ),
-                                          );
-                                        }),
-                                      ),
-                                      const SizedBox(
-                                          height:
-                                              4), // Adjust spacing between rows of dots
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: List.generate(3, (index) {
-                                          return Container(
-                                            width:
-                                                4, // Adjust the size of the dots
-                                            height:
-                                                4, // Adjust the size of the dots
-                                            margin: const EdgeInsets.all(
-                                                2), // Adjust spacing between dots
-                                            decoration: const BoxDecoration(
-                                              color: Colors.grey, // Dot color
-                                              shape: BoxShape.circle,
-                                            ),
-                                          );
-                                        }),
-                                      ),
-                                    ],
+                                                4), // Adjust spacing between rows of dots
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: List.generate(3, (index) {
+                                            return Container(
+                                              width:
+                                                  4, // Adjust the size of the dots
+                                              height:
+                                                  4, // Adjust the size of the dots
+                                              margin: const EdgeInsets.all(
+                                                  2), // Adjust spacing between dots
+                                              decoration: const BoxDecoration(
+                                                color: Colors.grey, // Dot color
+                                                shape: BoxShape.circle,
+                                              ),
+                                            );
+                                          }),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ],
