@@ -5,6 +5,7 @@ import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloud
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/project_dashboards.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/project_update_request.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/sensor_activity_log_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/tickets_messages_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/timedb_response.dart';
@@ -35,4 +36,6 @@ abstract class DashRepository {
       String token, int ticketId);
   Future<Either<String, bool>> createTicketMessage(
       String token, int ticketId, String message);
+  Future<Either<String, bool>> updateProject(
+      String token, int projectId, ProjectUpdateRequest request);
 }

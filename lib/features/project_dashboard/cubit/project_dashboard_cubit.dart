@@ -9,6 +9,7 @@ import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloud
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/project_dashboards.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/project_update_request.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/sensor_activity_log_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/timedb_response.dart';
 import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo.dart';
@@ -207,6 +208,17 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
     res.fold(
       (failure) => emit(ProjectDashboardSensorActivityLogFailure(failure)),
       (response) => emit(ProjectDashboardSensorActivityLogSuccess(response)),
+    );
+  }
+
+  Future<void> updateProject(
+      int projectId, ProjectUpdateRequest request) async {
+    emit(ProjectDashboardUpdateProjectLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res = await _repository.updateProject(token, projectId, request);
+    res.fold(
+      (failure) => emit(ProjectDashboardUpdateProjectFailure(failure)),
+      (response) => emit(ProjectDashboardUpdateProjectSuccess(response)),
     );
   }
 }

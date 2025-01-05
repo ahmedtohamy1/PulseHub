@@ -216,3 +216,21 @@ final class ProjectDashboardSensorActivityLogFailure
 
   const ProjectDashboardSensorActivityLogFailure(this.message);
 }
+
+final class ProjectDashboardUpdateProjectLoading
+    extends ProjectDashboardState {}
+
+final class ProjectDashboardUpdateProjectSuccess extends ProjectDashboardState {
+  final bool success;
+
+  const ProjectDashboardUpdateProjectSuccess(this.success);
+
+  @override
+  List<Object> get props => [success];
+}
+
+final class ProjectDashboardUpdateProjectFailure extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardUpdateProjectFailure(this.message);
+}

@@ -9,6 +9,7 @@ import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloud
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/project_dashboards.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/project_update_request.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/sensor_activity_log_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/tickets_messages_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/timedb_response.dart';
@@ -290,6 +291,32 @@ class DashRepoImpl extends DashRepository {
         return const Right(true);
       } else {
         return Left('Failed to create ticket message: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
+  Future<Either<String, bool>> updateProject(
+      String token, int projectId, ProjectUpdateRequest request) async {
+    try {
+      final Map<String, dynamic> filteredData = request.toJson()
+        ..removeWhere((key, value) => value == null || value == '');
+
+      final response = await myApiService.post(
+        EndPoints.updateProject,
+        token: token,
+        queryParameters: {'id': projectId},
+        data: filteredData,
+        encodeAsJson: true,
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return const Right(true);
+      } else {
+        return Left('Failed to update project: ${response.statusCode}');
       }
     } catch (error) {
       return Left('Exception occurred: $error');
