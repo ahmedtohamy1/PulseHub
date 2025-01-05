@@ -199,22 +199,27 @@ class ProjectDetailsContent extends StatelessWidget {
   final Project project;
 
   const ProjectDetailsContent({required this.project, super.key});
-
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         children: [
-          SectionTitle(title: 'Project: ${project.title}'),
+          const SectionTitle(title: 'Project Details'),
           const SizedBox(height: 8),
           Stack(
             children: [
-              AspectRatio(
-                aspectRatio: 16 / 9,
-                child: Image.network(
-                  project.pictureUrl ?? '',
-                  width: double.infinity,
-                  fit: BoxFit.cover,
+              // Updated Image with Rounded Corners
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16), // Adjust corner radius
+                child: SizedBox(
+                  height: 300, // Set a specific height
+                  child: AspectRatio(
+                    aspectRatio: 16 / 9, // Maintain the aspect ratio
+                    child: Image.network(
+                      project.pictureUrl ?? '',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
               ),
               Positioned(
