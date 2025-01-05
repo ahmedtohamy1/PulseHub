@@ -52,98 +52,122 @@ class _MonitoringScreenState extends State<MonitoringScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Scaffold(
-          body: Column(
-            children: [
-              BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
-                builder: (context, state) {
-                  if (state is ProjectDashboardMonitoringLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (state is ProjectDashboardMonitoringSuccess) {
-                    final monitorings =
-                        state.monitoringResponse.monitorings ?? [];
-                    if (monitorings.isNotEmpty &&
-                        (selectedMonitoring == null ||
-                            !monitorings.contains(selectedMonitoring))) {
-                      // Update the selectedMonitoring to the first valid item
-                      selectedMonitoring = monitorings.first;
-                    }
-                    return MonitoringDropdownWidget(
-                      selectedMonitoring: selectedMonitoring,
-                      monitorings: monitorings,
-                      onChanged: (newValue) {
-                        setState(() {
-                          selectedMonitoring = newValue;
-                        });
-                      },
-                    );
-                  } else if (state is ProjectDashboardMonitoringFailure) {
-                    return Center(
-                      child: Text(
-                        "Error: ${state.message}",
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                    );
-                  } else {
-                    return const SizedBox.shrink();
-                  }
-                },
-              ),
-              _buildTabs(),
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
+    return Scaffold(
+      body: Column(
+        children: [
+          BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
+            builder: (context, state) {
+              if (state is ProjectDashboardMonitoringLoading) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (state is ProjectDashboardMonitoringSuccess) {
+                final monitorings = state.monitoringResponse.monitorings ?? [];
+                if (monitorings.isNotEmpty &&
+                    (selectedMonitoring == null ||
+                        !monitorings.contains(selectedMonitoring))) {
+                  // Update the selectedMonitoring to the first valid item
+                  selectedMonitoring = monitorings.first;
+                }
+                return Row(
                   children: [
-                    _buildSensorsTab(),
-                    _buildCloudHubTab(),
-                    const Center(child: Text("Alarms content")),
-                    const Center(child: Text("Data Source content")),
+                    Expanded(
+                      child: MonitoringDropdownWidget(
+                        selectedMonitoring: selectedMonitoring,
+                        monitorings: monitorings,
+                        onChanged: (newValue) {
+                          setState(() {
+                            selectedMonitoring = newValue;
+                          });
+                        },
+                      ),
+                    ),
+                    // Show filter button only in the Sensors tab
+                    if (_tabController.index == 0)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: FilterButtonWidget(
+                          selectedFilter: selectedFilter,
+                          onFilterChanged: (newFilter) {
+                            setState(() {
+                              selectedFilter = newFilter;
+                            });
+                          },
+                        ),
+                      ),
                   ],
-                ),
-              ),
-            ],
+                );
+              } else if (state is ProjectDashboardMonitoringFailure) {
+                return Center(
+                  child: Text(
+                    "Error: ${state.message}",
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                );
+              } else {
+                return const SizedBox.shrink();
+              }
+            },
           ),
-        ),
-        FilterButtonWidget(
-          selectedFilter: selectedFilter,
-          onFilterChanged: (newFilter) {
-            setState(() {
-              selectedFilter = newFilter;
-            });
-          },
-        ),
+          _buildTabs(),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                SensorsTab(
+                  projectId: widget.projectId,
+                  selectedFilter: selectedFilter,
+                  selectedMonitoring: selectedMonitoring,
+                ),
+                const CloudHubTab(),
+                const Center(child: Text("Alarms content")),
+                const Center(child: Text("Data Source content")),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabs() {
+    return TabBar(
+      controller: _tabController,
+      indicatorColor: Theme.of(context).primaryColor,
+      labelColor: Theme.of(context).primaryColor,
+      unselectedLabelColor: Colors.grey,
+      tabs: const [
+        Tab(icon: Icon(Icons.sensors), text: "Sensors"),
+        Tab(icon: Icon(Icons.cloud), text: "CloudHub"),
+        Tab(icon: Icon(Icons.alarm), text: "Alarms"),
+        Tab(icon: Icon(Icons.layers), text: "Data Source"),
       ],
     );
   }
+}
 
-  Widget _buildCloudHubTab() {
-    return BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
-      builder: (context, state) {
-        if (state is ProjectDashboardMonitoringCloudHubLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is ProjectDashboardMonitoringCloudHubSuccess) {
-          final cloudHubs = state.monitoringCloudHubResponse.cloudhubs ?? [];
-          if (cloudHubs.isEmpty) {
-            return const Center(child: Text("No CloudHubs available."));
-          }
-          return _buildCloudHubTable(cloudHubs);
-        } else if (state is ProjectDashboardMonitoringCloudHubFailure) {
-          return Center(
-            child: Text(
-              "Error: ${state.message}",
-              style: const TextStyle(color: Colors.red),
-            ),
-          );
-        } else {
-          return const Center(child: Text("No CloudHub data available."));
-        }
-      },
-    );
-  }
+class SensorsTab extends StatefulWidget {
+  final int projectId;
+  final String selectedFilter;
+  final Monitoring? selectedMonitoring;
 
-  Widget _buildSensorsTab() {
+  const SensorsTab({
+    super.key,
+    required this.projectId,
+    required this.selectedFilter,
+    required this.selectedMonitoring,
+  });
+
+  @override
+  State<SensorsTab> createState() => _SensorsTabState();
+}
+
+class _SensorsTabState extends State<SensorsTab>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true; // Preserve the state of this tab
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     return BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
       builder: (context, state) {
         if (state is ProjectDashboardMonitoringLoading) {
@@ -154,11 +178,57 @@ class _MonitoringScreenState extends State<MonitoringScreen>
             return const Center(child: Text("No sensors available."));
           }
           return MonitoringTableWidget(
-            monitoring: selectedMonitoring ?? monitorings.first,
-            selectedFilter: selectedFilter,
+            monitoring: widget.selectedMonitoring ?? monitorings.first,
+            selectedFilter: widget.selectedFilter,
           );
         } else {
           return const Center(child: Text("No data available"));
+        }
+      },
+    );
+  }
+}
+
+class CloudHubTab extends StatefulWidget {
+  const CloudHubTab({super.key});
+
+  @override
+  State<CloudHubTab> createState() => _CloudHubTabState();
+}
+
+class _CloudHubTabState extends State<CloudHubTab>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true; // Preserve the state of this tab
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    return BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
+      builder: (context, state) {
+        final cubit = context.read<ProjectDashboardCubit>();
+
+        // Use the stored monitoringCloudHubResponse if available
+        if (cubit.monitoringCloudHubResponse != null) {
+          final cloudHubs = cubit.monitoringCloudHubResponse!.cloudhubs ?? [];
+          if (cloudHubs.isEmpty) {
+            return const Center(child: Text("No CloudHubs available."));
+          }
+          return _buildCloudHubTable(cloudHubs);
+        }
+
+        // Handle loading and error states
+        if (state is ProjectDashboardMonitoringCloudHubLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is ProjectDashboardMonitoringCloudHubFailure) {
+          return Center(
+            child: Text(
+              "Error: ${state.message}",
+              style: const TextStyle(color: Colors.red),
+            ),
+          );
+        } else {
+          return const Center(child: Text("No CloudHub data available."));
         }
       },
     );
@@ -229,21 +299,6 @@ class _MonitoringScreenState extends State<MonitoringScreen>
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildTabs() {
-    return TabBar(
-      controller: _tabController,
-      indicatorColor: Theme.of(context).primaryColor,
-      labelColor: Theme.of(context).primaryColor,
-      unselectedLabelColor: Colors.grey,
-      tabs: const [
-        Tab(icon: Icon(Icons.sensors), text: "Sensors"),
-        Tab(icon: Icon(Icons.cloud), text: "CloudHub"),
-        Tab(icon: Icon(Icons.alarm), text: "Alarms"),
-        Tab(icon: Icon(Icons.layers), text: "Data Source"),
-      ],
     );
   }
 }
