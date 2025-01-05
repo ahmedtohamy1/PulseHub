@@ -127,11 +127,30 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
                                 vertical: 10, horizontal: 5),
                             child: Row(
                               children: [
-                                CircleAvatar(
-                                  backgroundImage: NetworkImage(owner.logoUrl),
-                                  radius: 20,
-                                  onBackgroundImageError: (_, __) =>
-                                      const Icon(Icons.person),
+                                Container(
+                                  width: 48, // Set a specific width
+                                  height: 48, // Set a specific height
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(
+                                        6), // Rounded corners
+                                    color: Colors.white.withOpacity(
+                                        0.99), // White background with opacity
+                                  ),
+                                  child: owner.logoUrl != null
+                                      ? ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                              6), // Match container border radius
+                                          child: Image.network(
+                                            owner.logoUrl,
+                                            fit: BoxFit
+                                                .contain, // Ensure the image fits inside the container
+                                          ),
+                                        )
+                                      : const Icon(
+                                          Icons.person,
+                                          color: Colors
+                                              .grey, // Fallback icon color
+                                        ),
                                 ),
                                 const SizedBox(width: 10),
                                 Text(
