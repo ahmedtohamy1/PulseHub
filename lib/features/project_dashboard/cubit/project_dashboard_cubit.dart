@@ -55,8 +55,15 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
     res.fold(
       (failure) => emit(ProjectDashboardDetailsTimeDbFailure(failure)),
       (response) {
-        lastTimeDbResponse = response;
-        emit(ProjectDashboardDetailsTimeDbSuccess(response));
+        // If this is a single field update (from analyze button)
+        if (queryParams.fields == queryParams.sensorsToAnalyze &&
+            lastTimeDbResponse != null) {
+          updateSensorData(response);
+        } else {
+          // If this is a full update (from submit button)
+          lastTimeDbResponse = response;
+          emit(ProjectDashboardDetailsTimeDbSuccess(response));
+        }
       },
     );
   }
@@ -84,13 +91,48 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
         });
       }
 
+      // Keep existing frequency/magnitude data for fields not being updated
+      final Map<String, List<double>> updatedFrequency =
+          Map.from(lastTimeDbResponse!.frequency ?? {});
+      final Map<String, List<double>> updatedMagnitude =
+          Map.from(lastTimeDbResponse!.magnitude ?? {});
+      final Map<String, List<double>> updatedDominateFrequencies =
+          Map.from(lastTimeDbResponse!.dominate_frequencies ?? {});
+      final Map<String, double> updatedAnomalyPercentage =
+          Map.from(lastTimeDbResponse!.anomaly_percentage ?? {});
+      final Map<String, List<List<double>>> updatedAnomalyRegions =
+          Map.from(lastTimeDbResponse!.anomaly_regions ?? {});
+      final Map<String, dynamic> updatedTicket =
+          Map.from(lastTimeDbResponse!.ticket ?? {});
+      final Map<String, dynamic> updatedOpenTicket =
+          Map.from(lastTimeDbResponse!.open_ticket ?? {});
+
+      // Update only the fields that exist in the new data
+      if (sensorData.frequency != null)
+        updatedFrequency.addAll(sensorData.frequency!);
+      if (sensorData.magnitude != null)
+        updatedMagnitude.addAll(sensorData.magnitude!);
+      if (sensorData.dominate_frequencies != null)
+        updatedDominateFrequencies.addAll(sensorData.dominate_frequencies!);
+      if (sensorData.anomaly_percentage != null)
+        updatedAnomalyPercentage.addAll(sensorData.anomaly_percentage!);
+      if (sensorData.anomaly_regions != null)
+        updatedAnomalyRegions.addAll(sensorData.anomaly_regions!);
+      if (sensorData.ticket != null) updatedTicket.addAll(sensorData.ticket!);
+      if (sensorData.open_ticket != null)
+        updatedOpenTicket.addAll(sensorData.open_ticket!);
+
       final newResult = Result(fields: updatedFields);
 
       final updatedResponse = SensorDataResponse(
         result: newResult,
-        dominate_frequencies: sensorData.dominate_frequencies,
-        magnitude: sensorData.magnitude,
-        frequency: sensorData.frequency,
+        frequency: updatedFrequency,
+        magnitude: updatedMagnitude,
+        dominate_frequencies: updatedDominateFrequencies,
+        anomaly_percentage: updatedAnomalyPercentage,
+        anomaly_regions: updatedAnomalyRegions,
+        ticket: updatedTicket,
+        open_ticket: updatedOpenTicket,
       );
 
       lastTimeDbResponse = updatedResponse;

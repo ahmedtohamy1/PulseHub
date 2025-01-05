@@ -105,11 +105,30 @@ class TimeSeriesChart extends StatefulWidget {
 class _TimeSeriesChartState extends State<TimeSeriesChart> {
   late final Map<String, bool> showTimeView;
   late final Map<String, GlobalKey> chartKeys;
+  late List<String> _availableFields;
 
   @override
   void initState() {
     super.initState();
+    _availableFields = _getAvailableFields();
     _initializeMaps();
+  }
+
+  @override
+  void didUpdateWidget(TimeSeriesChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Only update available fields if the data has changed
+    if (widget.data != oldWidget.data) {
+      final newFields = _getAvailableFields();
+      // Add any new fields that weren't present before
+      for (final field in newFields) {
+        if (!_availableFields.contains(field)) {
+          showTimeView[field] = true;
+          chartKeys[field] = GlobalKey();
+        }
+      }
+      _availableFields = newFields;
+    }
   }
 
   List<String> _getAvailableFields() {
@@ -123,14 +142,13 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
   }
 
   void _initializeMaps() {
-    final availableFields = _getAvailableFields();
     showTimeView = {
-      if (availableFields.isNotEmpty) 'combined': true,
-      for (var field in availableFields) field: true,
+      if (_availableFields.isNotEmpty) 'combined': true,
+      for (var field in _availableFields) field: true,
     };
     chartKeys = {
-      if (availableFields.isNotEmpty) 'combined': GlobalKey(),
-      for (var field in availableFields) field: GlobalKey(),
+      if (_availableFields.isNotEmpty) 'combined': GlobalKey(),
+      for (var field in _availableFields) field: GlobalKey(),
     };
   }
 
@@ -267,7 +285,6 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     final hasTicket = widget.data.ticket?[field] != null;
 
     return Column(
-      key: ValueKey('graph_section_$field'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -401,14 +418,20 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
       return const Center(child: Text('No data available'));
     }
 
-    final availableFields = _getAvailableFields();
-
     return SingleChildScrollView(
       child: Column(
         children: [
-          if (availableFields.length > 1) _buildGraphSection('combined'),
-          for (var field in availableFields)
-            if (_hasDataForField(field)) _buildGraphSection(field),
+          if (_availableFields.length > 1)
+            RepaintBoundary(
+              key: const ValueKey('graph_section_combined'),
+              child: _buildGraphSection('combined'),
+            ),
+          for (var field in _availableFields)
+            if (_hasDataForField(field))
+              RepaintBoundary(
+                key: ValueKey('graph_section_$field'),
+                child: _buildGraphSection(field),
+              ),
         ],
       ),
     );
