@@ -98,13 +98,17 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
     );
   }
 
+  MonitoringCloudHubResponse? monitoringCloudHubResponse;
   Future<void> getMonitoringCloudHub() async {
     emit(ProjectDashboardMonitoringCloudHubLoading());
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
     final res = await _repository.getMonitoringCloudHub(token);
     res.fold(
       (failure) => emit(ProjectDashboardMonitoringCloudHubFailure(failure)),
-      (response) => emit(ProjectDashboardMonitoringCloudHubSuccess(response)),
+      (response) {
+        monitoringCloudHubResponse = response;
+        emit(ProjectDashboardMonitoringCloudHubSuccess(response));
+      },
     );
   }
 
