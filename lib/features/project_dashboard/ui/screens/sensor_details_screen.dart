@@ -8,6 +8,13 @@ import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 
+final filterMap = {
+  "All": null,
+  "Operational": "green",
+  "Warning": "orange",
+  "Critical": "red",
+};
+
 class SensorDetailsScreen extends StatefulWidget {
   final Sensor sensor;
 
@@ -63,6 +70,58 @@ class _SensorDetailsScreenState extends State<SensorDetailsScreen> {
     }
   }
 
+  Widget _buildEventStatusRow(String label, String event) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(
+            child: Row(
+              children: [
+                Icon(
+                  event == 'green'
+                      ? Icons.check_circle
+                      : event == 'orange'
+                          ? Icons.warning
+                          : Icons.error,
+                  color: event == 'green'
+                      ? Colors.green
+                      : event == 'orange'
+                          ? Colors.orange
+                          : Colors.red,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  event == 'green'
+                      ? 'Operational'
+                      : event == 'orange'
+                          ? 'Warning'
+                          : 'Critical',
+                  style: TextStyle(
+                    color: event == 'green'
+                        ? Colors.green
+                        : event == 'orange'
+                            ? Colors.orange
+                            : Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final sensorJson = widget.sensor.toJson();
@@ -109,7 +168,7 @@ class _SensorDetailsScreenState extends State<SensorDetailsScreen> {
                         widget.sensor.readingsPerDay?.toString() ?? 'N/A'),
                     _buildInfoRow(
                         'Active:', widget.sensor.active ? 'Yes' : 'No'),
-                    _buildInfoRow('Event Status:', widget.sensor.event),
+                    _buildEventStatusRow('Event Status:', widget.sensor.event),
                   ],
                 ),
               ),
