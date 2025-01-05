@@ -14,6 +14,7 @@ class MainLayout extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
         body: SafeArea(child: navigationShell),
         bottomNavigationBar: NavigationBar(
+          height: 70,
           selectedIndex: navigationShell.currentIndex,
           onDestinationSelected: navigationShell.goBranch,
           indicatorColor: Theme.of(context).primaryColor,
