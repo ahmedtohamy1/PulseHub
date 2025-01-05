@@ -739,13 +739,6 @@ class CustomisationTab extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              Text(
-                'Monitoring Sensor Types',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              const SizedBox(height: 16),
               Expanded(
                 child: UsedSensorsTable(
                   usedSensors:

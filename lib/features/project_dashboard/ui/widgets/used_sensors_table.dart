@@ -256,6 +256,95 @@ class UsedSensorsTable extends StatelessWidget {
     );
   }
 
+  Future<void> _showAddSensorDialog(BuildContext context) {
+    final countController = TextEditingController(text: '1');
+    final cubit = context.read<ProjectDashboardCubit>();
+    String? selectedSensorType;
+
+    return showDialog(
+      context: context,
+      builder: (dialogContext) => BlocProvider.value(
+        value: cubit,
+        child: StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            title: const Text('Add New Sensor'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Sensor Type',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  value: selectedSensorType,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                    hintText: 'Select Sensor Type',
+                  ),
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'temperature',
+                      child: Text('Temperature'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'humidity',
+                      child: Text('Humidity'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'acceleration',
+                      child: Text('Acceleration'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      selectedSensorType = value;
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Count',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: countController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Close'),
+              ),
+              FilledButton(
+                onPressed: selectedSensorType == null
+                    ? null
+                    : () {
+                        final count = int.tryParse(countController.text);
+                        if (count != null) {
+                          // TODO: Implement add sensor functionality
+                          Navigator.of(context).pop();
+                        }
+                      },
+                child: const Text('Submit'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (usedSensors.isEmpty) {
@@ -264,78 +353,104 @@ class UsedSensorsTable extends StatelessWidget {
       );
     }
 
-    int globalIndex = 0;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Monitoring Sensor Types',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const Spacer(),
+            IconButton.filled(
+              tooltip: 'Add new sensor',
+              icon: const Icon(Icons.sensors),
+              onPressed: () => _showAddSensorDialog(context),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: DataTable(
+                  showCheckboxColumn: false,
+                  headingRowColor: WidgetStateColor.resolveWith(
+                      (states) => Theme.of(context).colorScheme.primary),
+                  columns: const [
+                    DataColumn(
+                        label: Text('Sensor Name',
+                            style: TextStyle(color: Colors.white))),
+                    DataColumn(
+                        label: Text('Function',
+                            style: TextStyle(color: Colors.white))),
+                    DataColumn(
+                        label: Text('Count',
+                            style: TextStyle(color: Colors.white))),
+                    DataColumn(
+                        label: Text('Actions',
+                            style: TextStyle(color: Colors.white))),
+                  ],
+                  rows: List.generate(usedSensors.length, (index) {
+                    final sensor = usedSensors[index];
+                    final rowColor = index % 2 == 0
+                        ? Theme.of(context).colorScheme.secondaryContainer
+                        : Theme.of(context).colorScheme.surface;
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Padding(
-          padding: const EdgeInsets.only(top: 8.0),
-          child: DataTable(
-            showCheckboxColumn: false,
-            headingRowColor: WidgetStateColor.resolveWith(
-                (states) => Theme.of(context).colorScheme.primary),
-            columns: const [
-              DataColumn(
-                  label: Text('Sensor Name',
-                      style: TextStyle(color: Colors.white))),
-              DataColumn(
-                  label:
-                      Text('Function', style: TextStyle(color: Colors.white))),
-              DataColumn(
-                  label: Text('Count', style: TextStyle(color: Colors.white))),
-              DataColumn(
-                  label:
-                      Text('Actions', style: TextStyle(color: Colors.white))),
-            ],
-            rows: usedSensors.map((sensor) {
-              final rowColor = globalIndex++ % 2 == 0
-                  ? Theme.of(context).colorScheme.secondaryContainer
-                  : Theme.of(context).colorScheme.surface;
-
-              return DataRow(
-                color: WidgetStateColor.resolveWith((states) => rowColor),
-                cells: [
-                  DataCell(Text(sensor.name ?? 'N/A')),
-                  DataCell(Text(sensor.function ?? 'N/A')),
-                  DataCell(Text(sensor.count?.toString() ?? '0')),
-                  DataCell(
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit, size: 18),
-                          style: IconButton.styleFrom(
-                            backgroundColor:
-                                Theme.of(context).colorScheme.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.all(4),
-                            minimumSize: const Size(32, 32),
+                    return DataRow(
+                      color: WidgetStateColor.resolveWith((states) => rowColor),
+                      cells: [
+                        DataCell(Text(sensor.name ?? 'N/A')),
+                        DataCell(Text(sensor.function ?? 'N/A')),
+                        DataCell(Text(sensor.count?.toString() ?? '0')),
+                        DataCell(
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit, size: 18),
+                                style: IconButton.styleFrom(
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.primary,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.all(4),
+                                  minimumSize: const Size(32, 32),
+                                ),
+                                onPressed: () =>
+                                    _showEditDialog(context, sensor),
+                              ),
+                              const SizedBox(width: 8),
+                              IconButton(
+                                icon:
+                                    const Icon(Icons.delete_forever, size: 18),
+                                style: IconButton.styleFrom(
+                                  backgroundColor: Colors.red.shade700,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.all(4),
+                                  minimumSize: const Size(32, 32),
+                                ),
+                                onPressed: () => _showDeleteConfirmationDialog(
+                                    context, sensor),
+                              ),
+                            ],
                           ),
-                          onPressed: () => _showEditDialog(context, sensor),
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          icon: const Icon(Icons.delete_forever, size: 18),
-                          style: IconButton.styleFrom(
-                            backgroundColor: Colors.red.shade700,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.all(4),
-                            minimumSize: const Size(32, 32),
-                          ),
-                          onPressed: () =>
-                              _showDeleteConfirmationDialog(context, sensor),
                         ),
                       ],
-                    ),
-                  ),
-                ],
-              );
-            }).toList(),
+                    );
+                  }),
+                ),
+              ),
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 }
