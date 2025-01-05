@@ -132,12 +132,6 @@ class _VisualiseScreenState extends State<VisualiseScreen> {
                   dashboard.groups.trim().toLowerCase() == 'visualise')
               .toList();
 
-          if (dashboards.isEmpty) {
-            return const Center(
-              child: Text('No dashboards available for group "visualise".'),
-            );
-          }
-
           return SingleChildScrollView(
             child: Column(
               children: [
@@ -148,17 +142,24 @@ class _VisualiseScreenState extends State<VisualiseScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                ...dashboards.map((dashboard) => DashboardCard(
-                      dashboard: dashboard,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SpecialWidgetsScreen(),
-                          ),
-                        );
-                      },
-                    )),
+                if (dashboards.isEmpty)
+                  const Center(
+                    child:
+                        Text('No dashboards available for group "visualise".'),
+                  )
+                else
+                  ...dashboards.map((dashboard) => DashboardCard(
+                        dashboard: dashboard,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const SpecialWidgetsScreen(),
+                            ),
+                          );
+                        },
+                      )),
               ],
             ),
           );

@@ -132,36 +132,36 @@ class _AnalyseScreenState extends State<AnalyseScreen> {
                   dashboard.groups.trim().toLowerCase() == 'analyse')
               .toList();
 
-          if (dashboards.isEmpty) {
-            return const Center(
-              child: Text('No dashboards available for group "analyse".'),
-            );
-          }
-
           return SingleChildScrollView(
             child: Column(
               children: [
                 SectionTitle(
-                    onAdd: () {
-                      _onAdd(context);
-                    },
-                    title: 'Analyse Dashboards'),
+                  onAdd: () {
+                    _onAdd(context);
+                  },
+                  title: 'Analyse Dashboards',
+                ),
                 const SizedBox(height: 16),
-                ...dashboards.map((dashboard) => DashboardCard(
-                      dashboard: dashboard,
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => BlocProvider(
-                                      create: (context) =>
-                                          sl<ProjectDashboardCubit>(),
-                                      child: GraphDashboardSensors(
-                                        dashboard: dashboard,
-                                      ),
-                                    )));
-                      },
-                    )),
+                if (dashboards.isEmpty)
+                  const Center(
+                    child: Text('No dashboards available for group "analyse".'),
+                  )
+                else
+                  ...dashboards.map((dashboard) => DashboardCard(
+                        dashboard: dashboard,
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => BlocProvider(
+                                        create: (context) =>
+                                            sl<ProjectDashboardCubit>(),
+                                        child: GraphDashboardSensors(
+                                          dashboard: dashboard,
+                                        ),
+                                      )));
+                        },
+                      )),
               ],
             ),
           );
