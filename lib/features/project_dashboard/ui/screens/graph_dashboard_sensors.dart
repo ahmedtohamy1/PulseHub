@@ -245,7 +245,8 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                         children: [
                           FieldSelector(
                             fields: measurements
-                                .firstWhere((m) => m.name == selectedMeasurement)
+                                .firstWhere(
+                                    (m) => m.name == selectedMeasurement)
                                 .topics!
                                 .firstWhere((t) => t.name == selectedTopic)
                                 .fields!
@@ -260,69 +261,6 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                                   selectedFields.remove(field);
                                 }
                               });
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
-                            builder: (context, state) {
-                              if (state is ProjectDashboardCloudhubDataSuccess) {
-                                return Card(
-                                  child: SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    child: DataTable(
-                                      columns: const [
-                                        DataColumn(label: Text('CloudHub')),
-                                        DataColumn(label: Text('Last Seen')),
-                                        DataColumn(label: Text('Status')),
-                                      ],
-                                      rows: [
-                                        DataRow(
-                                          onSelectChanged: (_) {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    CloudHubDetailsScreen(
-                                                  cloudHub: state.cloudhubDetails,
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                          cells: [
-                                            DataCell(Text(state.cloudhubDetails.cloudhub.name)),
-                                            DataCell(Text(state.cloudhubDetails.success ? 'Online' : 'Offline')),
-                                            DataCell(
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(
-                                                  horizontal: 8,
-                                                  vertical: 4,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: state.cloudhubDetails.success
-                                                      ? Colors.green.withOpacity(0.2)
-                                                      : Colors.red.withOpacity(0.2),
-                                                  borderRadius: BorderRadius.circular(12),
-                                                ),
-                                                child: Text(
-                                                  state.cloudhubDetails.success ? 'online' : 'offline',
-                                                  style: TextStyle(
-                                                    color: state.cloudhubDetails.success
-                                                        ? Colors.green
-                                                        : Colors.red,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              }
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
                             },
                           ),
                         ],
@@ -355,7 +293,15 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                     DropdownSelector<String>(
                       label: 'Window Period',
                       value: windowPeriod,
-                      items: const ['5s', '10s', '1m', '5m', '15m', '30m', '1h'],
+                      items: const [
+                        '5s',
+                        '10s',
+                        '1m',
+                        '5m',
+                        '15m',
+                        '30m',
+                        '1h'
+                      ],
                       onChanged: (value) {
                         setState(() {
                           windowPeriod = value!;
@@ -488,7 +434,8 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                                   ),
                                 ),
                                 const SizedBox(height: 8),
-                                MarkdownBody(data: state.aiAnalyzeDataModel.message),
+                                MarkdownBody(
+                                    data: state.aiAnalyzeDataModel.message),
                               ],
                             ),
                           );
@@ -537,14 +484,17 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                           sensorsToAnalyze: field,
                           windowSize: windowSize.toString(),
                           deviationThreshold: deviationController.text,
-                          timeRangeStart:
-                              isCustomRange ? customRangeController.text : timeRange,
+                          timeRangeStart: isCustomRange
+                              ? customRangeController.text
+                              : timeRange,
                           aggregateFunc: aggregateFunction,
                           bucket: 'CloudHub',
                           org: 'DIC',
                           windowPeriod: windowPeriod,
                         );
-                        context.read<ProjectDashboardCubit>().getTimeDb(queryParams);
+                        context
+                            .read<ProjectDashboardCubit>()
+                            .getTimeDb(queryParams);
                       },
                       windowSize: windowSize.toString(),
                       deviationThreshold: deviationController.text,
