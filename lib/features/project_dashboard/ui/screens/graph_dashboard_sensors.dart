@@ -265,127 +265,160 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                         ],
                       ),
                     const SizedBox(height: 16),
-                    NumberInput(
-                      label: 'Window Size',
-                      controller: windowSizeController,
-                      onChanged: (value) {
-                        setState(() {
-                          windowSize = int.tryParse(value) ?? windowSize;
-                        });
-                      },
-                      onIncrement: () {
-                        setState(() {
-                          windowSize++;
-                          windowSizeController.text = windowSize.toString();
-                        });
-                      },
-                      onDecrement: () {
-                        setState(() {
-                          if (windowSize > 1) {
-                            windowSize--;
-                            windowSizeController.text = windowSize.toString();
-                          }
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownSelector<String>(
-                      label: 'Window Period',
-                      value: windowPeriod,
-                      items: const [
-                        '5s',
-                        '10s',
-                        '1m',
-                        '5m',
-                        '15m',
-                        '30m',
-                        '1h'
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          windowPeriod = value!;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    NumberInput(
-                      label: 'Deviation Threshold',
-                      controller: deviationController,
-                      onChanged: (value) {
-                        setState(() {
-                          double.tryParse(value) ??
-                              double.parse(deviationController.text);
-                        });
-                      },
-                      onIncrement: () {
-                        setState(() {
-                          final currentValue =
-                              double.tryParse(deviationController.text) ?? 0.0;
-                          deviationController.text =
-                              (currentValue + 0.01).toStringAsFixed(2);
-                        });
-                      },
-                      onDecrement: () {
-                        setState(() {
-                          final currentValue =
-                              double.tryParse(deviationController.text) ?? 0.0;
-                          if (currentValue > 0.01) {
-                            deviationController.text =
-                                (currentValue - 0.01).toStringAsFixed(2);
-                          }
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownSelector<String>(
-                      label: 'Aggregate Function',
-                      value: aggregateFunction,
-                      items: const ['mean', 'sum', 'max', 'min', 'median'],
-                      onChanged: (value) {
-                        setState(() {
-                          aggregateFunction = value!;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownSelector<String>(
-                      label: 'Select Time Range',
-                      value: timeRange,
-                      items: const [
-                        '1m',
-                        '5m',
-                        '15m',
-                        '1h',
-                        '3h',
-                        '6h',
-                        '24h',
-                        '2d',
-                        '7d',
-                        '30d',
-                        'Custom'
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          if (value == 'Custom') {
-                            isCustomRange = true;
-                          } else {
-                            isCustomRange = false;
-                            timeRange = value!;
-                          }
-                        });
-                      },
-                    ),
-                    if (isCustomRange)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: TextField(
-                          controller: customRangeController,
-                          decoration: const InputDecoration(
-                            labelText: 'Enter Custom Range',
-                            border: OutlineInputBorder(),
+                    // Two-column layout for input fields and dropdowns
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // First column
+                        Expanded(
+                          child: Column(
+                            children: [
+                              NumberInput(
+                                label: 'Window Size',
+                                controller: windowSizeController,
+                                onChanged: (value) {
+                                  setState(() {
+                                    windowSize =
+                                        int.tryParse(value) ?? windowSize;
+                                  });
+                                },
+                                onIncrement: () {
+                                  setState(() {
+                                    windowSize++;
+                                    windowSizeController.text =
+                                        windowSize.toString();
+                                  });
+                                },
+                                onDecrement: () {
+                                  setState(() {
+                                    if (windowSize > 1) {
+                                      windowSize--;
+                                      windowSizeController.text =
+                                          windowSize.toString();
+                                    }
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              NumberInput(
+                                label: 'Deviation Threshold',
+                                controller: deviationController,
+                                onChanged: (value) {
+                                  setState(() {
+                                    double.tryParse(value) ??
+                                        double.parse(deviationController.text);
+                                  });
+                                },
+                                onIncrement: () {
+                                  setState(() {
+                                    final currentValue = double.tryParse(
+                                            deviationController.text) ??
+                                        0.0;
+                                    deviationController.text =
+                                        (currentValue + 0.01)
+                                            .toStringAsFixed(2);
+                                  });
+                                },
+                                onDecrement: () {
+                                  setState(() {
+                                    final currentValue = double.tryParse(
+                                            deviationController.text) ??
+                                        0.0;
+                                    if (currentValue > 0.01) {
+                                      deviationController.text =
+                                          (currentValue - 0.01)
+                                              .toStringAsFixed(2);
+                                    }
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              DropdownSelector<String>(
+                                label: 'Aggregate Function',
+                                value: aggregateFunction,
+                                items: const [
+                                  'mean',
+                                  'sum',
+                                  'max',
+                                  'min',
+                                  'median'
+                                ],
+                                onChanged: (value) {
+                                  setState(() {
+                                    aggregateFunction = value!;
+                                  });
+                                },
+                              ),
+                            ],
                           ),
                         ),
-                      ),
+                        const SizedBox(width: 16), // Spacing between columns
+                        // Second column
+                        Expanded(
+                          child: Column(
+                            children: [
+                              DropdownSelector<String>(
+                                label: 'Window Period',
+                                value: windowPeriod,
+                                items: const [
+                                  '5s',
+                                  '10s',
+                                  '1m',
+                                  '5m',
+                                  '15m',
+                                  '30m',
+                                  '1h'
+                                ],
+                                onChanged: (value) {
+                                  setState(() {
+                                    windowPeriod = value!;
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              DropdownSelector<String>(
+                                label: 'Select Time Range',
+                                value: timeRange,
+                                items: const [
+                                  '1m',
+                                  '5m',
+                                  '15m',
+                                  '1h',
+                                  '3h',
+                                  '6h',
+                                  '24h',
+                                  '2d',
+                                  '7d',
+                                  '30d',
+                                  'Custom'
+                                ],
+                                onChanged: (value) {
+                                  setState(() {
+                                    if (value == 'Custom') {
+                                      isCustomRange = true;
+                                    } else {
+                                      isCustomRange = false;
+                                      timeRange = value!;
+                                    }
+                                  });
+                                },
+                              ),
+                              if (isCustomRange)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: TextField(
+                                    controller: customRangeController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Enter Custom Range',
+                                      border: OutlineInputBorder(),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 16),
                     Row(
                       children: [
