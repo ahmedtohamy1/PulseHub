@@ -250,7 +250,7 @@ class _EditableInfoRowState extends State<EditableInfoRow> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.value);
+    _controller = TextEditingController();
   }
 
   @override
@@ -262,8 +262,8 @@ class _EditableInfoRowState extends State<EditableInfoRow> {
   @override
   void didUpdateWidget(EditableInfoRow oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.value != widget.value) {
-      _controller.text = widget.value;
+    if (!widget.isEditing) {
+      _controller.clear();
     }
   }
 
@@ -275,7 +275,7 @@ class _EditableInfoRowState extends State<EditableInfoRow> {
   Future<void> _showDatePicker(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _parseDate(_controller.text) ?? DateTime.now(),
+      initialDate: _parseDate(widget.value) ?? DateTime.now(),
       firstDate: DateTime(1900),
       lastDate: DateTime(2100),
     );
@@ -334,6 +334,10 @@ class _EditableInfoRowState extends State<EditableInfoRow> {
                           isDense: true,
                           contentPadding: const EdgeInsets.all(8),
                           border: const OutlineInputBorder(),
+                          hintText: widget.value,
+                          hintStyle: TextStyle(
+                            color: Theme.of(context).hintColor,
+                          ),
                           suffixIcon: IconButton(
                             icon: const Icon(Icons.calendar_today),
                             onPressed: () => _showDatePicker(context),
@@ -342,13 +346,17 @@ class _EditableInfoRowState extends State<EditableInfoRow> {
                       )
                     : TextFormField(
                         controller: _controller,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           isDense: true,
-                          contentPadding: EdgeInsets.all(8),
-                          border: OutlineInputBorder(),
+                          contentPadding: const EdgeInsets.all(8),
+                          border: const OutlineInputBorder(),
+                          hintText: widget.value,
+                          hintStyle: TextStyle(
+                            color: Theme.of(context).hintColor,
+                          ),
                         ),
                       )
-                : Text(_controller.text),
+                : Text(widget.value),
           ),
         ],
       ),
