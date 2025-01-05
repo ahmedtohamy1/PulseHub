@@ -56,29 +56,13 @@ Map<String, dynamic> _$SensorDataResponseToJson(SensorDataResponse instance) =>
     };
 
 Result _$ResultFromJson(Map<String, dynamic> json) => Result(
-      accelX: json['accelX'] == null
-          ? null
-          : Data.fromJson(json['accelX'] as Map<String, dynamic>),
-      accelY: json['accelY'] == null
-          ? null
-          : Data.fromJson(json['accelY'] as Map<String, dynamic>),
-      accelZ: json['accelZ'] == null
-          ? null
-          : Data.fromJson(json['accelZ'] as Map<String, dynamic>),
-      humidity: json['humidity'] == null
-          ? null
-          : Data.fromJson(json['humidity'] as Map<String, dynamic>),
-      temperature: json['temperature'] == null
-          ? null
-          : Data.fromJson(json['temperature'] as Map<String, dynamic>),
+      fields: (json['fields'] as Map<String, dynamic>).map(
+        (k, e) => MapEntry(k, Data.fromJson(e as Map<String, dynamic>)),
+      ),
     );
 
 Map<String, dynamic> _$ResultToJson(Result instance) => <String, dynamic>{
-      'accelX': instance.accelX,
-      'accelY': instance.accelY,
-      'accelZ': instance.accelZ,
-      'humidity': instance.humidity,
-      'temperature': instance.temperature,
+      'fields': instance.fields,
     };
 
 Data _$DataFromJson(Map<String, dynamic> json) => Data(

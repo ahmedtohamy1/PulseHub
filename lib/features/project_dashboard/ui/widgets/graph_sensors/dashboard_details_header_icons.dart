@@ -1,11 +1,12 @@
 import 'dart:io';
 import 'dart:typed_data';
+
+import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/timedb_response.dart';
-import 'package:csv/csv.dart';
 import 'package:pulsehub/features/project_dashboard/ui/screens/graph_dashboard_sensors.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -21,87 +22,175 @@ class DashboardDetailsheaderIcons extends StatelessWidget {
     try {
       final rows = const CsvToListConverter().convert(csvData);
 
-      // If the file is completely empty or there's no header row, bail out
-      if (rows.isEmpty || rows[0].length < 13) {
-        throw Exception("CSV file format is incorrect");
+      // If the file is empty or has no header row, bail out
+      if (rows.isEmpty) {
+        throw Exception("CSV file is empty");
       }
 
-      final time = <DateTime>[];
-      final accelX = <double>[];
-      final accelY = <double>[];
-      final accelZ = <double>[];
-      final humidity = <double>[];
-      final temperature = <double>[];
-      final frequency = <double>[];
-      final magnitude = <double>[];
-      final dominateFrequencies = <double>[];
-      final anomalyRegions = <List<double>>[];
+      // Get headers from first row
+      final headers = List<String>.from(rows[0]);
+      if (headers.isEmpty) {
+        throw Exception("CSV file has no headers");
+      }
 
-      // Start from row index 1, because row[0] is typically your CSV header
+      // Find the time column index
+      final timeIndex = headers.indexOf('Time');
+      if (timeIndex == -1) {
+        throw Exception("CSV must have a 'Time' column");
+      }
+
+      // Initialize data structures
+      final Map<String, List<DateTime>> times = {};
+      final Map<String, List<double>> values = {};
+      final Map<String, List<double>> frequencies = {};
+      final Map<String, List<double>> magnitudes = {};
+      final Map<String, List<double>> dominateFrequencies = {};
+      final Map<String, List<List<double>>> anomalyRegions = {};
+      final Map<String, double> anomalyPercentages = {};
+      final Map<String, dynamic> tickets = {};
+      final Map<String, dynamic> openTickets = {};
+
+      // Determine which columns are sensor data fields
+      // A field is considered a sensor if it's not one of the special columns
+      final specialColumns = {
+        'Time',
+        'frequency',
+        'magnitude',
+        'dominate_frequencies',
+        'anomaly_percentage',
+        'anomaly_regions',
+        'open_ticket',
+        'ticket'
+      };
+      final sensorFields =
+          headers.where((h) => !specialColumns.contains(h)).toList();
+
+      // Initialize lists for each sensor field
+      for (final field in sensorFields) {
+        times[field] = [];
+        values[field] = [];
+      }
+
+      // Process each row
       for (var i = 1; i < rows.length; i++) {
         final row = rows[i];
+        if (row.length != headers.length) continue;
 
-        // --- 1) Skip if the row is too short to have all columns we need:
-        if (row.length < 10) {
-          continue;
-        }
+        // Parse time
+        final timestamp = int.tryParse(row[timeIndex].toString());
+        if (timestamp == null) continue;
+        final time = DateTime.fromMillisecondsSinceEpoch(timestamp);
 
-        // --- 2) Determine if this row is "empty" by checking columns you require:
-        //         For instance, time, temperature, accelX, etc.
-        bool isRowEmpty = true;
-        // Check the first 6 columns as an example (depending on your CSV structure):
-        for (var j = 0; j < 6; j++) {
-          final cell = row[j];
-          if (cell != null && cell.toString().trim().isNotEmpty) {
-            isRowEmpty = false;
-            break;
+        // Process each sensor field
+        for (final field in sensorFields) {
+          final valueIndex = headers.indexOf(field);
+          if (valueIndex != -1) {
+            final value =
+                double.tryParse(row[valueIndex].toString() ?? '') ?? 0.0;
+            times[field]!.add(time);
+            values[field]!.add(value);
           }
         }
-        if (isRowEmpty) {
-          continue;
-        }
 
-        // If not empty, parse the row
-        time.add(DateTime.fromMillisecondsSinceEpoch(
-          int.tryParse(row[0].toString()) ?? 0,
-        ));
-        accelX.add(double.tryParse(row[1]?.toString() ?? '') ?? 0.0);
-        accelY.add(double.tryParse(row[2]?.toString() ?? '') ?? 0.0);
-        accelZ.add(double.tryParse(row[3]?.toString() ?? '') ?? 0.0);
-        humidity.add(double.tryParse(row[4]?.toString() ?? '') ?? 0.0);
-        temperature.add(double.tryParse(row[5]?.toString() ?? '') ?? 0.0);
-        frequency.add(double.tryParse(row[6]?.toString() ?? '') ?? 0.0);
-        magnitude.add(double.tryParse(row[7]?.toString() ?? '') ?? 0.0);
-        dominateFrequencies
-            .add(double.tryParse(row[8]?.toString() ?? '') ?? 0.0);
-
-        final anomalyRegion = (row[9]?.toString() ?? '')
-            .split(';')
-            .map((e) => double.tryParse(e) ?? 0.0)
-            .toList();
-        anomalyRegions.add(anomalyRegion);
+        // Process special columns if they exist
+        _processSpecialColumns(
+          row,
+          headers,
+          sensorFields.first, // Use first sensor field as default
+          frequencies,
+          magnitudes,
+          dominateFrequencies,
+          anomalyRegions,
+          anomalyPercentages,
+          tickets,
+          openTickets,
+        );
       }
 
-      // Construct your SensorDataResponse only with the filtered, non-empty rows
+      // Create fields map for Result
+      final fields = <String, Data>{};
+      for (final field in sensorFields) {
+        if (times[field]!.isNotEmpty && values[field]!.isNotEmpty) {
+          fields[field] = Data(time: times[field], value: values[field]);
+        }
+      }
+
       return SensorDataResponse(
-        result: Result(
-          accelX: Data(time: time, value: accelX),
-          accelY: Data(time: time, value: accelY),
-          accelZ: Data(time: time, value: accelZ),
-          humidity: Data(time: time, value: humidity),
-          temperature: Data(time: time, value: temperature),
-        ),
-        frequency: {'accelX': frequency},
-        magnitude: {'accelX': magnitude},
-        dominate_frequencies: {'accelX': dominateFrequencies},
-        anomaly_regions: {'accelX': anomalyRegions},
-        anomaly_percentage: {'accelX': 0.0}, // Default value
-        open_ticket: {'accelX': false},
-        ticket: {'accelX': false},
+        result: Result(fields: fields),
+        frequency: frequencies.isNotEmpty ? frequencies : null,
+        magnitude: magnitudes.isNotEmpty ? magnitudes : null,
+        dominate_frequencies:
+            dominateFrequencies.isNotEmpty ? dominateFrequencies : null,
+        anomaly_percentage:
+            anomalyPercentages.isNotEmpty ? anomalyPercentages : null,
+        anomaly_regions: anomalyRegions.isNotEmpty ? anomalyRegions : null,
+        ticket: tickets.isNotEmpty ? tickets : null,
+        open_ticket: openTickets.isNotEmpty ? openTickets : null,
       );
     } catch (e) {
       debugPrint('Error parsing CSV: $e');
       return null;
+    }
+  }
+
+  void _processSpecialColumns(
+    List<dynamic> row,
+    List<String> headers,
+    String field,
+    Map<String, List<double>> frequencies,
+    Map<String, List<double>> magnitudes,
+    Map<String, List<double>> dominateFrequencies,
+    Map<String, List<List<double>>> anomalyRegions,
+    Map<String, double> anomalyPercentages,
+    Map<String, dynamic> tickets,
+    Map<String, dynamic> openTickets,
+  ) {
+    // Look for field-specific special columns
+    final freqIndex = headers.indexOf('${field}_frequency');
+    final magIndex = headers.indexOf('${field}_magnitude');
+    final domFreqIndex = headers.indexOf('${field}_dominate_frequencies');
+    final anomalyPctIndex = headers.indexOf('${field}_anomaly_percentage');
+    final anomalyRegionsIndex = headers.indexOf('${field}_anomaly_regions');
+    final ticketIndex = headers.indexOf('${field}_ticket');
+    final openTicketIndex = headers.indexOf('${field}_open_ticket');
+
+    if (freqIndex != -1) {
+      frequencies[field] ??= [];
+      frequencies[field]!
+          .add(double.tryParse(row[freqIndex].toString()) ?? 0.0);
+    }
+
+    if (magIndex != -1) {
+      magnitudes[field] ??= [];
+      magnitudes[field]!.add(double.tryParse(row[magIndex].toString()) ?? 0.0);
+    }
+
+    if (domFreqIndex != -1) {
+      dominateFrequencies[field] ??= [];
+      dominateFrequencies[field]!
+          .add(double.tryParse(row[domFreqIndex].toString()) ?? 0.0);
+    }
+
+    if (anomalyPctIndex != -1) {
+      final value = double.tryParse(row[anomalyPctIndex].toString()) ?? 0.0;
+      anomalyPercentages[field] = value;
+    }
+
+    if (anomalyRegionsIndex != -1) {
+      anomalyRegions[field] ??= [];
+      final regions = (row[anomalyRegionsIndex].toString())
+          .split(';')
+          .map((e) => double.tryParse(e.trim()) ?? 0.0)
+          .toList();
+      anomalyRegions[field]!.add(regions);
+    }
+
+    if (ticketIndex != -1) {
+      tickets[field] = row[ticketIndex];
+    }
+
+    if (openTicketIndex != -1) {
+      openTickets[field] = row[openTicketIndex];
     }
   }
 
@@ -137,14 +226,16 @@ class DashboardDetailsheaderIcons extends StatelessWidget {
 
   String _generateCsvData(SensorDataResponse data) {
     final List<List<dynamic>> csvData = [];
+    final result = data.result;
+    if (result == null) return '';
 
-    csvData.add([
-      'Time',
-      'accelX',
-      'accelY',
-      'accelZ',
-      'humidity',
-      'temperature',
+    // Get all field names
+    final fields = result.getFieldNames();
+    if (fields.isEmpty) return '';
+
+    // Create headers with special columns for each field
+    final headers = ['Time'];
+    final specialColumns = [
       'frequency',
       'magnitude',
       'dominate_frequencies',
@@ -152,65 +243,93 @@ class DashboardDetailsheaderIcons extends StatelessWidget {
       'anomaly_regions',
       'open_ticket',
       'ticket'
-    ]);
-
-    // 1) Figure out which time list to use
-    //    If accelX is empty, try temperature, etc.
-    final allTimes = [
-      data.result?.accelX?.time,
-      data.result?.temperature?.time,
-      data.result?.humidity?.time,
-      data.result?.accelY?.time,
-      data.result?.accelZ?.time,
     ];
 
-    // Pick the first non-empty list of times we find:
-    List<DateTime> time = [];
-    for (final tList in allTimes) {
-      if (tList != null && tList.isNotEmpty) {
-        time = tList;
-        break;
+    // Add field and its special columns
+    for (final field in fields) {
+      headers.add(field); // Add the main field
+      // Add special columns for this field
+      for (final special in specialColumns) {
+        headers.add('${field}_$special');
+      }
+    }
+    csvData.add(headers);
+
+    // Get the time series with the most data points
+    var maxTimePoints = 0;
+    for (final field in fields) {
+      final fieldData = result.getField(field);
+      if (fieldData?.time != null && fieldData!.time!.length > maxTimePoints) {
+        maxTimePoints = fieldData.time!.length;
       }
     }
 
-    // If we still have no times, throw an exception
-    if (time.isEmpty) {
-      throw Exception("No data available to export.");
-    }
+    if (maxTimePoints == 0) return '';
 
-    // 2) Grab each series. If null or shorter than time, fill with empty strings
-    List<double> accelX = data.result?.accelX?.value ?? [];
-    List<double> accelY = data.result?.accelY?.value ?? [];
-    List<double> accelZ = data.result?.accelZ?.value ?? [];
-    List<double> humidity = data.result?.humidity?.value ?? [];
-    List<double> temperature = data.result?.temperature?.value ?? [];
+    // For each time point
+    for (var i = 0; i < maxTimePoints; i++) {
+      final row = List<dynamic>.filled(headers.length, '');
 
-    // Frequencies, magnitudes, etc.
-    final freqX = data.frequency?['accelX'] ?? [];
-    final magX = data.magnitude?['accelX'] ?? [];
-    final domFreqX = data.dominate_frequencies?['accelX'] ?? [];
-    final anomalyRegionsX = data.anomaly_regions?['accelX'] ?? [];
-    final anomalyPctX = data.anomaly_percentage?['accelX'] ?? '';
-    final openTicketX = data.open_ticket?['accelX'] ?? '';
-    final ticketX = data.ticket?['accelX'] ?? '';
+      // Set time (use the first available field's time)
+      for (final field in fields) {
+        final fieldData = result.getField(field);
+        if (fieldData?.time != null && i < fieldData!.time!.length) {
+          row[0] = fieldData.time![i].millisecondsSinceEpoch;
+          break;
+        }
+      }
 
-    // 3) Loop through and add rows
-    for (int i = 0; i < time.length; i++) {
-      final row = [
-        time[i].millisecondsSinceEpoch,
-        i < accelX.length ? accelX[i] : '',
-        i < accelY.length ? accelY[i] : '',
-        i < accelZ.length ? accelZ[i] : '',
-        i < humidity.length ? humidity[i] : '',
-        i < temperature.length ? temperature[i] : '',
-        i < freqX.length ? freqX[i] : '',
-        i < magX.length ? magX[i] : '',
-        i < domFreqX.length ? domFreqX[i] : '',
-        anomalyPctX,
-        i < anomalyRegionsX.length ? (anomalyRegionsX[i]).join('; ') : '',
-        openTicketX,
-        ticketX,
-      ];
+      // For each field, set its value and special columns
+      for (final field in fields) {
+        final fieldData = result.getField(field);
+        final baseIndex = headers.indexOf(field);
+        if (baseIndex == -1) continue;
+
+        // Set main field value
+        if (fieldData?.value != null && i < fieldData!.value!.length) {
+          row[baseIndex] = fieldData.value![i];
+        }
+
+        // Set frequency
+        if (data.frequency?[field] != null &&
+            i < data.frequency![field]!.length) {
+          row[baseIndex + 1] = data.frequency![field]![i];
+        }
+
+        // Set magnitude
+        if (data.magnitude?[field] != null &&
+            i < data.magnitude![field]!.length) {
+          row[baseIndex + 2] = data.magnitude![field]![i];
+        }
+
+        // Set dominate frequencies
+        if (data.dominate_frequencies?[field] != null &&
+            i < data.dominate_frequencies![field]!.length) {
+          row[baseIndex + 3] = data.dominate_frequencies![field]![i];
+        }
+
+        // Set anomaly percentage
+        if (data.anomaly_percentage?[field] != null) {
+          row[baseIndex + 4] = data.anomaly_percentage![field];
+        }
+
+        // Set anomaly regions
+        if (data.anomaly_regions?[field] != null &&
+            i < data.anomaly_regions![field]!.length) {
+          row[baseIndex + 5] = data.anomaly_regions![field]![i].join(';');
+        }
+
+        // Set open ticket
+        if (data.open_ticket?[field] != null) {
+          row[baseIndex + 6] = data.open_ticket![field];
+        }
+
+        // Set ticket
+        if (data.ticket?[field] != null) {
+          row[baseIndex + 7] = data.ticket![field];
+        }
+      }
+
       csvData.add(row);
     }
 

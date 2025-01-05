@@ -1,13 +1,85 @@
+import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'dart:ui' show lerpDouble;
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/timedb_response.dart';
 import 'package:share_plus/share_plus.dart';
-import 'dart:io';
+
+class FlDotTrianglePainter extends FlDotPainter {
+  final double size;
+  final Color color;
+  final double strokeWidth;
+  final Color strokeColor;
+
+  const FlDotTrianglePainter({
+    required this.size,
+    required this.color,
+    this.strokeWidth = 0.0,
+    this.strokeColor = Colors.transparent,
+  });
+
+  @override
+  void draw(Canvas canvas, FlSpot spot, Offset offsetInCanvas) {
+    final path = Path();
+
+    // Calculate triangle points (pointing upward)
+    final halfSize = size / 2;
+    path.moveTo(offsetInCanvas.dx, offsetInCanvas.dy - halfSize); // Top point
+    path.lineTo(offsetInCanvas.dx - halfSize,
+        offsetInCanvas.dy + halfSize); // Bottom left
+    path.lineTo(offsetInCanvas.dx + halfSize,
+        offsetInCanvas.dy + halfSize); // Bottom right
+    path.close();
+
+    // Draw fill
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.fill,
+    );
+
+    // Draw stroke
+    if (strokeWidth > 0) {
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = strokeColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = strokeWidth,
+      );
+    }
+  }
+
+  @override
+  Size getSize(FlSpot spot) {
+    return Size(size, size);
+  }
+
+  @override
+  List<Object?> get props => [size, color, strokeWidth, strokeColor];
+
+  @override
+  Color get mainColor => color;
+
+  @override
+  FlDotPainter lerp(FlDotPainter a, FlDotPainter b, double t) {
+    if (a is FlDotTrianglePainter && b is FlDotTrianglePainter) {
+      return FlDotTrianglePainter(
+        size: lerpDouble(a.size, b.size, t)!,
+        color: Color.lerp(a.color, b.color, t)!,
+        strokeWidth: lerpDouble(a.strokeWidth, b.strokeWidth, t)!,
+        strokeColor: Color.lerp(a.strokeColor, b.strokeColor, t)!,
+      );
+    }
+    return this;
+  }
+}
 
 class TimeSeriesChart extends StatefulWidget {
   final SensorDataResponse data;
@@ -39,13 +111,10 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     final result = widget.data.result;
     if (result == null) return [];
 
-    return [
-      if (result.accelX?.value != null) 'accelX',
-      if (result.accelY?.value != null) 'accelY',
-      if (result.accelZ?.value != null) 'accelZ',
-      if (result.humidity?.value != null) 'humidity',
-      if (result.temperature?.value != null) 'temperature',
-    ];
+    return result.getFieldNames().where((field) {
+      final data = result.getField(field);
+      return data != null && data.value != null && data.value!.isNotEmpty;
+    }).toList();
   }
 
   void _initializeMaps() {
@@ -167,6 +236,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
             : '${_capitalize(field)} Over Frequency');
 
     return Column(
+      key: ValueKey('graph_section_$field'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -217,7 +287,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     final result = widget.data.result;
     if (result == null) return false;
 
-    final dataForField = _getDataForField(field);
+    final dataForField = result.getField(field);
     if (dataForField == null ||
         dataForField.value == null ||
         dataForField.value!.isEmpty) {
@@ -261,6 +331,17 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     return '${mantissa}e$exp';
   }
 
+  String _formatTimeAxisLabel(double value, bool scaleByDay) {
+    final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
+    if (scaleByDay) {
+      return '${date.day}/${date.month}';
+    } else {
+      final hh = date.hour.toString().padLeft(2, '0');
+      final mm = date.minute.toString().padLeft(2, '0');
+      return '$hh:$mm';
+    }
+  }
+
   Widget _buildLineChart(
     List<LineChartBarData> lineBarsData, {
     required bool isTimeXAxis,
@@ -271,11 +352,28 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
       return const SizedBox.shrink();
     }
 
-    final yScaleFactor = isMicroUnits ? 1e6 : 1.0;
-    lineBarsData = _scaleLineBarsData(lineBarsData, yScaleFactor);
+    // Add dominant frequency points before scaling
+    final dominantFreqPoints = !isTimeXAxis
+        ? _buildDominantFreqPoints(
+            field: field,
+            isMicroUnits: isMicroUnits,
+          )
+        : <LineChartBarData>[];
 
+    // Scale all data points including dominant frequencies
+    final yScaleFactor = isMicroUnits ? 1e6 : 1.0;
+    final scaledLineBarsData = _scaleLineBarsData(lineBarsData, yScaleFactor);
+    final scaledDominantPoints =
+        _scaleLineBarsData(dominantFreqPoints, yScaleFactor);
+
+    final List<LineChartBarData> allBarsData = [
+      ...scaledLineBarsData,
+      ...scaledDominantPoints
+    ];
+
+    // Calculate limits using all data points
     var (minX, maxX, minY, maxY) =
-        _calculateAxisLimits(lineBarsData, isTimeXAxis);
+        _calculateAxisLimits(allBarsData, isTimeXAxis);
 
     if (!isTimeXAxis) {
       minY = 0;
@@ -297,11 +395,9 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     final xInterval = (maxX - minX) / 4;
     final yInterval = (maxY - minY) / 4;
 
-    final dominantFreqPoints = _buildDominantFreqPoints(
-      field: field,
-      isMicroUnits: isMicroUnits,
-    );
-    final combinedLineBarsData = [...lineBarsData, ...dominantFreqPoints];
+    // Determine if we should scale by day based on time range
+    final scaleByDay =
+        isTimeXAxis && (maxX - minX) > Duration.millisecondsPerDay;
 
     return SizedBox(
       height: 300,
@@ -309,7 +405,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
         padding: const EdgeInsets.fromLTRB(8, 20, 16, 12),
         child: LineChart(
           LineChartData(
-            lineBarsData: combinedLineBarsData,
+            lineBarsData: allBarsData,
             minX: minX,
             maxX: maxX,
             minY: minY,
@@ -337,16 +433,14 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                   interval: xInterval,
                   getTitlesWidget: (value, meta) {
                     if (isTimeXAxis) {
-                      final date =
-                          DateTime.fromMillisecondsSinceEpoch(value.toInt());
-                      final hh = date.hour.toString().padLeft(2, '0');
-                      final mm = date.minute.toString().padLeft(2, '0');
                       return Transform.rotate(
                         angle: -45 * pi / 180,
                         child: Padding(
                           padding: const EdgeInsets.only(top: 4.0),
-                          child: Text('$hh:$mm',
-                              style: const TextStyle(fontSize: 10)),
+                          child: Text(
+                            _formatTimeAxisLabel(value, scaleByDay),
+                            style: const TextStyle(fontSize: 10),
+                          ),
                         ),
                       );
                     } else {
@@ -394,25 +488,58 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
               ),
             ),
             clipData: const FlClipData.all(),
-            backgroundColor: Colors.white,
+            backgroundColor: Colors.white.withOpacity(0.1),
             lineTouchData: LineTouchData(
               enabled: true,
               touchTooltipData: LineTouchTooltipData(
                 getTooltipItems: (List<LineBarSpot> touchedSpots) {
                   return touchedSpots.map((spot) {
+                    final barData = spot.bar;
                     final xValue = isTimeXAxis
                         ? DateTime.fromMillisecondsSinceEpoch(spot.x.toInt())
                             .toString()
                         : _formatFrequency(spot.x);
                     final yValue = spot.y.toStringAsFixed(2);
+
+                    // Check if this is a dominant frequency point
+                    final isDominantFreq = !isTimeXAxis &&
+                        barData.dotData.show &&
+                        barData.dotData.getDotPainter(spot, 0, barData, 0)
+                            is FlDotTrianglePainter;
+
+                    // Check if this is an anomaly region
+                    final isAnomaly = barData.color?.value ==
+                        Colors.red.withOpacity(0.5).value;
+
+                    String tooltipText = '';
+                    if (isDominantFreq) {
+                      tooltipText =
+                          '$field\nDominant Frequency\nFreq: $xValue Hz\nMagnitude: $yValue';
+                    } else if (isAnomaly) {
+                      tooltipText =
+                          '$field\nAnomaly Region\nTime: $xValue\nValue: $yValue';
+                    } else {
+                      tooltipText = '$field\nX: $xValue\nY: $yValue';
+                    }
+
                     return LineTooltipItem(
-                      '$field\nX: $xValue\nY: $yValue',
-                      const TextStyle(color: Colors.white, fontSize: 12),
+                      tooltipText,
+                      TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: isDominantFreq || isAnomaly
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
                     );
                   }).toList();
                 },
                 tooltipPadding: const EdgeInsets.all(8),
                 tooltipRoundedRadius: 8,
+                tooltipBorder: const BorderSide(color: Colors.black12),
+                tooltipMargin: 8,
+                fitInsideHorizontally: true,
+                fitInsideVertically: true,
               ),
             ),
           ),
@@ -434,25 +561,23 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
       final magData = widget.data.magnitude![field] ?? [];
       final freqData = widget.data.frequency![field] ?? [];
 
-      final yScaleFactor = isMicroUnits ? 1e6 : 1.0; // Apply scaling factor
-
       for (final freq in freqList) {
         final index = freqData.indexOf(freq);
         if (index != -1 && index < magData.length) {
-          final magnitude = magData[index] * yScaleFactor; // Scale magnitude
           dominantFreqPoints.add(
             LineChartBarData(
-              spots: [FlSpot(freq, magnitude)],
+              spots: [FlSpot(freq, magData[index])],
               isCurved: false,
               color: Colors.red,
               barWidth: 0,
               dotData: FlDotData(
                 show: true,
                 getDotPainter: (spot, percent, barData, index) =>
-                    FlDotCrossPainter(
+                    const FlDotTrianglePainter(
                   size: 12,
-                  width: 2,
                   color: Colors.red,
+                  strokeWidth: 1,
+                  strokeColor: Colors.white,
                 ),
               ),
               belowBarData: BarAreaData(show: false),
@@ -473,20 +598,12 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
           .toList();
       return LineChartBarData(
         spots: scaledSpots,
-        isCurved: false,
+        isCurved: barData.isCurved,
         color: barData.color,
-        barWidth: 1.5,
-        isStrokeCapRound: true,
-        dotData: FlDotData(
-          show: true,
-          getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
-            radius: 3.5,
-            color: barData.color!,
-            strokeWidth: 1,
-            strokeColor: Colors.white,
-          ),
-        ),
-        belowBarData: BarAreaData(show: false),
+        barWidth: barData.barWidth,
+        isStrokeCapRound: barData.isStrokeCapRound,
+        dotData: barData.dotData,
+        belowBarData: barData.belowBarData,
       );
     }).toList();
   }
@@ -541,22 +658,132 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
 
     if (xValues.isEmpty || yValues.isEmpty) return [];
 
+    final List<LineChartBarData> chartData = [];
+
+    // Determine if we should show points based on data density
+    final showPoints = xValues.length <=
+        100; // Show points only if we have 100 or fewer points
+    final pointSize =
+        xValues.length <= 50 ? 4.0 : 3.0; // Larger points for fewer data points
+
+    // Add main line data
     final spots = List<FlSpot>.generate(
       min(xValues.length, yValues.length),
       (i) => FlSpot(xValues[i], yValues[i]),
     );
 
-    return [
+    chartData.add(
       LineChartBarData(
         spots: spots,
         isCurved: false,
         color: color,
         barWidth: 2,
         isStrokeCapRound: true,
-        dotData: const FlDotData(show: false),
+        dotData: FlDotData(
+          show: showPoints,
+          getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+            radius: pointSize,
+            color: color.withOpacity(0.7),
+            strokeWidth: 1,
+            strokeColor: Colors.white,
+          ),
+        ),
         belowBarData: BarAreaData(show: false),
-      )
-    ];
+      ),
+    );
+
+    // Add anomaly regions in time mode
+    if (byTime && widget.data.anomaly_regions?[field] != null) {
+      final anomalyRegions = widget.data.anomaly_regions![field]!;
+      final data = result.getField(field);
+      final times = data?.time;
+      final values = data?.value;
+
+      if (times != null && values != null) {
+        for (final region in anomalyRegions) {
+          if (region.length >= 2) {
+            final startIndex = region[0].toInt();
+            final endIndex = region[1].toInt();
+
+            // Create spots for the anomaly region
+            final anomalySpots = <FlSpot>[];
+            for (var i = startIndex;
+                i <= endIndex && i < times.length && i < values.length;
+                i++) {
+              final timeValue = DateTime.parse(times[i].toString())
+                  .millisecondsSinceEpoch
+                  .toDouble();
+              anomalySpots.add(FlSpot(timeValue, values[i]));
+            }
+
+            if (anomalySpots.isNotEmpty) {
+              // Get min and max Y values to create full-height shading
+              double minY = double.infinity;
+              double maxY = double.negativeInfinity;
+              for (final value in values) {
+                if (value < minY) minY = value;
+                if (value > maxY) maxY = value;
+              }
+
+              // Create spots for the full height rectangle
+              final startTime = DateTime.parse(times[startIndex].toString())
+                  .millisecondsSinceEpoch
+                  .toDouble();
+              final endTime = DateTime.parse(times[endIndex].toString())
+                  .millisecondsSinceEpoch
+                  .toDouble();
+
+              // Add shaded area for anomaly region (full height)
+              chartData.add(
+                LineChartBarData(
+                  spots: [
+                    FlSpot(startTime, minY - (maxY - minY) * 0.1),
+                    FlSpot(startTime, maxY + (maxY - minY) * 0.1),
+                    FlSpot(endTime, maxY + (maxY - minY) * 0.1),
+                    FlSpot(endTime, minY - (maxY - minY) * 0.1),
+                    FlSpot(startTime, minY - (maxY - minY) * 0.1),
+                  ],
+                  isCurved: false,
+                  color: Colors.red.withOpacity(0.1),
+                  barWidth: 0,
+                  isStrokeCapRound: true,
+                  dotData: const FlDotData(show: false),
+                  belowBarData: BarAreaData(
+                    show: true,
+                    color: Colors.red.withOpacity(0.1),
+                  ),
+                ),
+              );
+
+              // Add the actual data line for the anomaly region
+              chartData.add(
+                LineChartBarData(
+                  spots: anomalySpots,
+                  isCurved: false,
+                  color: Colors.red.withOpacity(0.5),
+                  barWidth: 2,
+                  isStrokeCapRound: true,
+                  dotData: FlDotData(
+                    show: true, // Always show points in anomaly regions
+                    getDotPainter: (spot, percent, barData, index) =>
+                        FlDotCirclePainter(
+                      radius:
+                          pointSize + 1, // Slightly larger points for anomalies
+                      color: Colors.red.withOpacity(0.5),
+                      strokeWidth: 1,
+                      strokeColor: Colors.white,
+                    ),
+                  ),
+                  belowBarData: BarAreaData(show: false),
+                ),
+              );
+            }
+          }
+        }
+      }
+    }
+
+    return chartData;
   }
 
   (List<double>, List<double>) _extractData(
@@ -568,12 +795,31 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
 
     if (byTime) {
       final data = _getDataForField(field);
-      if (data != null) {
+      if (data != null && data.time != null && data.value != null) {
         yValues = data.value;
-        xValues = data.time
-            ?.map((t) =>
+
+        // Convert times to milliseconds
+        final times = data.time!
+            .map((t) =>
                 DateTime.parse(t.toString()).millisecondsSinceEpoch.toDouble())
             .toList();
+
+        // If data spans more than a day, consider sampling
+        if (times.length > 1000) {
+          // If we have too many points
+          final timeRange = times.last - times.first;
+          if (timeRange > Duration.millisecondsPerDay) {
+            // Sample data to reduce points while maintaining pattern
+            final sampledIndices =
+                _sampleDataPoints(times.length, 1000); // Limit to 1000 points
+            xValues = sampledIndices.map((i) => times[i]).toList();
+            yValues = sampledIndices.map((i) => data.value![i]).toList();
+          } else {
+            xValues = times;
+          }
+        } else {
+          xValues = times;
+        }
       }
     } else {
       final freqData = widget.data.frequency?[field];
@@ -588,24 +834,32 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     return (xValues ?? [], yValues ?? []);
   }
 
+  List<int> _sampleDataPoints(int totalPoints, int targetPoints) {
+    if (totalPoints <= targetPoints) {
+      return List.generate(totalPoints, (i) => i);
+    }
+
+    final step = totalPoints / targetPoints;
+    final indices = <int>[];
+    var currentIndex = 0.0;
+
+    while (currentIndex < totalPoints) {
+      indices.add(currentIndex.round());
+      currentIndex += step;
+    }
+
+    // Always include the last point
+    if (!indices.contains(totalPoints - 1)) {
+      indices.add(totalPoints - 1);
+    }
+
+    return indices;
+  }
+
   Data? _getDataForField(String field) {
     final result = widget.data.result;
     if (result == null) return null;
-
-    switch (field) {
-      case 'accelX':
-        return result.accelX;
-      case 'accelY':
-        return result.accelY;
-      case 'accelZ':
-        return result.accelZ;
-      case 'humidity':
-        return result.humidity;
-      case 'temperature':
-        return result.temperature;
-      default:
-        return null;
-    }
+    return result.getField(field);
   }
 
   Color _getColorForField(String field) {

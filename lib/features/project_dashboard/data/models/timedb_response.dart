@@ -34,23 +34,35 @@ class SensorDataResponse {
 
 @JsonSerializable()
 class Result {
-  final Data? accelX;
-  final Data? accelY;
-  final Data? accelZ;
-  final Data? humidity;
-  final Data? temperature;
+  final Map<String, Data> fields;
 
   Result({
-    this.accelX,
-    this.accelY,
-    this.accelZ,
-    this.humidity,
-    this.temperature,
+    required this.fields,
   });
 
-  factory Result.fromJson(Map<String, dynamic> json) => _$ResultFromJson(json);
+  factory Result.fromJson(Map<String, dynamic> json) {
+    final fields = <String, Data>{};
+    json.forEach((key, value) {
+      if (value != null) {
+        fields[key] = Data.fromJson(value as Map<String, dynamic>);
+      }
+    });
+    return Result(fields: fields);
+  }
 
-  Map<String, dynamic> toJson() => _$ResultToJson(this);
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> json = {};
+    fields.forEach((key, value) {
+      json[key] = value.toJson();
+    });
+    return json;
+  }
+
+  // Helper method to get a field's data
+  Data? getField(String fieldName) => fields[fieldName];
+
+  // Helper method to get all available field names
+  List<String> getFieldNames() => fields.keys.toList();
 }
 
 @JsonSerializable()

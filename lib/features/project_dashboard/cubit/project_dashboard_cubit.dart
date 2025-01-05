@@ -1,5 +1,5 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/utils/shared_pref_helper.dart';
 import 'package:pulsehub/core/utils/shared_pref_keys.dart';
@@ -73,7 +73,32 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
   }
 
   void updateSensorData(SensorDataResponse sensorData) {
-    emit(ProjectDashboardDetailsTimeDbSuccess(sensorData));
+    if (lastTimeDbResponse != null && lastTimeDbResponse!.result != null) {
+      final existingResult = lastTimeDbResponse!.result!;
+      final Map<String, Data> updatedFields = Map.from(existingResult.fields);
+
+      // Update only the fields that exist in the new data
+      if (sensorData.result != null) {
+        sensorData.result!.fields.forEach((key, value) {
+          updatedFields[key] = value;
+        });
+      }
+
+      final newResult = Result(fields: updatedFields);
+
+      final updatedResponse = SensorDataResponse(
+        result: newResult,
+        dominate_frequencies: sensorData.dominate_frequencies,
+        magnitude: sensorData.magnitude,
+        frequency: sensorData.frequency,
+      );
+
+      lastTimeDbResponse = updatedResponse;
+      emit(ProjectDashboardDetailsTimeDbSuccess(updatedResponse));
+    } else {
+      lastTimeDbResponse = sensorData;
+      emit(ProjectDashboardDetailsTimeDbSuccess(sensorData));
+    }
   }
 
   Future<void> createDash(

@@ -516,7 +516,7 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                         final queryParams = QueryParams(
                           measurementName: selectedMeasurement!,
                           topic: selectedTopic!,
-                          fields: selectedFields.join(','),
+                          fields: field,
                           sensorsToAnalyze: field,
                           windowSize: windowSize.toString(),
                           deviationThreshold: deviationController.text,
