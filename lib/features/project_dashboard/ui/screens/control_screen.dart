@@ -115,6 +115,8 @@ class OverviewTab extends StatefulWidget {
 
 class _OverviewTabState extends State<OverviewTab> {
   final Map<String, TextEditingController> _controllers = {};
+  final TextEditingController _deleteConfirmController =
+      TextEditingController();
 
   @override
   void initState() {
@@ -124,6 +126,7 @@ class _OverviewTabState extends State<OverviewTab> {
 
   @override
   void dispose() {
+    _deleteConfirmController.dispose();
     for (var controller in _controllers.values) {
       controller.dispose();
     }
@@ -208,6 +211,70 @@ class _OverviewTabState extends State<OverviewTab> {
     widget.onSave();
   }
 
+  Future<bool?> _showDeleteConfirmationDialog() async {
+    _deleteConfirmController.clear();
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Project'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Are you sure you want to delete this project?'),
+            const SizedBox(height: 16),
+            Text(
+              'To confirm deletion, please copy the project name: ${widget.project.title}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _deleteConfirmController,
+              decoration: const InputDecoration(
+                hintText: 'Enter project name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            onPressed: () {
+              if (_deleteConfirmController.text == widget.project.title) {
+                Navigator.of(context).pop(true);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Project name does not match'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: const Text('Delete Project'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleDelete() async {
+    final confirmed = await _showDeleteConfirmationDialog();
+    if (confirmed == true) {
+      if (!mounted) return;
+      await context
+          .read<ProjectDashboardCubit>()
+          .deleteProject(widget.project.projectId!);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<ProjectDashboardCubit, ProjectDashboardState>(
@@ -219,7 +286,6 @@ class _OverviewTabState extends State<OverviewTab> {
               backgroundColor: Colors.green,
             ),
           );
-          // Refetch project data after successful update
           context.read<ProjectsCubit>().getProject(widget.project.projectId!);
           widget.onSave();
         } else if (state is ProjectDashboardUpdateProjectFailure) {
@@ -229,11 +295,27 @@ class _OverviewTabState extends State<OverviewTab> {
               backgroundColor: Colors.red,
             ),
           );
+        } else if (state is ProjectDashboardDeleteProjectSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Project deleted successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.of(context).pop(); // Return to projects list
+        } else if (state is ProjectDashboardDeleteProjectFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to delete project: ${state.message}'),
+              backgroundColor: Colors.red,
+            ),
+          );
         }
       },
       child: BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
         builder: (context, dashState) {
-          final isLoading = dashState is ProjectDashboardUpdateProjectLoading;
+          final isLoading = dashState is ProjectDashboardUpdateProjectLoading ||
+              dashState is ProjectDashboardDeleteProjectLoading;
 
           return Stack(
             children: [
@@ -242,37 +324,100 @@ class _OverviewTabState extends State<OverviewTab> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        if (!widget.isEditing)
-                          FilledButton.icon(
-                            onPressed: isLoading ? null : widget.onEdit,
-                            icon: const Icon(Icons.edit),
-                            label: const Text('Edit'),
-                          )
-                        else ...[
-                          OutlinedButton.icon(
-                            onPressed: isLoading ? null : widget.onCancel,
-                            icon: const Icon(Icons.cancel),
-                            label: const Text('Cancel'),
-                          ),
-                          const SizedBox(width: 8),
-                          FilledButton.icon(
-                            onPressed: isLoading ? null : _handleSave,
-                            icon: isLoading
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2),
-                                  )
-                                : const Icon(Icons.save),
-                            label:
-                                Text(isLoading ? 'Saving...' : 'Save Changes'),
-                          ),
-                        ],
-                      ],
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth: widget.isEditing ? 48 : 160,
+                              ),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                child: ClipRect(
+                                  child: FilledButton.icon(
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: Colors.red.shade700,
+                                      padding: widget.isEditing
+                                          ? const EdgeInsets.all(8)
+                                          : const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 8),
+                                    ),
+                                    onPressed: isLoading ? null : _handleDelete,
+                                    icon: const Icon(Icons.delete_forever,
+                                        size: 20),
+                                    label: widget.isEditing
+                                        ? const SizedBox.shrink()
+                                        : const Text('Delete'),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 300),
+                              child: !widget.isEditing
+                                  ? FilledButton.icon(
+                                      key: const ValueKey('edit'),
+                                      onPressed:
+                                          isLoading ? null : widget.onEdit,
+                                      icon: const Icon(Icons.edit, size: 20),
+                                      label: const Text('Edit'),
+                                      style: FilledButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 8,
+                                        ),
+                                      ),
+                                    )
+                                  : Row(
+                                      key: const ValueKey('save-cancel'),
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        OutlinedButton.icon(
+                                          onPressed: isLoading
+                                              ? null
+                                              : widget.onCancel,
+                                          icon: const Icon(Icons.cancel,
+                                              size: 20),
+                                          label: const Text('Cancel'),
+                                          style: OutlinedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 8,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        FilledButton.icon(
+                                          onPressed:
+                                              isLoading ? null : _handleSave,
+                                          icon: isLoading
+                                              ? const SizedBox(
+                                                  width: 20,
+                                                  height: 20,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                          strokeWidth: 2),
+                                                )
+                                              : const Icon(Icons.save,
+                                                  size: 20),
+                                          label: Text(
+                                              isLoading ? 'Saving' : 'Save'),
+                                          style: FilledButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 8,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 16),
                     EditableInfoRow(

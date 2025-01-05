@@ -322,6 +322,27 @@ class DashRepoImpl extends DashRepository {
       return Left('Exception occurred: $error');
     }
   }
+
+  @override
+  Future<Either<String, bool>> deleteProject(
+      String token, int projectId) async {
+    try {
+      final response = await myApiService.delete(
+        EndPoints.updateProject,
+        token: token,
+        queryParameters: {'id': projectId},
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return const Right(true);
+      } else {
+        return Left('Failed to delete project: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
 }
 
 class QueryParams {

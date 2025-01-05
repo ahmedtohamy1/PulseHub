@@ -234,3 +234,21 @@ final class ProjectDashboardUpdateProjectFailure extends ProjectDashboardState {
 
   const ProjectDashboardUpdateProjectFailure(this.message);
 }
+
+final class ProjectDashboardDeleteProjectLoading
+    extends ProjectDashboardState {}
+
+final class ProjectDashboardDeleteProjectSuccess extends ProjectDashboardState {
+  final bool success;
+
+  const ProjectDashboardDeleteProjectSuccess(this.success);
+
+  @override
+  List<Object> get props => [success];
+}
+
+final class ProjectDashboardDeleteProjectFailure extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardDeleteProjectFailure(this.message);
+}

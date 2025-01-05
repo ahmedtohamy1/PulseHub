@@ -221,4 +221,14 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
       (response) => emit(ProjectDashboardUpdateProjectSuccess(response)),
     );
   }
+
+  Future<void> deleteProject(int projectId) async {
+    emit(ProjectDashboardDeleteProjectLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res = await _repository.deleteProject(token, projectId);
+    res.fold(
+      (failure) => emit(ProjectDashboardDeleteProjectFailure(failure)),
+      (response) => emit(ProjectDashboardDeleteProjectSuccess(response)),
+    );
+  }
 }

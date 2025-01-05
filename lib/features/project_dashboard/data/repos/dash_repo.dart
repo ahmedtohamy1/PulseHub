@@ -38,4 +38,5 @@ abstract class DashRepository {
       String token, int ticketId, String message);
   Future<Either<String, bool>> updateProject(
       String token, int projectId, ProjectUpdateRequest request);
+  Future<Either<String, bool>> deleteProject(String token, int projectId);
 }
