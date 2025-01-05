@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/project_update_request.dart';
+import 'package:pulsehub/features/project_dashboard/ui/widgets/used_sensors_table.dart';
 import 'package:pulsehub/features/projects/cubit/projects_cubit.dart';
 import 'package:pulsehub/features/projects/data/models/project_response.dart';
 
@@ -22,6 +23,14 @@ class _ControlScreenState extends State<ControlScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(_handleTabChange);
+  }
+
+  void _handleTabChange() {
+    if (_tabController.index == 1) {
+      // Customisation tab
+      context.read<ProjectDashboardCubit>().getUsedSensors();
+    }
   }
 
   @override
@@ -78,11 +87,10 @@ class _ControlScreenState extends State<ControlScreen>
                 onEdit: () => setState(() => _isEditing = true),
                 onCancel: () => setState(() => _isEditing = false),
                 onSave: () {
-                  // TODO: Implement save functionality
                   setState(() => _isEditing = false);
                 },
               ),
-              const Center(child: Text('Customisation content coming soon')),
+              const CustomisationTab(),
               const Center(child: Text('Media Library content coming soon')),
               const Center(child: Text('Collaborators content coming soon')),
             ],
@@ -707,6 +715,49 @@ class _EditableInfoRowState extends State<EditableInfoRow> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class CustomisationTab extends StatelessWidget {
+  const CustomisationTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
+      builder: (context, state) {
+        if (state is ProjectDashboardGetUsedSensorsLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (state is ProjectDashboardGetUsedSensorsFailure) {
+          return Center(child: Text('Error: ${state.message}'));
+        }
+
+        if (state is ProjectDashboardGetUsedSensorsSuccess) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16),
+              Text(
+                'Monitoring Sensor Types',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: UsedSensorsTable(
+                  usedSensors:
+                      state.getUsedSensorsResponseModel.usedSensorList ?? [],
+                ),
+              ),
+            ],
+          );
+        }
+
+        return const Center(child: Text('No data available'));
+      },
     );
   }
 }

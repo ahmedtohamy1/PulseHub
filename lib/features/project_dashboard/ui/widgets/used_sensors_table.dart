@@ -1,0 +1,341 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/get_used_sensors_response_model.dart';
+
+class UsedSensorsTable extends StatelessWidget {
+  final List<UsedSensorList> usedSensors;
+
+  const UsedSensorsTable({
+    super.key,
+    required this.usedSensors,
+  });
+
+  Future<void> _showEditDialog(BuildContext context, UsedSensorList sensor) {
+    final countController = TextEditingController(text: '');
+    final cubit = context.read<ProjectDashboardCubit>();
+
+    return showDialog(
+      context: context,
+      builder: (dialogContext) => BlocProvider.value(
+        value: cubit,
+        child: BlocListener<ProjectDashboardCubit, ProjectDashboardState>(
+          listener: (context, state) {
+            if (state is ProjectDashboardUpdateUsedSensorsSuccess) {
+              Navigator.of(context).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Sensor count updated successfully'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              // Refresh the sensors list
+              context.read<ProjectDashboardCubit>().getUsedSensors();
+            } else if (state is ProjectDashboardUpdateUsedSensorsFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content:
+                      Text('Failed to update sensor count: ${state.message}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+          child: AlertDialog(
+            title: const Text('Edit Sensor Count'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                RichText(
+                  text: TextSpan(
+                    style: DefaultTextStyle.of(context).style,
+                    children: [
+                      const TextSpan(
+                        text: 'Sensor Type\n',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      TextSpan(text: sensor.name ?? 'N/A'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                RichText(
+                  text: TextSpan(
+                    style: DefaultTextStyle.of(context).style,
+                    children: [
+                      const TextSpan(
+                        text: 'Function\n',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      TextSpan(text: sensor.function ?? 'N/A'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                RichText(
+                  text: TextSpan(
+                    style: DefaultTextStyle.of(context).style,
+                    children: const [
+                      TextSpan(
+                        text: 'Count (New Sensors)\n',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+                TextFormField(
+                  controller: countController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Original Count: ${sensor.count ?? 0}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
+                builder: (context, state) {
+                  final isLoading =
+                      state is ProjectDashboardUpdateUsedSensorsLoading;
+                  return FilledButton(
+                    onPressed: isLoading
+                        ? null
+                        : () {
+                            final count = int.tryParse(countController.text);
+                            if (count != null && sensor.usedSensorId != null) {
+                              context
+                                  .read<ProjectDashboardCubit>()
+                                  .updateUsedSensors(
+                                      sensor.usedSensorId!, count);
+                            }
+                          },
+                    child: isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('Save'),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showDeleteConfirmationDialog(
+      BuildContext context, UsedSensorList sensor) {
+    final cubit = context.read<ProjectDashboardCubit>();
+
+    return showDialog(
+      context: context,
+      builder: (dialogContext) => BlocProvider.value(
+        value: cubit,
+        child: BlocListener<ProjectDashboardCubit, ProjectDashboardState>(
+          listener: (context, state) {
+            if (state is ProjectDashboardUpdateUsedSensorsSuccess) {
+              Navigator.of(context).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Sensor deleted successfully'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              // Refresh the sensors list
+              context.read<ProjectDashboardCubit>().getUsedSensors();
+            } else if (state is ProjectDashboardUpdateUsedSensorsFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to delete sensor: ${state.message}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+          child: AlertDialog(
+            title: const Text('Delete Sensor'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Are you sure you want to delete this sensor?'),
+                const SizedBox(height: 16),
+                RichText(
+                  text: TextSpan(
+                    style: DefaultTextStyle.of(context).style,
+                    children: [
+                      const TextSpan(
+                        text: 'Sensor Type: ',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      TextSpan(text: sensor.name ?? 'N/A'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                RichText(
+                  text: TextSpan(
+                    style: DefaultTextStyle.of(context).style,
+                    children: [
+                      const TextSpan(
+                        text: 'Function: ',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      TextSpan(text: sensor.function ?? 'N/A'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                RichText(
+                  text: TextSpan(
+                    style: DefaultTextStyle.of(context).style,
+                    children: [
+                      const TextSpan(
+                        text: 'Current Count: ',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      TextSpan(text: sensor.count?.toString() ?? '0'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
+                builder: (context, state) {
+                  final isLoading =
+                      state is ProjectDashboardUpdateUsedSensorsLoading;
+                  return FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: isLoading
+                        ? null
+                        : () {
+                            if (sensor.usedSensorId != null) {
+                              context
+                                  .read<ProjectDashboardCubit>()
+                                  .updateUsedSensors(
+                                      sensor.usedSensorId!, 0, true);
+                            }
+                          },
+                    child: isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('Delete'),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (usedSensors.isEmpty) {
+      return const Center(
+        child: Text("No sensors available."),
+      );
+    }
+
+    int globalIndex = 0;
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: DataTable(
+            showCheckboxColumn: false,
+            headingRowColor: WidgetStateColor.resolveWith(
+                (states) => Theme.of(context).colorScheme.primary),
+            columns: const [
+              DataColumn(
+                  label: Text('Sensor Name',
+                      style: TextStyle(color: Colors.white))),
+              DataColumn(
+                  label:
+                      Text('Function', style: TextStyle(color: Colors.white))),
+              DataColumn(
+                  label: Text('Count', style: TextStyle(color: Colors.white))),
+              DataColumn(
+                  label:
+                      Text('Actions', style: TextStyle(color: Colors.white))),
+            ],
+            rows: usedSensors.map((sensor) {
+              final rowColor = globalIndex++ % 2 == 0
+                  ? Theme.of(context).colorScheme.secondaryContainer
+                  : Theme.of(context).colorScheme.surface;
+
+              return DataRow(
+                color: WidgetStateColor.resolveWith((states) => rowColor),
+                cells: [
+                  DataCell(Text(sensor.name ?? 'N/A')),
+                  DataCell(Text(sensor.function ?? 'N/A')),
+                  DataCell(Text(sensor.count?.toString() ?? '0')),
+                  DataCell(
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit, size: 18),
+                          style: IconButton.styleFrom(
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.all(4),
+                            minimumSize: const Size(32, 32),
+                          ),
+                          onPressed: () => _showEditDialog(context, sensor),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(Icons.delete_forever, size: 18),
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.red.shade700,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.all(4),
+                            minimumSize: const Size(32, 32),
+                          ),
+                          onPressed: () =>
+                              _showDeleteConfirmationDialog(context, sensor),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+}

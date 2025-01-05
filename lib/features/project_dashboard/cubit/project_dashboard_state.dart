@@ -252,3 +252,44 @@ final class ProjectDashboardDeleteProjectFailure extends ProjectDashboardState {
 
   const ProjectDashboardDeleteProjectFailure(this.message);
 }
+
+final class ProjectDashboardGetUsedSensorsLoading
+    extends ProjectDashboardState {}
+
+final class ProjectDashboardGetUsedSensorsSuccess
+    extends ProjectDashboardState {
+  final GetUsedSensorsResponseModel getUsedSensorsResponseModel;
+
+  const ProjectDashboardGetUsedSensorsSuccess(this.getUsedSensorsResponseModel);
+
+  @override
+  List<Object> get props => [getUsedSensorsResponseModel];
+}
+
+final class ProjectDashboardGetUsedSensorsFailure
+    extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardGetUsedSensorsFailure(this.message);
+}
+
+final class ProjectDashboardUpdateUsedSensorsLoading
+    extends ProjectDashboardState {}
+
+final class ProjectDashboardUpdateUsedSensorsSuccess
+    extends ProjectDashboardState {
+  final bool getUsedSensorsResponseModel;
+
+  const ProjectDashboardUpdateUsedSensorsSuccess(
+      this.getUsedSensorsResponseModel);
+
+  @override
+  List<Object> get props => [getUsedSensorsResponseModel];
+}
+
+final class ProjectDashboardUpdateUsedSensorsFailure
+    extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardUpdateUsedSensorsFailure(this.message);
+}

@@ -5,6 +5,7 @@ import 'package:pulsehub/core/utils/shared_pref_helper.dart';
 import 'package:pulsehub/core/utils/shared_pref_keys.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/ai_analyze_data_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/cloudhub_model.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/get_used_sensors_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_details.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_model.dart';
@@ -229,6 +230,28 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
     res.fold(
       (failure) => emit(ProjectDashboardDeleteProjectFailure(failure)),
       (response) => emit(ProjectDashboardDeleteProjectSuccess(response)),
+    );
+  }
+
+  Future<void> getUsedSensors() async {
+    emit(ProjectDashboardGetUsedSensorsLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res = await _repository.getUsedSensors(token);
+    res.fold(
+      (failure) => emit(ProjectDashboardGetUsedSensorsFailure(failure)),
+      (response) => emit(ProjectDashboardGetUsedSensorsSuccess(response)),
+    );
+  }
+
+  Future<void> updateUsedSensors(int id, int count, [bool? isdelete]) async {
+    emit(ProjectDashboardUpdateUsedSensorsLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res = isdelete != null && isdelete == true
+        ? await _repository.deleteUsedSensors(token, id)
+        : await _repository.updateUsedSensors(token, id, count);
+    res.fold(
+      (failure) => emit(ProjectDashboardUpdateUsedSensorsFailure(failure)),
+      (response) => emit(ProjectDashboardUpdateUsedSensorsSuccess(response)),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/ai_analyze_data_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/cloudhub_model.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/get_used_sensors_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_details.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_model.dart';
@@ -39,4 +40,10 @@ abstract class DashRepository {
   Future<Either<String, bool>> updateProject(
       String token, int projectId, ProjectUpdateRequest request);
   Future<Either<String, bool>> deleteProject(String token, int projectId);
+  Future<Either<String, GetUsedSensorsResponseModel>> getUsedSensors(
+      String token);
+  Future<Either<String, bool>> updateUsedSensors(
+      String token, int usedSensorId, int count);
+  Future<Either<String, bool>> deleteUsedSensors(
+      String token, int usedSensorId);
 }

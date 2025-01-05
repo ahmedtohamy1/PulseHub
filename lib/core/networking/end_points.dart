@@ -35,6 +35,8 @@ class EndPoints {
   static const String getSensorActivityLog = "/project/ticket/";
   static const String getTicketMessages = "/project/ticket-messages/";
   static const String createTicketMessage = "/project/ticket-messages/";
+  static const String getUsedSensor = "/project/used-sensor/";
+
   // imgs
   static String imageUrl(String path) => '$baseUrl$path';
 }
