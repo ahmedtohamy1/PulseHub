@@ -8,8 +8,9 @@ import 'package:pulsehub/features/project_dashboard/data/models/cloudhub_model.d
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_details.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_model.dart';
-
 import 'package:pulsehub/features/project_dashboard/data/models/project_dashboards.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/sensor_activity_log_model.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/tickets_messages_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/timedb_response.dart';
 import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo.dart';
 
@@ -223,6 +224,72 @@ class DashRepoImpl extends DashRepository {
         return Right(MonitoringCloudhubDetails.fromJson(response.data));
       } else {
         return Left('Failed to get sensor data: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
+  Future<Either<String, SensorActivityLog>> getSensorActivityLog(
+      String token, int sensorId) async {
+    try {
+      final response = await myApiService.get(
+        EndPoints.getSensorActivityLog,
+        token: token,
+        queryParameters: {'sensor_id': sensorId},
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return Right(SensorActivityLog.fromJson(response.data));
+      } else {
+        return Left(
+            'Failed to get sensor activity log: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
+  Future<Either<String, TicketMessagesModel>> getTicketMessages(
+      String token, int ticketId) async {
+    try {
+      final response = await myApiService.get(
+        EndPoints.getTicketMessages,
+        token: token,
+        queryParameters: {'ticket_id': ticketId},
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return Right(TicketMessagesModel.fromJson(response.data));
+      } else {
+        return Left('Failed to get ticket messages: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
+  Future<Either<String, bool>> createTicketMessage(
+      String token, int ticketId, String message) async {
+    try {
+      final response = await myApiService.post(
+        EndPoints.createTicketMessage,
+        token: token,
+        encodeAsJson: true,
+        queryParameters: {'ticket_id': ticketId},
+        data: {'message': message},
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return const Right(true);
+      } else {
+        return Left('Failed to create ticket message: ${response.statusCode}');
       }
     } catch (error) {
       return Left('Exception occurred: $error');

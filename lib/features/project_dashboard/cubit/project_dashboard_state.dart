@@ -196,3 +196,23 @@ final class ProjectDashboardCloudhubDataFailure extends ProjectDashboardState {
   @override
   List<Object> get props => [message];
 }
+
+final class ProjectDashboardSensorActivityLogLoading
+    extends ProjectDashboardState {}
+
+final class ProjectDashboardSensorActivityLogSuccess
+    extends ProjectDashboardState {
+  final SensorActivityLog sensorActivityLog;
+
+  const ProjectDashboardSensorActivityLogSuccess(this.sensorActivityLog);
+
+  @override
+  List<Object> get props => [sensorActivityLog];
+}
+
+final class ProjectDashboardSensorActivityLogFailure
+    extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardSensorActivityLogFailure(this.message);
+}

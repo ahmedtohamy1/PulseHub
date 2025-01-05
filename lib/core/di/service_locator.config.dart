@@ -24,6 +24,8 @@ import '../../features/dics/data/repos/dic_repo.dart' as _i90;
 import '../../features/dics/data/repos/dic_repo_impl.dart' as _i1046;
 import '../../features/project_dashboard/cubit/project_dashboard_cubit.dart'
     as _i495;
+import '../../features/project_dashboard/cubit/ticket_messages_cubit.dart'
+    as _i696;
 import '../../features/project_dashboard/data/repos/dash_repo.dart' as _i346;
 import '../../features/project_dashboard/data/repos/dash_repo_impl.dart'
     as _i503;
@@ -56,6 +58,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i1046.DicRepoImpl(gh<_i713.MyApi>()));
     gh.factory<_i495.ProjectDashboardCubit>(
         () => _i495.ProjectDashboardCubit(gh<_i346.DashRepository>()));
+    gh.factory<_i696.TicketMessagesCubit>(
+        () => _i696.TicketMessagesCubit(gh<_i346.DashRepository>()));
     gh.lazySingleton<_i573.AuthRepository>(
         () => _i153.AuthRepositoryImpl(gh<_i713.MyApi>()));
     gh.lazySingleton<_i767.AiReportRepository>(

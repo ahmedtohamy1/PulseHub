@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pulsehub/core/di/service_locator.dart';
+import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_model.dart';
-import 'package:pulsehub/features/project_dashboard/ui/screens/sensor_details_screen.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/sensor_data_model.dart'
     as sdm;
+import 'package:pulsehub/features/project_dashboard/ui/screens/sensor_details_screen.dart';
 
 class MonitoringTableWidget extends StatelessWidget {
   final Monitoring monitoring;
@@ -85,31 +88,34 @@ class MonitoringTableWidget extends StatelessWidget {
                   onSelectChanged: (_) => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => SensorDetailsScreen(
-                        sensor: sdm.Sensor(
-                          sensorId: sensor.sensorId,
-                          name: sensor.name,
-                          uuid: sensor.uuid,
-                          usedSensor: sensor.usedSensor,
-                          cloudHub: sensor.cloudHub,
-                          installDate: sensor.installDate,
-                          typeId: sensor.typeId,
-                          dataSource: sensor.dataSource,
-                          readingsPerDay: sensor.readingsPerDay,
-                          active: sensor.active,
-                          coordinateX: sensor.coordinateX,
-                          coordinateY: sensor.coordinateY,
-                          coordinateZ: sensor.coordinateZ,
-                          longitude: sensor.longitude,
-                          latitude: sensor.latitude,
-                          calibrated: sensor.calibrated,
-                          calibrationDate: sensor.calibrationDate,
-                          calibrationComments: sensor.calibrationComments,
-                          event: sensor.event ?? 'N/A',
-                          eventLastStatus: sensor.eventLastStatus ?? 'N/A',
-                          status: sensor.status,
-                          cloudHubTime: sensor.cloudHubTime,
-                          sendTime: sensor.sendTime,
+                      builder: (context) => BlocProvider(
+                        create: (context) => sl<ProjectDashboardCubit>(),
+                        child: SensorDetailsScreen(
+                          sensor: sdm.Sensor(
+                            sensorId: sensor.sensorId,
+                            name: sensor.name,
+                            uuid: sensor.uuid,
+                            usedSensor: sensor.usedSensor,
+                            cloudHub: sensor.cloudHub,
+                            installDate: sensor.installDate,
+                            typeId: sensor.typeId,
+                            dataSource: sensor.dataSource,
+                            readingsPerDay: sensor.readingsPerDay,
+                            active: sensor.active,
+                            coordinateX: sensor.coordinateX,
+                            coordinateY: sensor.coordinateY,
+                            coordinateZ: sensor.coordinateZ,
+                            longitude: sensor.longitude,
+                            latitude: sensor.latitude,
+                            calibrated: sensor.calibrated,
+                            calibrationDate: sensor.calibrationDate,
+                            calibrationComments: sensor.calibrationComments,
+                            event: sensor.event ?? 'N/A',
+                            eventLastStatus: sensor.eventLastStatus ?? 'N/A',
+                            status: sensor.status,
+                            cloudHubTime: sensor.cloudHubTime,
+                            sendTime: sensor.sendTime,
+                          ),
                         ),
                       ),
                     ),
