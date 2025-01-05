@@ -118,7 +118,7 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
                         // Owner Header
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.2),
+                            color: Colors.green.withValues(alpha: 0.2),
                             borderRadius: const BorderRadius.vertical(
                                 top: Radius.circular(10)),
                           ),

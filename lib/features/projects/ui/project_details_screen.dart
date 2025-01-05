@@ -232,7 +232,7 @@ class ProjectDetailsContent extends StatelessWidget {
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
                       colors: [
-                        Colors.black.withOpacity(0.8),
+                        Colors.black.withValues(alpha: 0.8),
                         Colors.transparent,
                       ],
                     ),
@@ -246,7 +246,7 @@ class ProjectDetailsContent extends StatelessWidget {
                         height: 48,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(6),
-                          color: Colors.white.withOpacity(0.99),
+                          color: Colors.white.withValues(alpha: 0.99),
                         ),
                         child: project.owner?.logoUrl != null
                             ? Image.network(

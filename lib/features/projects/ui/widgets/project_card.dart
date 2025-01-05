@@ -115,7 +115,7 @@ class ProjectCardState extends State<ProjectCard> {
                       IconButton.filled(
                         onPressed: () => togglePin(context),
                         style: IconButton.styleFrom(
-                          backgroundColor: Colors.green.withOpacity(0),
+                          backgroundColor: Colors.green.withValues(alpha: 0),
                         ),
                         icon: isPinned
                             ? const Icon(

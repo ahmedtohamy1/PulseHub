@@ -149,7 +149,7 @@ InputDecoration customInputDecoration(String labelText, IconData icon,
     label: labelx ? Text(labelText) : null,
     filled: true,
     fillColor: isApp
-        ? const Color(0xFFE0E0E0).withOpacity(0.2)
+        ? const Color(0xFFE0E0E0).withValues(alpha: 0.2)
         : const Color(0xFFE0E0E0), // Light gray background
     prefixIcon: Icon(icon, color: Colors.grey),
     hintText: labelText,
@@ -175,8 +175,8 @@ ButtonStyle customButtonStyle(
 ButtonStyle outlineButtonStyle([bool isApp = false]) {
   return OutlinedButton.styleFrom(
     // Transparent background
-    backgroundColor: Colors.white.withOpacity(0),
-    shadowColor: Colors.white.withOpacity(0),
+    backgroundColor: Colors.white.withValues(alpha: 0),
+    shadowColor: Colors.white.withValues(alpha: 0),
     elevation: 0,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(30), // Rounded edges

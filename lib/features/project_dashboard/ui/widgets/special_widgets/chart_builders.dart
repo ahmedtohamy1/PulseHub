@@ -14,11 +14,11 @@ Widget buildLineChart(List<FlSpot> data) {
           horizontalInterval: 1,
           verticalInterval: 1,
           getDrawingHorizontalLine: (value) => FlLine(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             strokeWidth: 0.5,
           ),
           getDrawingVerticalLine: (value) => FlLine(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             strokeWidth: 0.5,
           ),
         ),
@@ -133,11 +133,11 @@ Widget buildBarChart(List<FlSpot> data) {
           horizontalInterval: 1,
           verticalInterval: 1,
           getDrawingHorizontalLine: (value) => FlLine(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             strokeWidth: 0.5,
           ),
           getDrawingVerticalLine: (value) => FlLine(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             strokeWidth: 0.5,
           ),
         ),
@@ -263,11 +263,11 @@ Widget buildScatterChart(List<FlSpot> data) {
           horizontalInterval: 1,
           verticalInterval: 1,
           getDrawingHorizontalLine: (value) => FlLine(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             strokeWidth: 0.5,
           ),
           getDrawingVerticalLine: (value) => FlLine(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             strokeWidth: 0.5,
           ),
         ),
@@ -338,11 +338,11 @@ Widget buildAreaChart(List<FlSpot> data) {
           horizontalInterval: 1,
           verticalInterval: 1,
           getDrawingHorizontalLine: (value) => FlLine(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             strokeWidth: 0.5,
           ),
           getDrawingVerticalLine: (value) => FlLine(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             strokeWidth: 0.5,
           ),
         ),
@@ -410,8 +410,8 @@ Widget buildAreaChart(List<FlSpot> data) {
             barWidth: 2,
             isStrokeCapRound: true,
             dotData: const FlDotData(show: false),
-            belowBarData:
-                BarAreaData(show: true, color: Colors.blue.withOpacity(0.3)),
+            belowBarData: BarAreaData(
+                show: true, color: Colors.blue.withValues(alpha: 0.3)),
           ),
         ],
         minX: 0,
@@ -458,20 +458,19 @@ Widget buildRadarChart(List<double> data) {
         dataSets: [
           RadarDataSet(
             dataEntries: dataSetEntries,
-            fillColor: Colors.blue.withOpacity(0.2),
+            fillColor: Colors.blue.withValues(alpha: 0.2),
             borderColor: Colors.blue,
             borderWidth: 2,
           ),
         ],
         radarShape: RadarShape.polygon,
         radarBackgroundColor: Colors.transparent,
-      gridBorderData: BorderSide(color: Colors.black12, width: 1),
+        gridBorderData: BorderSide(color: Colors.black12, width: 1),
         titleTextStyle: const TextStyle(fontSize: 12, color: Colors.black87),
         tickCount: 5,
         ticksTextStyle: const TextStyle(fontSize: 10, color: Colors.black87),
         titlePositionPercentageOffset: 0.2,
         // Add titles for each data point
-        
       ),
     ),
   );
