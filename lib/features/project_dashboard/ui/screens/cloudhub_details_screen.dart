@@ -1,6 +1,12 @@
+import 'dart:convert';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_details.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 class CloudHubDetailsScreen extends StatelessWidget {
   final MonitoringCloudhubDetails cloudHub;
@@ -12,6 +18,55 @@ class CloudHubDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final qrKey = GlobalKey(); // Key for capturing the QR code widget
+
+    // Generate QR code data
+    final qrData = _generateQrData();
+
+    // Function to download and share the QR code
+    Future<void> downloadQrCode() async {
+      try {
+        final boundary =
+            qrKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+        final image = await boundary.toImage(pixelRatio: 3.0);
+        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+        final pngBytes = byteData!.buffer.asUint8List();
+
+        final tempDir = await getTemporaryDirectory();
+        final now = DateTime.now();
+        final fileName =
+            'cloudhub_qr_${cloudHub.cloudhub.name.replaceAll(' ', '_')}_${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}.png';
+        final tempFile = File('${tempDir.path}/$fileName');
+        await tempFile.writeAsBytes(pngBytes);
+
+        if (context.mounted) {
+          final box = context.findRenderObject() as RenderBox?;
+          final position = box!.localToGlobal(Offset.zero);
+          final size = box.size;
+
+          await Share.shareXFiles(
+            [XFile(tempFile.path)],
+            subject: 'CloudHub QR Code - ${cloudHub.cloudhub.name}',
+            sharePositionOrigin: Rect.fromLTWH(
+              position.dx,
+              position.dy,
+              size.width,
+              size.height / 2,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to save QR code: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -32,21 +87,39 @@ class CloudHubDetailsScreen extends StatelessWidget {
               _buildInfoRow('Notes', cloudHub.cloudhub.notes),
             ],
           ),
-          const SizedBox(height: 32),
-          Center(
-            child: Column(
-              children: [
-                Text(
-                  'CloudHub QR Code',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 16),
-                QrImageView(
-                  data: _generateQrData(),
-                  version: QrVersions.auto,
-                  size: 200.0,
-                ),
-              ],
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        'CloudHub QR Code',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const Spacer(),
+                      IconButton.filled(
+                        icon: const Icon(Icons.download),
+                        onPressed: downloadQrCode,
+                        tooltip: 'Download QR Code',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: RepaintBoundary(
+                      key: qrKey, // Key for capturing the QR code widget
+                      child: QrImageView(
+                        data: qrData,
+                        version: QrVersions.auto,
+                        size: 200.0,
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

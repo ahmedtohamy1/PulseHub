@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_model.dart';
+import 'package:pulsehub/features/project_dashboard/ui/screens/cloudhub_details_screen.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/monitoring/filter_button.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/monitoring/monitoring_dropdown.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/monitoring/sensors_table.dart';
@@ -117,27 +118,6 @@ class _MonitoringScreenState extends State<MonitoringScreen>
     );
   }
 
-  Widget _buildSensorsTab() {
-    return BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
-      builder: (context, state) {
-        if (state is ProjectDashboardMonitoringLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is ProjectDashboardMonitoringSuccess) {
-          final monitorings = state.monitoringResponse.monitorings ?? [];
-          if (monitorings.isEmpty) {
-            return const Center(child: Text("No sensors available."));
-          }
-          return MonitoringTableWidget(
-            monitoring: selectedMonitoring ?? monitorings.first,
-            selectedFilter: selectedFilter,
-          );
-        } else {
-          return const Center(child: Text("No data available"));
-        }
-      },
-    );
-  }
-
   Widget _buildCloudHubTab() {
     return BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
       builder: (context, state) {
@@ -163,6 +143,27 @@ class _MonitoringScreenState extends State<MonitoringScreen>
     );
   }
 
+  Widget _buildSensorsTab() {
+    return BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
+      builder: (context, state) {
+        if (state is ProjectDashboardMonitoringLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is ProjectDashboardMonitoringSuccess) {
+          final monitorings = state.monitoringResponse.monitorings ?? [];
+          if (monitorings.isEmpty) {
+            return const Center(child: Text("No sensors available."));
+          }
+          return MonitoringTableWidget(
+            monitoring: selectedMonitoring ?? monitorings.first,
+            selectedFilter: selectedFilter,
+          );
+        } else {
+          return const Center(child: Text("No data available"));
+        }
+      },
+    );
+  }
+
   Widget _buildCloudHubTable(List<CloudHub> cloudHubs) {
     int globalIndex = 0;
 
@@ -176,7 +177,6 @@ class _MonitoringScreenState extends State<MonitoringScreen>
             width: MediaQuery.of(context)
                 .size
                 .width, // Set the width to the screen width
-
             child: DataTable(
               headingRowColor: WidgetStateColor.resolveWith(
                 (states) => Theme.of(context).primaryColor,
@@ -204,6 +204,25 @@ class _MonitoringScreenState extends State<MonitoringScreen>
                     DataCell(Text(cloudHub.notes ?? 'N/A')),
                     DataCell(Text(cloudHub.code ?? 'N/A')),
                   ],
+                  onSelectChanged: (_) {
+                    // Fetch CloudHub details and navigate to the details screen
+                    context
+                        .read<ProjectDashboardCubit>()
+                        .getCloudhubData(cloudHub.cloudhubId)
+                        .then((_) {
+                      final state = context.read<ProjectDashboardCubit>().state;
+                      if (state is ProjectDashboardCloudhubDataSuccess) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CloudHubDetailsScreen(
+                              cloudHub: state.cloudhubDetails,
+                            ),
+                          ),
+                        );
+                      }
+                    });
+                  },
                 );
               }).toList(),
             ),
