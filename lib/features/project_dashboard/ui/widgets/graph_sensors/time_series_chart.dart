@@ -1,5 +1,5 @@
 import 'dart:math';
-
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -205,9 +205,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          // Combined sensor data
           if (availableFields.length > 1) _buildGraphSection('combined'),
-          // Individual sensor data
           for (var field in availableFields)
             if (_hasDataForField(field)) _buildGraphSection(field),
         ],
@@ -226,10 +224,9 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
       return false;
     }
 
-    // Optionally, skip if *all* values are zero (or NaN):
     final allZero = dataForField.value!.every((v) => v == 0.0);
     if (allZero) {
-      return false; // or keep true if you want to see a "flat line" at zero
+      return false;
     }
 
     return true;
@@ -264,38 +261,30 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     return '${mantissa}e$exp';
   }
 
-  /// Creates the main line chart widget.
-  /// Draws extra vertical lines for each dominant frequency when not in time mode.
   Widget _buildLineChart(
     List<LineChartBarData> lineBarsData, {
     required bool isTimeXAxis,
     required bool isMicroUnits,
     required String field,
   }) {
-    // Early exit if there's no data to show
     if (lineBarsData.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    // Scale the Y-values if needed (e.g., convert raw acceleration to micro units)
     final yScaleFactor = isMicroUnits ? 1e6 : 1.0;
     lineBarsData = _scaleLineBarsData(lineBarsData, yScaleFactor);
 
-    // Calculate axis limits (min/max X/Y)
     var (minX, maxX, minY, maxY) =
         _calculateAxisLimits(lineBarsData, isTimeXAxis);
 
-    // Force minY=0 for frequency-based charts
     if (!isTimeXAxis) {
       minY = 0;
     }
 
-    // If we failed to calculate valid axis limits, return a fallback
     if (minX == null || maxX == null || minY == null || maxY == null) {
       return const Center(child: Text('No valid data to display'));
     }
 
-    // If the data is flat (single point), expand axes slightly
     if (minX == maxX) {
       minX -= 1;
       maxX += 1;
@@ -305,105 +294,126 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
       maxY += 1;
     }
 
+    final xInterval = (maxX - minX) / 4;
+    final yInterval = (maxY - minY) / 4;
+
+    final dominantFreqPoints = _buildDominantFreqPoints(
+      field: field,
+      isMicroUnits: isMicroUnits,
+    );
+    final combinedLineBarsData = [...lineBarsData, ...dominantFreqPoints];
+
     return SizedBox(
       height: 300,
-      child: LineChart(
-        LineChartData(
-          lineBarsData: lineBarsData,
-          minX: minX,
-          maxX: maxX,
-          minY: minY,
-          maxY: maxY,
-          titlesData: FlTitlesData(
-            show: true,
-            topTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 20, 16, 12),
+        child: LineChart(
+          LineChartData(
+            lineBarsData: combinedLineBarsData,
+            minX: minX,
+            maxX: maxX,
+            minY: minY,
+            maxY: maxY,
+            gridData: FlGridData(
+              show: true,
+              drawHorizontalLine: true,
+              drawVerticalLine: true,
+              horizontalInterval: yInterval,
+              verticalInterval: xInterval,
+              getDrawingHorizontalLine: (value) => FlLine(
+                color: Colors.grey.withOpacity(0.1),
+                strokeWidth: 0.5,
+              ),
+              getDrawingVerticalLine: (value) => FlLine(
+                color: Colors.grey.withOpacity(0.1),
+                strokeWidth: 0.5,
+              ),
             ),
-            rightTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
-            bottomTitles: AxisTitles(
-              axisNameWidget: Text(
-                isTimeXAxis ? 'Time' : 'Frequency (Hz)',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
+            titlesData: FlTitlesData(
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 22,
+                  interval: xInterval,
+                  getTitlesWidget: (value, meta) {
+                    if (isTimeXAxis) {
+                      final date =
+                          DateTime.fromMillisecondsSinceEpoch(value.toInt());
+                      final hh = date.hour.toString().padLeft(2, '0');
+                      final mm = date.minute.toString().padLeft(2, '0');
+                      return Transform.rotate(
+                        angle: -45 * pi / 180,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: Text('$hh:$mm',
+                              style: const TextStyle(fontSize: 10)),
+                        ),
+                      );
+                    } else {
+                      return Transform.rotate(
+                        angle: -45 * pi / 180,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: Text(_formatFrequency(value),
+                              style: const TextStyle(fontSize: 10)),
+                        ),
+                      );
+                    }
+                  },
                 ),
               ),
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 30,
-                interval: (maxX - minX) / 5,
-                getTitlesWidget: (value, meta) {
-                  if (isTimeXAxis) {
-                    final date =
-                        DateTime.fromMillisecondsSinceEpoch(value.toInt());
+              leftTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 50,
+                  interval: yInterval,
+                  getTitlesWidget: (value, meta) {
                     return Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
+                      padding: const EdgeInsets.only(right: 8.0),
                       child: Text(
-                        '${date.hour}:${date.minute.toString().padLeft(2, '0')}',
-                        style: const TextStyle(fontSize: 10),
+                        _formatYAxisLabel(value),
+                        style: const TextStyle(fontSize: 12),
+                        textAlign: TextAlign.right,
                       ),
                     );
-                  } else {
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        _formatFrequency(value),
-                        style: const TextStyle(fontSize: 10),
-                      ),
-                    );
-                  }
-                },
-              ),
-            ),
-            leftTitles: AxisTitles(
-              axisNameWidget: RotatedBox(
-                quarterTurns: 3,
-                child: Text(
-                  isTimeXAxis ? 'Value' : 'Magnitude',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  },
                 ),
               ),
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 40,
-                interval: (maxY - minY) / 5,
-                getTitlesWidget: (value, meta) {
-                  return Text(
-                    _formatYAxisLabel(value),
-                    style: const TextStyle(fontSize: 10),
-                  );
-                },
+              topTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              rightTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
               ),
             ),
-          ),
-          gridData: FlGridData(
-            show: true,
-            drawHorizontalLine: true,
-            drawVerticalLine: true,
-            horizontalInterval: (maxY - minY) / 10,
-            verticalInterval: (maxX - minX) / 10,
-          ),
-          borderData: FlBorderData(
-            show: true,
-            border: Border.all(color: Colors.grey.shade300),
-          ),
-          extraLinesData: ExtraLinesData(
-            horizontalLines: [
-              HorizontalLine(
-                y: 0,
-                color: Colors.grey.shade400,
-                strokeWidth: 1,
-                dashArray: [5, 5],
+            borderData: FlBorderData(
+              show: true,
+              border: Border.all(
+                color: Colors.black12,
+                width: 1,
               ),
-            ],
-            verticalLines: _buildDominantFreqLines(
-              isTimeXAxis: isTimeXAxis,
-              field: field,
+            ),
+            clipData: const FlClipData.all(),
+            backgroundColor: Colors.white,
+            lineTouchData: LineTouchData(
+              enabled: true,
+              touchTooltipData: LineTouchTooltipData(
+                getTooltipItems: (List<LineBarSpot> touchedSpots) {
+                  return touchedSpots.map((spot) {
+                    final xValue = isTimeXAxis
+                        ? DateTime.fromMillisecondsSinceEpoch(spot.x.toInt())
+                            .toString()
+                        : _formatFrequency(spot.x);
+                    final yValue = spot.y.toStringAsFixed(2);
+                    return LineTooltipItem(
+                      '$field\nX: $xValue\nY: $yValue',
+                      const TextStyle(color: Colors.white, fontSize: 12),
+                    );
+                  }).toList();
+                },
+                tooltipPadding: const EdgeInsets.all(8),
+                tooltipRoundedRadius: 8,
+              ),
             ),
           ),
         ),
@@ -411,32 +421,48 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     );
   }
 
-  /// Builds a list of [VerticalLine] objects for each of the field's dominant frequencies.
-  ///
-  /// Only applies if we're NOT in time mode (`!isTimeXAxis`).
-  List<VerticalLine> _buildDominantFreqLines({
-    required bool isTimeXAxis,
+  List<LineChartBarData> _buildDominantFreqPoints({
     required String field,
+    required bool isMicroUnits,
   }) {
-    final verticalLines = <VerticalLine>[];
+    final dominantFreqPoints = <LineChartBarData>[];
 
-    // Only draw vertical lines for frequency-based chart
-    if (!isTimeXAxis && widget.data.dominate_frequencies != null) {
+    if (widget.data.dominate_frequencies != null &&
+        widget.data.magnitude != null &&
+        widget.data.frequency != null) {
       final freqList = widget.data.dominate_frequencies![field] ?? [];
-      for (final freq in freqList) {
-        verticalLines.add(
-          VerticalLine(
-            x: freq,
-            color: Colors.red,
+      final magData = widget.data.magnitude![field] ?? [];
+      final freqData = widget.data.frequency![field] ?? [];
 
-            strokeWidth: 1,
-            dashArray: [5, 5], // dotted line style
-          ),
-        );
+      final yScaleFactor = isMicroUnits ? 1e6 : 1.0; // Apply scaling factor
+
+      for (final freq in freqList) {
+        final index = freqData.indexOf(freq);
+        if (index != -1 && index < magData.length) {
+          final magnitude = magData[index] * yScaleFactor; // Scale magnitude
+          dominantFreqPoints.add(
+            LineChartBarData(
+              spots: [FlSpot(freq, magnitude)],
+              isCurved: false,
+              color: Colors.red,
+              barWidth: 0,
+              dotData: FlDotData(
+                show: true,
+                getDotPainter: (spot, percent, barData, index) =>
+                    FlDotCrossPainter(
+                  size: 12,
+                  width: 2,
+                  color: Colors.red,
+                ),
+              ),
+              belowBarData: BarAreaData(show: false),
+            ),
+          );
+        }
       }
     }
 
-    return verticalLines;
+    return dominantFreqPoints;
   }
 
   List<LineChartBarData> _scaleLineBarsData(
@@ -544,8 +570,10 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
       final data = _getDataForField(field);
       if (data != null) {
         yValues = data.value;
-        xValues =
-            data.time?.map((t) => t.millisecondsSinceEpoch.toDouble()).toList();
+        xValues = data.time
+            ?.map((t) =>
+                DateTime.parse(t.toString()).millisecondsSinceEpoch.toDouble())
+            .toList();
       }
     } else {
       final freqData = widget.data.frequency?[field];
@@ -596,28 +624,4 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
         return Colors.grey;
     }
   }
-}
-
-class TrianglePainter extends CustomPainter {
-  final Color color;
-
-  TrianglePainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    final path = Path()
-      ..moveTo(size.width / 2, 0)
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..close();
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
