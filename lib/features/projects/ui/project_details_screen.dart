@@ -7,6 +7,7 @@ import 'package:pulsehub/features/ai_report/cubit/ai_report_cubit.dart';
 import 'package:pulsehub/features/ai_report/ui/ai_screen.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/ui/screens/analyse_screen.dart';
+import 'package:pulsehub/features/project_dashboard/ui/screens/control_screen.dart';
 import 'package:pulsehub/features/project_dashboard/ui/screens/monitoring_screen.dart';
 import 'package:pulsehub/features/project_dashboard/ui/screens/visualise_screen.dart';
 import 'package:pulsehub/features/projects/cubit/projects_cubit.dart';
@@ -59,6 +60,10 @@ class _ProjectDetailsScreenState extends State<ProjectDetailsScreen> {
             BlocProvider(
               create: (context) => sl<ProjectDashboardCubit>(),
               child: MonitoringScreen(projectId: project.projectId!),
+            ),
+            BlocProvider(
+              create: (context) => sl<ProjectDashboardCubit>(),
+              child: ControlScreen(project: project),
             ),
           ];
 
@@ -113,7 +118,8 @@ class HeaderIcons extends StatelessWidget {
       Icons.map_sharp,
       LucideIcons.gauge,
       LucideIcons.fileText,
-      MdiIcons.monitorEye
+      MdiIcons.monitorEye,
+      MdiIcons.wrench,
     ];
 
     return Row(
