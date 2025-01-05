@@ -72,6 +72,22 @@ class CloudHubDetailsScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              IconButton.filled(
+                icon: const Icon(Icons.arrow_back_ios_new_outlined),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                cloudHub.cloudhub.name.isNotEmpty
+                    ? cloudHub.cloudhub.name
+                    : 'CloudHub Details',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
           _buildInfoSection(
             title: 'Basic Information',
             children: [
