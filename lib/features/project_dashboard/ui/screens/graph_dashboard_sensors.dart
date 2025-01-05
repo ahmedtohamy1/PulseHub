@@ -512,25 +512,8 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
 
                     TimeDbResponseBuilder(
                       selectedFields: selectedFields,
-                      onAnalyzeSensor: (field) {
-                        final queryParams = QueryParams(
-                          measurementName: selectedMeasurement!,
-                          topic: selectedTopic!,
-                          fields: field,
-                          sensorsToAnalyze: field,
-                          windowSize: windowSize.toString(),
-                          deviationThreshold: deviationController.text,
-                          timeRangeStart: isCustomRange
-                              ? customRangeController.text
-                              : timeRange,
-                          aggregateFunc: aggregateFunction,
-                          bucket: 'CloudHub',
-                          org: 'DIC',
-                          windowPeriod: windowPeriod,
-                        );
-                        context
-                            .read<ProjectDashboardCubit>()
-                            .getTimeDb(queryParams);
+                      onAnalyzeSensor: (params) {
+                        context.read<ProjectDashboardCubit>().getTimeDb(params);
                       },
                       windowSize: windowSize.toString(),
                       deviationThreshold: deviationController.text,

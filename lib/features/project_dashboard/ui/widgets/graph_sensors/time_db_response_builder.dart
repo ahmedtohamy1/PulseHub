@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
+import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo_impl.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/time_series_chart.dart';
 
 class TimeDbResponseBuilder extends StatelessWidget {
@@ -29,12 +30,11 @@ class TimeDbResponseBuilder extends StatelessWidget {
   final String windowPeriod;
   final String? selectedMeasurement;
   final String? selectedTopic;
-  final Function(String field) onAnalyzeSensor;
+  final Function(QueryParams params) onAnalyzeSensor;
 
-  void _analyzeSensor(BuildContext context, String field) {
+  void _analyzeSensor(BuildContext context, String field, QueryParams params) {
     if (selectedMeasurement == null || selectedTopic == null) return;
-
-    onAnalyzeSensor(field);
+    onAnalyzeSensor(params);
   }
 
   @override
@@ -78,7 +78,10 @@ class TimeDbResponseBuilder extends StatelessWidget {
           return TimeSeriesChart(
             data: state.sensorDataResponse,
             selectedFields: selectedFields,
-            onAnalyze: (field) => _analyzeSensor(context, field),
+            onAnalyze: (field, params) =>
+                _analyzeSensor(context, field, params),
+            measurementName: selectedMeasurement,
+            topic: selectedTopic,
           );
         }
 
@@ -87,7 +90,10 @@ class TimeDbResponseBuilder extends StatelessWidget {
           return TimeSeriesChart(
             data: cubit.lastTimeDbResponse!,
             selectedFields: selectedFields,
-            onAnalyze: (field) => _analyzeSensor(context, field),
+            onAnalyze: (field, params) =>
+                _analyzeSensor(context, field, params),
+            measurementName: selectedMeasurement,
+            topic: selectedTopic,
           );
         }
 

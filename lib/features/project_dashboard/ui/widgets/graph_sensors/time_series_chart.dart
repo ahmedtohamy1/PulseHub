@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/timedb_response.dart';
+import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo_impl.dart';
 import 'package:share_plus/share_plus.dart';
 
 class FlDotTrianglePainter extends FlDotPainter {
@@ -84,13 +85,17 @@ class FlDotTrianglePainter extends FlDotPainter {
 class TimeSeriesChart extends StatefulWidget {
   final SensorDataResponse data;
   final List<String> selectedFields;
-  final Function(String field)? onAnalyze;
+  final Function(String field, QueryParams params)? onAnalyze;
+  final String? measurementName;
+  final String? topic;
 
   const TimeSeriesChart({
     super.key,
     required this.data,
     required this.selectedFields,
     this.onAnalyze,
+    this.measurementName,
+    this.topic,
   });
 
   @override
@@ -212,11 +217,40 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
             icon: const Icon(
               Icons.analytics_outlined,
             ),
-            onPressed: () => widget.onAnalyze!(field),
+            onPressed: () => _showAnalysisDialog(field),
             tooltip: 'Analyze Sensor',
           ),
       ],
     );
+  }
+
+  void _showAnalysisDialog(String field) async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => const AnalysisParametersDialog(
+        initialWindowPeriod: '5m',
+        initialTimeRange: '1h',
+        initialDeviation: '0.05',
+        initialAggregateFunction: 'mean',
+      ),
+    );
+
+    if (result != null && context.mounted && widget.onAnalyze != null) {
+      final params = QueryParams(
+        measurementName: widget.measurementName,
+        topic: widget.topic,
+        fields: field,
+        sensorsToAnalyze: field,
+        windowSize: '20',
+        deviationThreshold: result['deviation'],
+        timeRangeStart: result['timeRange'],
+        aggregateFunc: result['aggregateFunction'],
+        bucket: 'CloudHub',
+        org: 'DIC',
+        windowPeriod: result['windowPeriod'],
+      );
+      widget.onAnalyze!(field, params);
+    }
   }
 
   Widget _buildGraphSection(String field) {
@@ -974,5 +1008,184 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
       default:
         return Colors.grey;
     }
+  }
+}
+
+class AnalysisParametersDialog extends StatefulWidget {
+  final String initialWindowPeriod;
+  final String initialTimeRange;
+  final String initialDeviation;
+  final String initialAggregateFunction;
+
+  const AnalysisParametersDialog({
+    super.key,
+    required this.initialWindowPeriod,
+    required this.initialTimeRange,
+    required this.initialDeviation,
+    required this.initialAggregateFunction,
+  });
+
+  @override
+  State<AnalysisParametersDialog> createState() =>
+      _AnalysisParametersDialogState();
+}
+
+class _AnalysisParametersDialogState extends State<AnalysisParametersDialog> {
+  late String windowPeriod;
+  late String timeRange;
+  late String deviation;
+  late String aggregateFunction;
+  bool isCustomRange = false;
+  final customRangeController = TextEditingController();
+  late final TextEditingController deviationController;
+
+  @override
+  void initState() {
+    super.initState();
+    windowPeriod = widget.initialWindowPeriod;
+    timeRange = widget.initialTimeRange;
+    deviation = widget.initialDeviation;
+    aggregateFunction = widget.initialAggregateFunction;
+    deviationController = TextEditingController(text: widget.initialDeviation);
+  }
+
+  @override
+  void dispose() {
+    customRangeController.dispose();
+    deviationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Row(
+        children: [
+          Icon(Icons.analytics_outlined),
+          SizedBox(width: 8),
+          Text('Analysis Parameters'),
+        ],
+      ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            DropdownButtonFormField<String>(
+              value: windowPeriod,
+              decoration: const InputDecoration(
+                labelText: 'Window Period',
+                border: OutlineInputBorder(),
+              ),
+              items: const [
+                DropdownMenuItem(value: '5s', child: Text('5 seconds')),
+                DropdownMenuItem(value: '10s', child: Text('10 seconds')),
+                DropdownMenuItem(value: '1m', child: Text('1 minute')),
+                DropdownMenuItem(value: '5m', child: Text('5 minutes')),
+                DropdownMenuItem(value: '15m', child: Text('15 minutes')),
+                DropdownMenuItem(value: '30m', child: Text('30 minutes')),
+                DropdownMenuItem(value: '1h', child: Text('1 hour')),
+              ],
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => windowPeriod = value);
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              value: timeRange,
+              decoration: const InputDecoration(
+                labelText: 'Time Range',
+                border: OutlineInputBorder(),
+              ),
+              items: const [
+                DropdownMenuItem(value: '1m', child: Text('Last 1 minute')),
+                DropdownMenuItem(value: '5m', child: Text('Last 5 minutes')),
+                DropdownMenuItem(value: '15m', child: Text('Last 15 minutes')),
+                DropdownMenuItem(value: '1h', child: Text('Last 1 hour')),
+                DropdownMenuItem(value: '3h', child: Text('Last 3 hours')),
+                DropdownMenuItem(value: '6h', child: Text('Last 6 hours')),
+                DropdownMenuItem(value: '24h', child: Text('Last 24 hours')),
+                DropdownMenuItem(value: '2d', child: Text('Last 2 days')),
+                DropdownMenuItem(value: '7d', child: Text('Last 7 days')),
+                DropdownMenuItem(value: '30d', child: Text('Last 30 days')),
+                DropdownMenuItem(value: 'Custom', child: Text('Custom')),
+              ],
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    timeRange = value;
+                    isCustomRange = value == 'Custom';
+                  });
+                }
+              },
+            ),
+            if (isCustomRange) ...[
+              const SizedBox(height: 16),
+              TextField(
+                controller: customRangeController,
+                decoration: const InputDecoration(
+                  labelText: 'Custom Range',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+            TextField(
+              controller: deviationController,
+              decoration: const InputDecoration(
+                labelText: 'Deviation Threshold',
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                setState(() => deviation = value);
+              },
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              value: aggregateFunction,
+              decoration: const InputDecoration(
+                labelText: 'Aggregate Function',
+                border: OutlineInputBorder(),
+              ),
+              items: const [
+                DropdownMenuItem(value: 'mean', child: Text('Mean')),
+                DropdownMenuItem(value: 'sum', child: Text('Sum')),
+                DropdownMenuItem(value: 'max', child: Text('Maximum')),
+                DropdownMenuItem(value: 'min', child: Text('Minimum')),
+                DropdownMenuItem(value: 'median', child: Text('Median')),
+              ],
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => aggregateFunction = value);
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.of(context).pop({
+              'windowPeriod': windowPeriod,
+              'timeRange':
+                  isCustomRange ? customRangeController.text : timeRange,
+              'deviation': deviationController.text,
+              'aggregateFunction': aggregateFunction,
+              'isCustomRange': isCustomRange,
+            });
+          },
+          child: const Text('Analyze'),
+        ),
+      ],
+    );
   }
 }
