@@ -46,4 +46,6 @@ abstract class DashRepository {
       String token, int usedSensorId, int count);
   Future<Either<String, bool>> deleteUsedSensors(
       String token, int usedSensorId);
+  Future<Either<String, bool>> createUsedSensors(
+      String token, int usedSensorTypeId, int count, int monitoringId);
 }

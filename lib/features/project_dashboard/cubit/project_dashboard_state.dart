@@ -293,3 +293,23 @@ final class ProjectDashboardUpdateUsedSensorsFailure
 
   const ProjectDashboardUpdateUsedSensorsFailure(this.message);
 }
+
+final class ProjectDashboardCreateUsedSensorsLoading
+    extends ProjectDashboardState {}
+
+final class ProjectDashboardCreateUsedSensorsSuccess
+    extends ProjectDashboardState {
+  final bool success;
+
+  const ProjectDashboardCreateUsedSensorsSuccess(this.success);
+
+  @override
+  List<Object> get props => [success];
+}
+
+final class ProjectDashboardCreateUsedSensorsFailure
+    extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardCreateUsedSensorsFailure(this.message);
+}

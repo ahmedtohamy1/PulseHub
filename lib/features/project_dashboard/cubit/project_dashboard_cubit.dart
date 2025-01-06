@@ -254,4 +254,14 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
       (response) => emit(ProjectDashboardUpdateUsedSensorsSuccess(response)),
     );
   }
+
+  Future<void> createUsedSensors(int usedSensorTypeId, int count, int monitoringId) async {
+    emit(ProjectDashboardCreateUsedSensorsLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res = await _repository.createUsedSensors(token, usedSensorTypeId, count, monitoringId);
+    res.fold(
+      (failure) => emit(ProjectDashboardCreateUsedSensorsFailure(failure)),
+      (response) => emit(ProjectDashboardCreateUsedSensorsSuccess(response)),
+    );
+  }
 }

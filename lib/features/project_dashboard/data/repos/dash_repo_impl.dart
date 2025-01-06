@@ -407,6 +407,31 @@ class DashRepoImpl extends DashRepository {
       return Left('Exception occurred: $error');
     }
   }
+
+  @override
+  Future<Either<String, bool>> createUsedSensors(
+      String token, int usedSensorTypeId, int count, int monitoringId) async {
+    try {
+      final response = await myApiService.post(
+        EndPoints.getUsedSensor,
+        token: token,
+        data: {
+          "sensor_type_id": usedSensorTypeId,
+          "count": count,
+          "monitoring": monitoringId
+        },
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return const Right(true);
+      } else {
+        return Left('Failed to create used sensors: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
 }
 
 class QueryParams {
