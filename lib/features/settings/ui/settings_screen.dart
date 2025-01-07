@@ -95,10 +95,10 @@ class SettingsScreen extends StatelessWidget {
                 padding: EdgeInsets.all(20.0),
                 child: Row(
                   children: [
-                    Icon(Icons.settings, size: 30, color: Colors.grey),
+                    Icon(LucideIcons.bell, size: 30, color: Colors.grey),
                     SizedBox(width: 16),
                     Text(
-                      'Settings Placeholder',
+                      'Notifications',
                       style: TextStyle(fontSize: 16),
                     ),
                   ],
