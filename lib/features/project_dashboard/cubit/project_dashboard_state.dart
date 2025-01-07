@@ -444,3 +444,26 @@ final class ProjectDashboardDeleteCollaboratorsFailure
   @override
   List<Object> get props => [message];
 }
+
+final class ProjectDashboardCreateCollaboratorsGroupLoading
+    extends ProjectDashboardState {}
+
+final class ProjectDashboardCreateCollaboratorsGroupSuccess
+    extends ProjectDashboardState {
+  final bool response;
+
+  const ProjectDashboardCreateCollaboratorsGroupSuccess(this.response);
+
+  @override
+  List<Object> get props => [response];
+}
+
+final class ProjectDashboardCreateCollaboratorsGroupFailure
+    extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardCreateCollaboratorsGroupFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}

@@ -600,6 +600,46 @@ class DashRepoImpl extends DashRepository {
       return Left('Exception occurred: $error');
     }
   }
+
+  @override
+  Future<Either<String, bool>> createCollaboratorsGroup(
+      String token,
+      int projectId,
+      String name,
+      String description,
+      bool isAnalyzer,
+      bool isViewer,
+      bool isEditor,
+      bool isMonitor,
+      bool isManager,
+      bool isNotificationSender) async {
+    try {
+      final response = await myApiService.post(
+        EndPoints.createCollaboratorsGroup,
+        token: token,
+        data: {
+          "project": projectId,
+          "name": name,
+          "description": description,
+          "is_analyzer": isAnalyzer,
+          "is_viewer": isViewer,
+          "is_editor": isEditor,
+          "is_monitor": isMonitor,
+          "is_manager": isManager,
+          "is_notifications_sender": isNotificationSender,
+        },
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return const Right(true);
+      } else {
+        return Left('Failed to create collaborators group: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
 }
 
 class QueryParams {

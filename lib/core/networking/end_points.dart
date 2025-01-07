@@ -39,6 +39,7 @@ class EndPoints {
   static const String mediaLibrary = "/project/media-library/";
   static const String getCollaborators = "/project/groups/";
   static const String updateCollaborators = "/project/group/update/";
+  static const String createCollaboratorsGroup = "/project/group/";
 
   // imgs
   static String imageUrl(String path) => '$baseUrl$path';

@@ -297,6 +297,188 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
     );
   }
 
+  void _showCreateGroupDialog(BuildContext context) {
+    final nameController = TextEditingController();
+    final descriptionController = TextEditingController();
+    bool isViewer = false;
+    bool isAnalyzer = false;
+    bool isEditor = false;
+    bool isMonitor = false;
+    bool isManager = false;
+    bool isNotificationsSender = false;
+    bool isLoading = false;
+
+    // Capture the cubit before showing dialog
+    final cubit = context.read<ProjectDashboardCubit>();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => BlocProvider.value(
+        value: cubit,
+        child: StatefulBuilder(
+          builder: (dialogContext, setState) =>
+              BlocListener<ProjectDashboardCubit, ProjectDashboardState>(
+            listener: (context, state) {
+              if (state is ProjectDashboardCreateCollaboratorsGroupSuccess) {
+                Navigator.of(dialogContext).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Group created successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                // Refresh the collaborators list
+                cubit.getCollaborators(widget.projectId);
+              } else if (state
+                  is ProjectDashboardCreateCollaboratorsGroupFailure) {
+                setState(() => isLoading = false);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to create group: ${state.message}'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: AlertDialog(
+              title: const Text('Create Group'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Group Name',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: descriptionController,
+                      decoration: const InputDecoration(
+                        labelText: 'Description',
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Permissions',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    CheckboxListTile(
+                      title: const Text('Viewer'),
+                      value: isViewer,
+                      onChanged: isLoading
+                          ? null
+                          : (value) =>
+                              setState(() => isViewer = value ?? false),
+                    ),
+                    CheckboxListTile(
+                      title: const Text('Analyzer'),
+                      value: isAnalyzer,
+                      onChanged: isLoading
+                          ? null
+                          : (value) =>
+                              setState(() => isAnalyzer = value ?? false),
+                    ),
+                    CheckboxListTile(
+                      title: const Text('Editor'),
+                      value: isEditor,
+                      onChanged: isLoading
+                          ? null
+                          : (value) =>
+                              setState(() => isEditor = value ?? false),
+                    ),
+                    CheckboxListTile(
+                      title: const Text('Monitor'),
+                      value: isMonitor,
+                      onChanged: isLoading
+                          ? null
+                          : (value) =>
+                              setState(() => isMonitor = value ?? false),
+                    ),
+                    CheckboxListTile(
+                      title: const Text('Manager'),
+                      value: isManager,
+                      onChanged: isLoading
+                          ? null
+                          : (value) =>
+                              setState(() => isManager = value ?? false),
+                    ),
+                    CheckboxListTile(
+                      title: const Text('Notifications Sender'),
+                      value: isNotificationsSender,
+                      onChanged: isLoading
+                          ? null
+                          : (value) => setState(
+                              () => isNotificationsSender = value ?? false),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isLoading
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancel'),
+                ),
+                if (isLoading)
+                  const SizedBox(
+                    width: 80,
+                    child: Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                  )
+                else
+                  TextButton(
+                    onPressed: () {
+                      final name = nameController.text.trim();
+                      if (name.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Group name cannot be empty'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+
+                      setState(() => isLoading = true);
+                      cubit.createCollaboratorsGroup(
+                        widget.projectId,
+                        name,
+                        descriptionController.text.trim(),
+                        isAnalyzer,
+                        isViewer,
+                        isEditor,
+                        isMonitor,
+                        isManager,
+                        isNotificationsSender,
+                      );
+                    },
+                    child: const Text('Create'),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
@@ -358,9 +540,7 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
                                 ),
                           ),
                           FilledButton.icon(
-                            onPressed: () {
-                              // TODO: Implement add group functionality
-                            },
+                            onPressed: () => _showCreateGroupDialog(context),
                             icon: const Icon(Icons.add),
                             label: const Text('Add Group'),
                           ),

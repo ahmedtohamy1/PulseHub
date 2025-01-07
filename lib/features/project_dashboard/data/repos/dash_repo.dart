@@ -76,6 +76,16 @@ abstract class DashRepository {
       bool isMonitor,
       bool isManager,
       bool isNotificationSender);
-  Future<Either<String, bool>> deleteCollaborators(
-      String token, int groupId);
+  Future<Either<String, bool>> deleteCollaborators(String token, int groupId);
+  Future<Either<String, bool>> createCollaboratorsGroup(
+      String token,
+      int projectId,
+      String name,
+      String description,
+      bool isAnalyzer,
+      bool isViewer,
+      bool isEditor,
+      bool isMonitor,
+      bool isManager,
+      bool isNotificationSender);
 }
