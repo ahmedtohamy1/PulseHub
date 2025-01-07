@@ -6,6 +6,7 @@ import 'package:pulsehub/core/utils/shared_pref_helper.dart';
 import 'package:pulsehub/core/utils/shared_pref_keys.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/ai_analyze_data_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/cloudhub_model.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/get_all_users_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_collaborators_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_medial_library_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_used_sensors_response_model.dart';
@@ -39,6 +40,7 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
 
   CloudHubResponse? cloudHubResponse;
   SensorDataResponse? lastTimeDbResponse;
+  GetCollaboratorsResponseModel? cachedCollaborators;
 
   getDashDetails(int projectId) async {
     emit(ProjectDashboardDetailsLoading());
@@ -308,12 +310,17 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
   }
 
   Future<void> getCollaborators(int projectId) async {
-    emit(ProjectDashboardGetCollaboratorsLoading());
+    if (cachedCollaborators == null) {
+      emit(ProjectDashboardGetCollaboratorsLoading());
+    }
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
     final res = await _repository.getCollaborators(token, projectId);
     res.fold(
       (failure) => emit(ProjectDashboardGetCollaboratorsFailure(failure)),
-      (response) => emit(ProjectDashboardGetCollaboratorsSuccess(response)),
+      (response) {
+        cachedCollaborators = response;
+        emit(ProjectDashboardGetCollaboratorsSuccess(response));
+      },
     );
   }
 
@@ -390,11 +397,14 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
   }
 
   Future<void> addUserToCollaboratorsGroup(
-      List<int> groupIds, int userId) async {
+      List<int> groupIds, List<int> userIds) async {
     emit(ProjectDashboardAddUserToCollaboratorsGroupLoading());
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
-    final res =
-        await _repository.addUserToCollaboratorsGroup(token, groupIds, userId);
+    final res = await _repository.addUserToCollaboratorsGroup(
+      token,
+      groupIds,
+      userIds,
+    );
     res.fold(
       (failure) =>
           emit(ProjectDashboardAddUserToCollaboratorsGroupFailure(failure)),
@@ -414,6 +424,16 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
           ProjectDashboardRemoveUserFromCollaboratorsGroupFailure(failure)),
       (response) => emit(
           ProjectDashboardRemoveUserFromCollaboratorsGroupSuccess(response)),
+    );
+  }
+
+  Future<void> getAllUsers() async {
+    emit(ProjectDashboardGetAllUsersLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res = await _repository.getAllUsers(token);
+    res.fold(
+      (failure) => emit(ProjectDashboardGetAllUsersFailure(failure)),
+      (response) => emit(ProjectDashboardGetAllUsersSuccess(response)),
     );
   }
 }

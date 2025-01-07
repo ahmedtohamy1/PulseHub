@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_collaborators_response_model.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/get_all_users_response_model.dart';
 
 class CollaboratorsTab extends StatefulWidget {
   final int projectId;
@@ -421,7 +422,7 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
                                   if (groupsToAdd.isNotEmpty) {
                                     await cubit.addUserToCollaboratorsGroup(
                                       groupsToAdd,
-                                      member.userId ?? 0,
+                                      [member.userId ?? 0],
                                     );
                                   }
                                 } catch (e) {
@@ -625,6 +626,309 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
                     child: const Text('Create'),
                   ),
               ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAddCollaboratorDialog(BuildContext context, List<Group> allGroups) {
+    bool isLoading = false;
+    final selectedUsers = <User>{};
+    final selectedGroups = <int>{};
+    final searchController = TextEditingController();
+
+    // Capture the cubit before showing dialog
+    final cubit = context.read<ProjectDashboardCubit>();
+    cubit.getAllUsers();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => BlocProvider.value(
+        value: cubit,
+        child: StatefulBuilder(
+          builder: (dialogContext, setState) =>
+              BlocListener<ProjectDashboardCubit, ProjectDashboardState>(
+            listener: (context, state) {
+              if (state is ProjectDashboardAddUserToCollaboratorsGroupSuccess) {
+                Navigator.of(dialogContext).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Users added to groups successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                cubit.getCollaborators(widget.projectId);
+              } else if (state
+                  is ProjectDashboardAddUserToCollaboratorsGroupFailure) {
+                setState(() => isLoading = false);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to add users: ${state.message}'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: Dialog(
+              child: ConstrainedBox(
+                constraints:
+                    const BoxConstraints(maxWidth: 600, maxHeight: 800),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Add Collaborators',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Flexible(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Combined search field
+                              TextField(
+                                controller: searchController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Search by Name or Email',
+                                  border: OutlineInputBorder(),
+                                  prefixIcon: Icon(Icons.search),
+                                  hintText: 'Type to search...',
+                                ),
+                                onChanged: (value) {
+                                  // Trigger rebuild to filter users
+                                  setState(() {});
+                                },
+                              ),
+                              const SizedBox(height: 24),
+                              // Users list
+                              BlocBuilder<ProjectDashboardCubit,
+                                  ProjectDashboardState>(
+                                builder: (context, state) {
+                                  if (state
+                                      is ProjectDashboardGetAllUsersLoading) {
+                                    return const Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  }
+
+                                  if (state
+                                      is ProjectDashboardGetAllUsersFailure) {
+                                    return Center(
+                                      child: Text('Error: ${state.message}'),
+                                    );
+                                  }
+
+                                  if (state
+                                      is ProjectDashboardGetAllUsersSuccess) {
+                                    final users =
+                                        state.getAllResponseModel.users ?? [];
+                                    final searchTerm =
+                                        searchController.text.toLowerCase();
+                                    final filteredUsers = users.where((user) {
+                                      final fullName =
+                                          '${user.firstName ?? ''} ${user.lastName ?? ''}'
+                                              .toLowerCase();
+                                      final email =
+                                          user.email?.toLowerCase() ?? '';
+
+                                      return searchTerm.isEmpty ||
+                                          fullName.contains(searchTerm) ||
+                                          email.contains(searchTerm);
+                                    }).toList();
+
+                                    if (filteredUsers.isEmpty) {
+                                      return const Center(
+                                        child: Padding(
+                                          padding: EdgeInsets.all(16.0),
+                                          child: Text(
+                                            'No users found',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }
+
+                                    return Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text(
+                                              'Select Users',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                            Text(
+                                              '${filteredUsers.length} users found',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall,
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .outline,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                          ),
+                                          height: 200,
+                                          child: ListView.builder(
+                                            itemCount: filteredUsers.length,
+                                            itemBuilder: (context, index) {
+                                              final user = filteredUsers[index];
+                                              final isSelected =
+                                                  selectedUsers.contains(user);
+
+                                              return CheckboxListTile(
+                                                title: Text(
+                                                    '${user.firstName ?? ''} ${user.lastName ?? ''}'),
+                                                subtitle:
+                                                    Text(user.email ?? ''),
+                                                value: isSelected,
+                                                onChanged: isLoading
+                                                    ? null
+                                                    : (value) {
+                                                        setState(() {
+                                                          if (value ?? false) {
+                                                            selectedUsers
+                                                                .add(user);
+                                                          } else {
+                                                            selectedUsers
+                                                                .remove(user);
+                                                          }
+                                                        });
+                                                      },
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  }
+
+                                  return const SizedBox.shrink();
+                                },
+                              ),
+                              const SizedBox(height: 24),
+                              // Groups selection
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    'Select Groups',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${selectedGroups.length} selected',
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: allGroups.map((group) {
+                                  final isSelected =
+                                      selectedGroups.contains(group.groupId);
+                                  return FilterChip(
+                                    label: Text(group.name ?? ''),
+                                    selected: isSelected,
+                                    onSelected: isLoading
+                                        ? null
+                                        : (value) {
+                                            setState(() {
+                                              if (value) {
+                                                selectedGroups
+                                                    .add(group.groupId ?? 0);
+                                              } else {
+                                                selectedGroups
+                                                    .remove(group.groupId ?? 0);
+                                              }
+                                            });
+                                          },
+                                  );
+                                }).toList(),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: isLoading
+                                ? null
+                                : () => Navigator.of(dialogContext).pop(),
+                            child: const Text('Cancel'),
+                          ),
+                          const SizedBox(width: 8),
+                          if (isLoading)
+                            const SizedBox(
+                              width: 80,
+                              child: Center(
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                            )
+                          else
+                            FilledButton(
+                              onPressed: selectedUsers.isEmpty ||
+                                      selectedGroups.isEmpty
+                                  ? null
+                                  : () {
+                                      setState(() => isLoading = true);
+                                      cubit.addUserToCollaboratorsGroup(
+                                        selectedGroups.toList(),
+                                        selectedUsers
+                                            .map((u) => u.userId ?? 0)
+                                            .toList(),
+                                      );
+                                    },
+                              child: const Text('Add'),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -896,9 +1200,8 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
                                 ),
                           ),
                           FilledButton.icon(
-                            onPressed: () {
-                              // TODO: Implement add collaborator functionality
-                            },
+                            onPressed: () =>
+                                _showAddCollaboratorDialog(context, groups),
                             icon: const Icon(Icons.person_add),
                             label: const Text('Add Collaborator'),
                           ),

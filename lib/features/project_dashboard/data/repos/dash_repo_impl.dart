@@ -7,6 +7,7 @@ import 'package:pulsehub/core/networking/my_api.dart';
 import 'package:pulsehub/core/networking/status_code.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/ai_analyze_data_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/cloudhub_model.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/get_all_users_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_collaborators_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_medial_library_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_used_sensors_response_model.dart';
@@ -644,8 +645,7 @@ class DashRepoImpl extends DashRepository {
 
   @override
   Future<Either<String, bool>> addUserToCollaboratorsGroup(
-      String token, List<int> groupIds, int userId) async {
-    List<int> userIds = [userId];
+      String token, List<int> groupIds, List<int> userIds) async {
     try {
       final response = await myApiService.post(
         EndPoints.addUserToCollaboratorsGroup,
@@ -686,6 +686,25 @@ class DashRepoImpl extends DashRepository {
       } else {
         return Left(
             'Failed to remove user from collaborators group: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
+  Future<Either<String, GetAllResponseModel>> getAllUsers(String token) async {
+    try {
+      final response = await myApiService.get(
+        EndPoints.getAllUsers,
+        token: token,
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return Right(GetAllResponseModel.fromJson(response.data));
+      } else {
+        return Left('Failed to get all users: ${response.statusCode}');
       }
     } catch (error) {
       return Left('Exception occurred: $error');

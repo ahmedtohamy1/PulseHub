@@ -3,6 +3,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/ai_analyze_data_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/cloudhub_model.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/get_all_users_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_collaborators_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_medial_library_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_used_sensors_response_model.dart';
@@ -89,9 +90,8 @@ abstract class DashRepository {
       bool isManager,
       bool isNotificationSender);
   Future<Either<String, bool>> addUserToCollaboratorsGroup(
-      String token, List<int>  groupIds, int userId);
+      String token, List<int> groupIds, List<int> userIds);
   Future<Either<String, bool>> removeUserFromCollaboratorsGroup(
-      String token, List<int>  groupIds, int userId);
+      String token, List<int> groupIds, int userId);
+  Future<Either<String, GetAllResponseModel>> getAllUsers(String token);
 }
-
-

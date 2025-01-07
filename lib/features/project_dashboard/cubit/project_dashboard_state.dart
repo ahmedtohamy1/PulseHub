@@ -513,3 +513,23 @@ final class ProjectDashboardRemoveUserFromCollaboratorsGroupFailure
   @override
   List<Object> get props => [message];
 }
+
+final class ProjectDashboardGetAllUsersLoading extends ProjectDashboardState {}
+
+final class ProjectDashboardGetAllUsersSuccess extends ProjectDashboardState {
+  final GetAllResponseModel getAllResponseModel;
+
+  const ProjectDashboardGetAllUsersSuccess(this.getAllResponseModel);
+
+  @override
+  List<Object> get props => [getAllResponseModel];
+}
+
+final class ProjectDashboardGetAllUsersFailure extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardGetAllUsersFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
