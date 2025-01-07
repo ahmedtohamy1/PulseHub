@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/utils/shared_pref_helper.dart';
 import 'package:pulsehub/core/utils/shared_pref_keys.dart';
+import 'package:pulsehub/features/settings/data/models/get_notifications_response_model.dart';
 import 'package:pulsehub/features/settings/data/models/manage_session_response.dart';
 import 'package:pulsehub/features/settings/data/models/user_details.dart';
 import 'package:pulsehub/features/settings/data/repos/settings_repo.dart';
@@ -81,6 +82,16 @@ class SettingsCubit extends Cubit<SettingsState> {
     res.fold(
       (failure) => emit(ResetPasswordError(failure)),
       (message) => emit(ResetPasswordSuccess()),
+    );
+  }
+
+  Future<void> getNotifications() async {
+    emit(GetNotificationsLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res = await _repository.getNotifications(token);
+    res.fold(
+      (failure) => emit(GetNotificationsError(failure)),
+      (response) => emit(GetNotificationsSuccess(response)),
     );
   }
 }

@@ -11,6 +11,7 @@ class Routes {
   static const String homePage = '/home';
   static const String settingsPage = '/settings';
   static const String profilePage = '/settings/profile';
+  static const String notificationsPage = '/settings/notifications';
   static const String sessionManagerPage = '/settings/session-manager';
   static const String projectDetailsPage = '/home/project-details/';
   static const String explorePage = '/explore';

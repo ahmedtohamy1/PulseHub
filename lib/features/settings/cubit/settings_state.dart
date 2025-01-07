@@ -70,3 +70,15 @@ final class ResetPasswordError extends SettingsState {
   final String message;
   const ResetPasswordError(this.message);
 }
+
+final class GetNotificationsLoading extends SettingsState {}
+
+final class GetNotificationsSuccess extends SettingsState {
+  final GetNotificationResponseModel response;
+  const GetNotificationsSuccess(this.response);
+}
+
+final class GetNotificationsError extends SettingsState {
+  final String message;
+  const GetNotificationsError(this.message);
+}

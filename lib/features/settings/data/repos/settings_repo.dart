@@ -1,4 +1,5 @@
 import 'package:fpdart/fpdart.dart';
+import 'package:pulsehub/features/settings/data/models/get_notifications_response_model.dart';
 import 'package:pulsehub/features/settings/data/models/manage_session_response.dart';
 import 'package:pulsehub/features/settings/data/models/user_details.dart';
 
@@ -17,4 +18,6 @@ abstract class SettingsRepository {
   Future logout(String refreshToken, String token);
   Future resetPassword(String password, String newPassword,
       String confirmPassword, String token);
+  Future<Either<String, GetNotificationResponseModel>> getNotifications(
+      String token);
 }

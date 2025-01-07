@@ -15,6 +15,7 @@ import 'package:pulsehub/features/projects/ui/home_screen.dart';
 import 'package:pulsehub/features/projects/ui/project_details_screen.dart';
 
 import 'package:pulsehub/features/settings/cubit/settings_cubit.dart';
+import 'package:pulsehub/features/settings/ui/notifications_screen.dart';
 import 'package:pulsehub/features/settings/ui/profile_screen.dart';
 import 'package:pulsehub/features/settings/ui/session_screen.dart';
 import 'package:pulsehub/features/settings/ui/settings_screen.dart';
@@ -108,6 +109,16 @@ final router = GoRouter(
                     create: (context) => sl<SettingsCubit>(),
                     child: const SessionScreen(),
                   ),
+                ),
+                GoRoute(
+                  path: 'notifications',
+                  builder: (context, state) {
+                    return BlocProvider(
+                      create: (context) =>
+                          sl<SettingsCubit>()..getNotifications(),
+                      child: const NotificationsScreen(),
+                    );
+                  },
                 ),
               ],
             ),

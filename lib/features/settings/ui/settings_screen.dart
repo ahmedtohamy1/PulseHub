@@ -85,19 +85,24 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 3),
-          const Card(
-            elevation: 0,
-            child: Padding(
-              padding: EdgeInsets.all(20.0),
-              child: Row(
-                children: [
-                  Icon(Icons.settings, size: 30, color: Colors.grey),
-                  SizedBox(width: 16),
-                  Text(
-                    'Settings Placeholder',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ],
+          GestureDetector(
+            onTap: () {
+              context.push(Routes.notificationsPage);
+            },
+            child: const Card(
+              elevation: 0,
+              child: Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Row(
+                  children: [
+                    Icon(Icons.settings, size: 30, color: Colors.grey),
+                    SizedBox(width: 16),
+                    Text(
+                      'Settings Placeholder',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
