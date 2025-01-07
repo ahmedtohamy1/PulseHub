@@ -313,3 +313,26 @@ final class ProjectDashboardCreateUsedSensorsFailure
 
   const ProjectDashboardCreateUsedSensorsFailure(this.message);
 }
+
+final class ProjectDashboardCreateMediaLibraryFileLoading
+    extends ProjectDashboardState {}
+
+final class ProjectDashboardCreateMediaLibraryFileSuccess
+    extends ProjectDashboardState {
+  final bool success;
+
+  const ProjectDashboardCreateMediaLibraryFileSuccess(this.success);
+
+  @override
+  List<Object> get props => [success];
+}
+
+final class ProjectDashboardCreateMediaLibraryFileFailure
+    extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardCreateMediaLibraryFileFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}

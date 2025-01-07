@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:pulsehub/core/utils/shared_pref_helper.dart';
+import 'package:pulsehub/core/utils/shared_pref_keys.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_model.dart'
     as monitoring;
@@ -7,6 +10,7 @@ import 'package:pulsehub/features/project_dashboard/data/models/project_update_r
 import 'package:pulsehub/features/project_dashboard/ui/widgets/used_sensors_table.dart';
 import 'package:pulsehub/features/projects/cubit/projects_cubit.dart';
 import 'package:pulsehub/features/projects/data/models/project_response.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ControlScreen extends StatefulWidget {
   final Project project;
@@ -93,7 +97,7 @@ class _ControlScreenState extends State<ControlScreen>
                 },
               ),
               CustomisationTab(project: widget.project),
-              const Center(child: Text('Media Library content coming soon')),
+              MediaLibraryTab(projectId: widget.project.projectId!),
               const Center(child: Text('Collaborators content coming soon')),
             ],
           ),
@@ -770,6 +774,189 @@ class _CustomisationTabState extends State<CustomisationTab> {
         }
 
         return const Center(child: Text('No data available'));
+      },
+    );
+  }
+}
+
+class MediaLibraryTab extends StatelessWidget {
+  final int projectId;
+
+  const MediaLibraryTab({super.key, required this.projectId});
+
+  Future<void> _showUploadDialog(BuildContext context) async {
+    PlatformFile? selectedFile;
+    final descriptionController = TextEditingController();
+    final fileNameController = TextEditingController();
+
+    Future<void> pickFile(StateSetter setState) async {
+      final result = await FilePicker.platform.pickFiles();
+      if (result != null && result.files.isNotEmpty) {
+        setState(() {
+          selectedFile = result.files.first;
+          // Extract file name without extension
+          final fileName = selectedFile!.name;
+          final lastDot = fileName.lastIndexOf('.');
+          if (lastDot != -1) {
+            fileNameController.text = fileName.substring(0, lastDot);
+          } else {
+            fileNameController.text = fileName;
+          }
+        });
+      }
+    }
+
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    if (!context.mounted) return;
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => BlocProvider.value(
+        value: context.read<ProjectDashboardCubit>(),
+        child: StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            title: const Text('Upload File'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (selectedFile == null)
+                  FilledButton.icon(
+                    onPressed: () => pickFile(setState),
+                    icon: const Icon(Icons.attach_file),
+                    label: const Text('Choose File'),
+                  )
+                else
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                    'Type: ${selectedFile!.extension ?? 'Unknown'}'),
+                                const SizedBox(height: 8),
+                                TextField(
+                                  controller: fileNameController,
+                                  decoration: const InputDecoration(
+                                    labelText: 'File Name',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            onPressed: () => pickFile(setState),
+                            icon: const Icon(Icons.refresh),
+                            tooltip: 'Pick Different File',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: descriptionController,
+                        decoration: const InputDecoration(
+                          labelText: 'Description (optional)',
+                          border: OutlineInputBorder(),
+                        ),
+                        maxLines: 3,
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              if (selectedFile != null)
+                FilledButton(
+                  onPressed: () async {
+                    Navigator.of(context).pop();
+                    try {
+                      if (context.mounted) {
+                        // Combine the edited name with the original extension
+                        final extension = selectedFile!.name.split('.').last;
+                        final newFileName =
+                            '${fileNameController.text}.$extension';
+
+                        await context
+                            .read<ProjectDashboardCubit>()
+                            .createMediaLibraryFile(
+                              token,
+                              projectId,
+                              newFileName,
+                              descriptionController.text,
+                              selectedFile!,
+                            );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error uploading file: $e')),
+                        );
+                      }
+                    }
+                  },
+                  child: const Text('Upload'),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<ProjectDashboardCubit, ProjectDashboardState>(
+      listener: (context, state) {
+        if (state is ProjectDashboardCreateMediaLibraryFileSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('File uploaded successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else if (state is ProjectDashboardCreateMediaLibraryFileFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to upload file: ${state.message}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      builder: (context, state) {
+        return Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Media Library',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                if (state is ProjectDashboardCreateMediaLibraryFileLoading)
+                  const CircularProgressIndicator()
+                else
+                  ElevatedButton.icon(
+                    onPressed: () => _showUploadDialog(context),
+                    icon: const Icon(Icons.upload_file),
+                    label: const Text('Upload File'),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // Add your media library content here
+          ],
+        );
       },
     );
   }

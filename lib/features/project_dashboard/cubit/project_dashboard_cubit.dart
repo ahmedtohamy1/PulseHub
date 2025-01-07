@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/utils/shared_pref_helper.dart';
@@ -255,13 +256,32 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
     );
   }
 
-  Future<void> createUsedSensors(int usedSensorTypeId, int count, int monitoringId) async {
+  Future<void> createUsedSensors(
+      int usedSensorTypeId, int count, int monitoringId) async {
     emit(ProjectDashboardCreateUsedSensorsLoading());
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
-    final res = await _repository.createUsedSensors(token, usedSensorTypeId, count, monitoringId);
+    final res = await _repository.createUsedSensors(
+        token, usedSensorTypeId, count, monitoringId);
     res.fold(
       (failure) => emit(ProjectDashboardCreateUsedSensorsFailure(failure)),
       (response) => emit(ProjectDashboardCreateUsedSensorsSuccess(response)),
+    );
+  }
+
+  Future<void> createMediaLibraryFile(String token, int projectId,
+      String fileName, String fileDescription, PlatformFile file) async {
+    emit(ProjectDashboardCreateMediaLibraryFileLoading());
+    final res = await _repository.createMediaLibraryFile(
+      token,
+      projectId,
+      fileName,
+      fileDescription,
+      file,
+    );
+    res.fold(
+      (failure) => emit(ProjectDashboardCreateMediaLibraryFileFailure(failure)),
+      (response) =>
+          emit(ProjectDashboardCreateMediaLibraryFileSuccess(response)),
     );
   }
 }

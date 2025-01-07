@@ -1,5 +1,7 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:injectable/injectable.dart';
+import 'package:dio/dio.dart';
 import 'package:pulsehub/core/networking/end_points.dart';
 import 'package:pulsehub/core/networking/my_api.dart';
 import 'package:pulsehub/core/networking/status_code.dart';
@@ -427,6 +429,44 @@ class DashRepoImpl extends DashRepository {
         return const Right(true);
       } else {
         return Left('Failed to create used sensors: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
+  Future<Either<String, bool>> createMediaLibraryFile(
+      String token,
+      int projectId,
+      String fileName,
+      String fileDescription,
+      PlatformFile file) async {
+    try {
+      // Create form data
+      final formData = FormData.fromMap({
+        'project': projectId,
+        'file_name': fileName,
+        'file_description': fileDescription,
+        'file': await MultipartFile.fromFile(
+          file.path!,
+          filename: file.name,
+        ),
+      });
+
+      final response = await myApiService.post(
+        EndPoints.mediaLibrary,
+        token: token,
+        data: formData,
+      );
+
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return const Right(true);
+      } else {
+        return Left(
+            'Failed to create media library file: ${response.statusCode}');
       }
     } catch (error) {
       return Left('Exception occurred: $error');
