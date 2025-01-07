@@ -1,7 +1,11 @@
+import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
+import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/networking/app_interceptors.dart';
 import 'package:pulsehub/core/networking/end_points.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 /// A service class for making HTTP requests using the Dio package.
 ///
@@ -20,6 +24,7 @@ import 'package:pulsehub/core/networking/end_points.dart';
 @LazySingleton()
 class MyApi {
   final Dio _dio;
+  late final CookieJar _cookieJar;
 
   /// Constructs a new instance of [MyApi].
   ///
@@ -27,11 +32,30 @@ class MyApi {
   /// perform HTTP requests. The Dio instance is configured with a base URL,
   /// default headers, and interceptors during initialization.
   MyApi(this._dio) {
+    _initializeCookieJar();
+  }
+
+  Future<void> _initializeCookieJar() async {
+    final appDocDir = await getApplicationDocumentsDirectory();
+    final cookiePath = path.join(appDocDir.path, '.cookies');
+
+    _cookieJar = PersistCookieJar(
+      ignoreExpires: true,
+      storage: FileStorage(cookiePath),
+    );
+
     // Configure Dio with default options
     _dio.options.baseUrl = EndPoints.apiUrl;
     _dio.options.headers['Content-Type'] = 'application/json';
+    _dio.options.headers['Accept'] = 'application/json';
 
-    // Add the AppInterceptors to the Dio instance
+    // Enable cookie handling
+    _dio.options.validateStatus = (status) => true;
+    _dio.options.followRedirects = true;
+    _dio.options.receiveDataWhenStatusError = true;
+
+    // Add cookie manager interceptor before app interceptors
+    _dio.interceptors.add(CookieManager(_cookieJar));
     _dio.interceptors.add(AppIntercepters());
   }
 
@@ -69,6 +93,9 @@ class MyApi {
       final dioOptions = Options(
         headers: headers,
         extra: {'withCredentials': options?['withCredentials'] ?? false},
+        validateStatus: (status) => true,
+        followRedirects: true,
+        receiveDataWhenStatusError: true,
       );
 
       final response = await _dio.get(
@@ -135,6 +162,9 @@ class MyApi {
             ? Headers.jsonContentType
             : Headers.formUrlEncodedContentType,
         extra: {'withCredentials': options?['withCredentials'] ?? false},
+        validateStatus: (status) => true,
+        followRedirects: true,
+        receiveDataWhenStatusError: true,
       );
 
       final response = await _dio.post(
@@ -143,6 +173,13 @@ class MyApi {
         queryParameters: queryParameters,
         options: dioOptions,
       );
+
+      // Log cookies for debugging
+      final cookies = await _cookieJar
+          .loadForRequest(Uri.parse(EndPoints.apiUrl + endpoint));
+      print(
+          'Cookies after request: ${cookies.map((c) => '${c.name}=${c.value}').join('; ')}');
+
       return response;
     } on DioException catch (e) {
       _handleDioException(e);
@@ -344,6 +381,7 @@ class MyApi {
   Map<String, String> _generateHeaders(String? token) {
     final headers = <String, String>{
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
     };
     if (token != null) {
       headers['Authorization'] = 'Bearer $token';
@@ -366,5 +404,10 @@ class MyApi {
       }
     }
     throw Exception('DioError: Failed to make request: ${e.message}');
+  }
+
+  // Method to clear cookies if needed
+  Future<void> clearCookies() async {
+    await _cookieJar.deleteAll();
   }
 }
