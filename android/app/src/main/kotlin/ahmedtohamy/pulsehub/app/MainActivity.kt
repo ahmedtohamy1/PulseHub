@@ -1,4 +1,4 @@
-package com.example.pulsehub
+package ahmedtohamy.pulsehub.app
 
 import io.flutter.embedding.android.FlutterActivity
 
