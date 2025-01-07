@@ -358,51 +358,54 @@ class DashboardDetailsheaderIcons extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          IconButton.filled(
-            icon: const Icon(Icons.arrow_back_ios_new_outlined),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            IconButton.filled(
+              icon: const Icon(Icons.arrow_back_ios_new_outlined),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            const SizedBox(width: 8),
+            Text(
               widget.dashboard.name,
-              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
-          ),
-          BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
-            builder: (context, state) {
-              final isDownloadEnabled =
-                  state is ProjectDashboardDetailsTimeDbSuccess;
+            const SizedBox(width: 16),
+            BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
+              builder: (context, state) {
+                final isDownloadEnabled =
+                    state is ProjectDashboardDetailsTimeDbSuccess;
 
-              return Tooltip(
-                message: 'Import Dashboard Data',
-                child: IconButton.filled(
-                  icon: const Icon(Icons.download),
-                  onPressed: isDownloadEnabled
-                      ? () {
-                          final data = (state).sensorDataResponse;
-                          _exportCsv(data);
-                        }
-                      : null,
-                  color: isDownloadEnabled ? null : Colors.grey,
-                ),
-              );
-            },
-          ),
-          Tooltip(
-            message: 'Export Dashboard Data',
-            child: IconButton.filled(
-              icon: const Icon(Icons.upload),
-              onPressed: () => _importCsv(context),
+                return Tooltip(
+                  message: 'Export Dashboard Data',
+                  child: IconButton.filled(
+                    icon: const Icon(Icons.download),
+                    onPressed: isDownloadEnabled
+                        ? () {
+                            final data = (state).sensorDataResponse;
+                            _exportCsv(data);
+                          }
+                        : null,
+                    color: isDownloadEnabled ? null : Colors.grey,
+                  ),
+                );
+              },
             ),
-          ),
-        ],
+            const SizedBox(width: 8),
+            Tooltip(
+              message: 'Import Dashboard Data',
+              child: IconButton.filled(
+                icon: const Icon(Icons.upload),
+                onPressed: () => _importCsv(context),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
