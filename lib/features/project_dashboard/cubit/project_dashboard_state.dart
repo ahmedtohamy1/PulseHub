@@ -377,3 +377,23 @@ final class ProjectDashboardDeleteMediaLibraryFailure
 
   const ProjectDashboardDeleteMediaLibraryFailure(this.message);
 }
+
+final class ProjectDashboardGetCollaboratorsLoading
+    extends ProjectDashboardState {}
+
+final class ProjectDashboardGetCollaboratorsSuccess
+    extends ProjectDashboardState {
+  final GetCollaboratorsResponseModel getCollaboratorsResponseModel;
+
+  const ProjectDashboardGetCollaboratorsSuccess(this.getCollaboratorsResponseModel);
+
+  @override
+  List<Object> get props => [getCollaboratorsResponseModel];
+}
+
+final class ProjectDashboardGetCollaboratorsFailure
+    extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardGetCollaboratorsFailure(this.message);
+}   

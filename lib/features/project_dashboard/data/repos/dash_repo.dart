@@ -3,6 +3,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/ai_analyze_data_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/cloudhub_model.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/get_collaborators_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_medial_library_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_used_sensors_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_details.dart';
@@ -61,5 +62,8 @@ abstract class DashRepository {
       String token, int projectId);
   Future<Either<String, bool>> deleteMediaLibrary(
       String token, int mediaLibraryId);
+  Future<Either<String, GetCollaboratorsResponseModel>> getCollaborators(
+      String token, int projectId);
 }
+
 

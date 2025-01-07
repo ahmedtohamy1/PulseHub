@@ -7,6 +7,7 @@ import 'package:pulsehub/core/networking/my_api.dart';
 import 'package:pulsehub/core/networking/status_code.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/ai_analyze_data_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/cloudhub_model.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/get_collaborators_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_medial_library_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_used_sensors_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_details.dart';
@@ -510,6 +511,27 @@ class DashRepoImpl extends DashRepository {
         return const Right(true);
       } else {
         return Left('Failed to delete media library: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
+  Future<Either<String, GetCollaboratorsResponseModel>> getCollaborators(
+      String token, int projectId) async {
+    try {
+      final response = await myApiService.get(
+        EndPoints.getCollaborators,
+        token: token,
+        queryParameters: {'id': projectId},
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return Right(GetCollaboratorsResponseModel.fromJson(response.data));
+      } else {
+        return Left('Failed to get collaborators: ${response.statusCode}');
       }
     } catch (error) {
       return Left('Exception occurred: $error');

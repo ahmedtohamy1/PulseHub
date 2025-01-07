@@ -6,6 +6,7 @@ import 'package:pulsehub/core/utils/shared_pref_helper.dart';
 import 'package:pulsehub/core/utils/shared_pref_keys.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/ai_analyze_data_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/cloudhub_model.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/get_collaborators_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_medial_library_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_used_sensors_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_details.dart';
@@ -303,6 +304,16 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
     res.fold(
       (failure) => emit(ProjectDashboardDeleteMediaLibraryFailure(failure)),
       (response) => emit(ProjectDashboardDeleteMediaLibrarySuccess(response)),
+    );
+  }
+
+  Future<void> getCollaborators(int projectId) async {
+    emit(ProjectDashboardGetCollaboratorsLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res = await _repository.getCollaborators(token, projectId);
+    res.fold(
+      (failure) => emit(ProjectDashboardGetCollaboratorsFailure(failure)),
+      (response) => emit(ProjectDashboardGetCollaboratorsSuccess(response)),
     );
   }
 }
