@@ -59,4 +59,7 @@ abstract class DashRepository {
       PlatformFile file);
   Future<Either<String, GetMediaLibrariesResponseModel>> getMediaLibrary(
       String token, int projectId);
+  Future<Either<String, bool>> deleteMediaLibrary(
+      String token, int mediaLibraryId);
 }
+

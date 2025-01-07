@@ -295,4 +295,14 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
       (response) => emit(ProjectDashboardGetMediaLibrarySuccess(response)),
     );
   }
+
+  Future<void> deleteMediaLibrary(int mediaLibraryId) async {
+    emit(ProjectDashboardDeleteMediaLibraryLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res = await _repository.deleteMediaLibrary(token, mediaLibraryId);
+    res.fold(
+      (failure) => emit(ProjectDashboardDeleteMediaLibraryFailure(failure)),
+      (response) => emit(ProjectDashboardDeleteMediaLibrarySuccess(response)),
+    );
+  }
 }

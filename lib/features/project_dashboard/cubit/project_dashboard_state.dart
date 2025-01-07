@@ -357,3 +357,23 @@ final class ProjectDashboardGetMediaLibraryFailure
   @override
   List<Object> get props => [message];
 }
+
+final class ProjectDashboardDeleteMediaLibraryLoading
+    extends ProjectDashboardState {}
+
+final class ProjectDashboardDeleteMediaLibrarySuccess
+    extends ProjectDashboardState {
+  final bool success;
+
+  const ProjectDashboardDeleteMediaLibrarySuccess(this.success);
+
+  @override
+  List<Object> get props => [success];
+}
+
+final class ProjectDashboardDeleteMediaLibraryFailure
+    extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardDeleteMediaLibraryFailure(this.message);
+}

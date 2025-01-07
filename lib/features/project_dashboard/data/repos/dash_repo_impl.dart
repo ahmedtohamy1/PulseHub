@@ -448,7 +448,7 @@ class DashRepoImpl extends DashRepository {
       final formData = FormData.fromMap({
         'project': projectId,
         'file_name': fileName,
-        'file_description': fileDescription,
+        'description': fileDescription,
         'file': await MultipartFile.fromFile(
           file.path!,
           filename: file.name,
@@ -489,6 +489,27 @@ class DashRepoImpl extends DashRepository {
         return Right(GetMediaLibrariesResponseModel.fromJson(response.data));
       } else {
         return Left('Failed to get media library: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
+  Future<Either<String, bool>> deleteMediaLibrary(
+      String token, int mediaLibraryId) async {
+    try {
+      final response = await myApiService.delete(
+        EndPoints.mediaLibrary,
+        token: token,
+        queryParameters: {'id': mediaLibraryId},
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return const Right(true);
+      } else {
+        return Left('Failed to delete media library: ${response.statusCode}');
       }
     } catch (error) {
       return Left('Exception occurred: $error');
