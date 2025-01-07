@@ -122,36 +122,40 @@ class HeaderIcons extends StatelessWidget {
       MdiIcons.wrench,
     ];
 
-    return Row(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Tooltip(
-            message: _getTooltipMessage(0),
-            child: IconButton.filled(
-              onPressed: () => Navigator.of(context).pop(),
-              icon: Icon(
-                iconData[0],
-              ),
-            ),
-          ),
-        ),
-        const Spacer(),
-        for (int i = 1; i < iconData.length; i++)
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5.0),
+            padding: const EdgeInsets.all(8.0),
             child: Tooltip(
-              message: _getTooltipMessage(i),
-              child: InkWell(
-                onTap: () => onIconTap(i),
-                child: CircleIcon(
-                  icon: iconData[i],
-                  isActive: activeIconIndex == i,
+              message: _getTooltipMessage(0),
+              child: IconButton.filled(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: Icon(
+                  iconData[0],
                 ),
               ),
             ),
           ),
-      ],
+          const SizedBox(
+              width: 8), // Add spacing between the back button and icons
+          for (int i = 1; i < iconData.length; i++)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 5.0),
+              child: Tooltip(
+                message: _getTooltipMessage(i),
+                child: InkWell(
+                  onTap: () => onIconTap(i),
+                  child: CircleIcon(
+                    icon: iconData[i],
+                    isActive: activeIconIndex == i,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -167,6 +171,10 @@ class HeaderIcons extends StatelessWidget {
         return 'Speed';
       case 4:
         return 'File Content';
+      case 5:
+        return 'Monitoring';
+      case 6:
+        return 'Control';
       default:
         return '';
     }
