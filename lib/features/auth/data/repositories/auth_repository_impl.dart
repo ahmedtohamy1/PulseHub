@@ -26,6 +26,13 @@ class AuthRepositoryImpl implements AuthRepository {
           'email': email,
           'password': password,
         },
+        options: {
+          'headers': {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          'withCredentials': true,
+        },
       );
 
       if (response.statusCode == StatusCode.created ||
@@ -38,6 +45,25 @@ class AuthRepositoryImpl implements AuthRepository {
           UserManager().setUser(User.fromJson(json['user']));
           await SharedPrefHelper.setSecuredString(
               SharedPrefKeys.token, json['access']);
+
+          // Store cookies from response only on successful login
+          final cookies = response.headers['set-cookie'];
+          if (cookies != null && cookies is List) {
+            final cookieList = List<String>.from(cookies);
+            await SharedPrefHelper.cookieSave(cookieList);
+          }
+
+          // Store CSRF token if present
+          final csrfTokenHeader = response.headers['x-csrftoken'];
+          if (csrfTokenHeader != null) {
+            final csrfToken = csrfTokenHeader is List
+                ? csrfTokenHeader.first
+                : csrfTokenHeader.toString();
+            if (csrfToken.isNotEmpty) {
+              await SharedPrefHelper.setSecuredString(
+                  SharedPrefKeys.csrfToken, csrfToken);
+            }
+          }
 
           return Right(LoginResponseModel.fromJson(json));
         } else if (json['otp_verified'] == false &&
@@ -62,6 +88,13 @@ class AuthRepositoryImpl implements AuthRepository {
         EndPoints.sendPasswordResetCode,
         queryParameters: {
           'email': email,
+        },
+        options: {
+          'headers': {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          'withCredentials': true,
         },
       );
 
@@ -94,6 +127,13 @@ class AuthRepositoryImpl implements AuthRepository {
           'new_password': password,
           'confirm_new_password': confirmPassword,
         },
+        options: {
+          'headers': {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          'withCredentials': true,
+        },
       );
 
       if (response.statusCode == StatusCode.created ||
@@ -124,6 +164,13 @@ class AuthRepositoryImpl implements AuthRepository {
           "otp_access": otpAccess,
           "remember_me": remeberMe,
         },
+        options: {
+          'headers': {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          'withCredentials': true,
+        },
       );
 
       if (response.statusCode == StatusCode.created ||
@@ -134,6 +181,26 @@ class AuthRepositoryImpl implements AuthRepository {
               SharedPrefKeys.token, json['access']);
           await SharedPrefHelper.setSecuredString(
               SharedPrefKeys.refreshToken, json['refresh']);
+
+          // Store cookies from response only on successful OTP verification
+          final cookies = response.headers['set-cookie'];
+          if (cookies != null && cookies is List) {
+            final cookieList = List<String>.from(cookies);
+            await SharedPrefHelper.cookieSave(cookieList);
+          }
+
+          // Store CSRF token if present
+          final csrfTokenHeader = response.headers['x-csrftoken'];
+          if (csrfTokenHeader != null) {
+            final csrfToken = csrfTokenHeader is List
+                ? csrfTokenHeader.first
+                : csrfTokenHeader.toString();
+            if (csrfToken.isNotEmpty) {
+              await SharedPrefHelper.setSecuredString(
+                  SharedPrefKeys.csrfToken, csrfToken);
+            }
+          }
+
           return Right(OtpVerify.fromJson(json));
         } else {
           return const Left(

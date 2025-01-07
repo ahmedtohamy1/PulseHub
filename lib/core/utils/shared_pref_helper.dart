@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pulsehub/core/utils/shared_pref_keys.dart';
 
 class SharedPrefHelper {
   // Private constructor to prevent instantiation
@@ -85,5 +86,15 @@ class SharedPrefHelper {
   static Future<void> clearAllSecuredData() async {
     debugPrint('SharedPrefHelper: Clearing all secured data');
     await _secureStorage.deleteAll();
+  }
+
+  static Future<void> cookieSave(List<String> cookies) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(SharedPrefKeys.cookies, cookies.join('; '));
+  }
+
+  static Future<void> removeSecuredString(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(key);
   }
 }

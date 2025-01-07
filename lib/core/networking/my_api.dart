@@ -19,20 +19,68 @@ import 'package:pulsehub/core/networking/end_points.dart';
 /// ```
 @LazySingleton()
 class MyApi {
-  final Dio dio;
+  final Dio _dio;
 
   /// Constructs a new instance of [MyApi].
   ///
-  /// The [dio] parameter is an instance of the Dio client, which is used to
+  /// The [_dio] parameter is an instance of the Dio client, which is used to
   /// perform HTTP requests. The Dio instance is configured with a base URL,
   /// default headers, and interceptors during initialization.
-  MyApi(this.dio) {
+  MyApi(this._dio) {
     // Configure Dio with default options
-    dio.options.baseUrl = EndPoints.apiUrl;
-    dio.options.headers['Content-Type'] = 'application/json';
+    _dio.options.baseUrl = EndPoints.apiUrl;
+    _dio.options.headers['Content-Type'] = 'application/json';
 
     // Add the AppInterceptors to the Dio instance
-    dio.interceptors.add(AppIntercepters());
+    _dio.interceptors.add(AppIntercepters());
+  }
+
+  /// Sends a GET request to the specified [endpoint].
+  ///
+  /// The [queryParameters] parameter is optional and can be used to include
+  /// query parameters in the request URL.
+  ///
+  /// The [options] parameter is optional and can be used to include additional
+  /// options such as headers and withCredentials.
+  ///
+  /// Throws an exception if the request fails. The exception includes details
+  /// about the error, such as the status code and error message.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// final response = await myApi.get(
+  ///   '/endpoint',
+  ///   queryParameters: {'key': 'value'},
+  ///   options: {'headers': {'Authorization': 'Bearer auth_token'}},
+  /// );
+  /// ```
+  Future<Response> get(
+    String endpoint, {
+    Map<String, dynamic>? queryParameters,
+    String? token,
+    Map<String, dynamic>? options,
+  }) async {
+    try {
+      final headers = _generateHeaders(token);
+      if (options?['headers'] != null) {
+        headers.addAll(options!['headers']);
+      }
+
+      final dioOptions = Options(
+        headers: headers,
+        extra: {'withCredentials': options?['withCredentials'] ?? false},
+      );
+
+      final response = await _dio.get(
+        endpoint,
+        queryParameters: queryParameters,
+        options: dioOptions,
+      );
+      return response;
+    } on DioException catch (e) {
+      _handleDioException(e);
+      rethrow;
+    }
   }
 
   /// Sends a POST request to the specified [endpoint].
@@ -60,81 +108,45 @@ class MyApi {
   /// ```
   Future<Response> post(
     String endpoint, {
-    dynamic data, // Accept either Map, FormData, or raw data
+    dynamic data,
     String? token,
     Map<String, dynamic>? queryParameters,
     bool noBody = false,
-    bool encodeAsJson = false, // Flag for JSON encoding
+    bool encodeAsJson = false,
+    Map<String, dynamic>? options,
   }) async {
     try {
-      // Generate request headers
       final headers = _generateHeaders(token);
+      if (options?['headers'] != null) {
+        headers.addAll(options!['headers']);
+      }
 
-      // Handle requests with no body
       final requestData = noBody
           ? null
-          : data is FormData // Check if data is already FormData
-              ? data // Use the existing FormData
+          : data is FormData
+              ? data
               : encodeAsJson
-                  ? data // Use raw data for JSON encoding
-                  : FormData.fromMap(data); // Convert to FormData if it's a Map
+                  ? data
+                  : FormData.fromMap(data);
 
-      final response = await dio.post(
+      final dioOptions = Options(
+        headers: headers,
+        contentType: encodeAsJson
+            ? Headers.jsonContentType
+            : Headers.formUrlEncodedContentType,
+        extra: {'withCredentials': options?['withCredentials'] ?? false},
+      );
+
+      final response = await _dio.post(
         endpoint,
         data: requestData,
         queryParameters: queryParameters,
-        options: Options(
-          headers: headers,
-          contentType: encodeAsJson
-              ? Headers.jsonContentType
-              : Headers.formUrlEncodedContentType,
-        ),
+        options: dioOptions,
       );
-
       return response;
     } on DioException catch (e) {
       _handleDioException(e);
-      rethrow; // Let the caller handle the exception if necessary
-    }
-  }
-
-  /// Sends a GET request to the specified [endpoint].
-  ///
-  /// The [queryParameters] parameter is optional and can be used to include
-  /// query parameters in the request URL.
-  ///
-  /// The [token] parameter is optional and can be used to include an
-  /// authorization token in the request headers.
-  ///
-  /// Throws an exception if the request fails. The exception includes details
-  /// about the error, such as the status code and error message.
-  ///
-  /// Example usage:
-  /// ```dart
-  /// final response = await myApi.get(
-  ///   '/endpoint',
-  ///   queryParameters: {'key': 'value'},
-  ///   token: 'auth_token',
-  /// );
-  /// ```
-  Future<Response> get(
-    String endpoint, {
-    Map<String, dynamic>? queryParameters,
-    String? token,
-  }) async {
-    try {
-      final headers = _generateHeaders(token);
-
-      final response = await dio.get(
-        endpoint,
-        queryParameters: queryParameters,
-        options: Options(headers: headers),
-      );
-
-      return response;
-    } on DioException catch (e) {
-      _handleDioException(e);
-      rethrow; // Let the caller handle the exception if necessary
+      rethrow;
     }
   }
 
@@ -163,41 +175,45 @@ class MyApi {
   /// ```
   Future<Response> put(
     String endpoint, {
-    dynamic data, // Accept either Map, FormData, or raw data
+    dynamic data,
     String? token,
     Map<String, dynamic>? queryParameters,
     bool noBody = false,
-    bool encodeAsJson = false, // Flag for JSON encoding
+    bool encodeAsJson = false,
+    Map<String, dynamic>? options,
   }) async {
     try {
-      // Generate request headers
       final headers = _generateHeaders(token);
+      if (options?['headers'] != null) {
+        headers.addAll(options!['headers']);
+      }
 
-      // Handle requests with no body
       final requestData = noBody
           ? null
-          : data is FormData // Check if data is already FormData
-              ? data // Use the existing FormData
+          : data is FormData
+              ? data
               : encodeAsJson
-                  ? data // Use raw data for JSON encoding
-                  : FormData.fromMap(data); // Convert to FormData if it's a Map
+                  ? data
+                  : FormData.fromMap(data);
 
-      final response = await dio.put(
+      final dioOptions = Options(
+        headers: headers,
+        contentType: encodeAsJson
+            ? Headers.jsonContentType
+            : Headers.formUrlEncodedContentType,
+        extra: {'withCredentials': options?['withCredentials'] ?? false},
+      );
+
+      final response = await _dio.put(
         endpoint,
         data: requestData,
         queryParameters: queryParameters,
-        options: Options(
-          headers: headers,
-          contentType: encodeAsJson
-              ? Headers.jsonContentType
-              : Headers.formUrlEncodedContentType,
-        ),
+        options: dioOptions,
       );
-
       return response;
     } on DioException catch (e) {
       _handleDioException(e);
-      rethrow; // Let the caller handle the exception if necessary
+      rethrow;
     }
   }
 
@@ -226,41 +242,45 @@ class MyApi {
   /// ```
   Future<Response> patch(
     String endpoint, {
-    dynamic data, // Accept either Map, FormData, or raw data
+    dynamic data,
     String? token,
     Map<String, dynamic>? queryParameters,
     bool noBody = false,
-    bool encodeAsJson = false, // Flag for JSON encoding
+    bool encodeAsJson = false,
+    Map<String, dynamic>? options,
   }) async {
     try {
-      // Generate request headers
       final headers = _generateHeaders(token);
+      if (options?['headers'] != null) {
+        headers.addAll(options!['headers']);
+      }
 
-      // Handle requests with no body
       final requestData = noBody
           ? null
-          : data is FormData // Check if data is already FormData
-              ? data // Use the existing FormData
+          : data is FormData
+              ? data
               : encodeAsJson
-                  ? data // Use raw data for JSON encoding
-                  : FormData.fromMap(data); // Convert to FormData if it's a Map
+                  ? data
+                  : FormData.fromMap(data);
 
-      final response = await dio.patch(
+      final dioOptions = Options(
+        headers: headers,
+        contentType: encodeAsJson
+            ? Headers.jsonContentType
+            : Headers.formUrlEncodedContentType,
+        extra: {'withCredentials': options?['withCredentials'] ?? false},
+      );
+
+      final response = await _dio.patch(
         endpoint,
         data: requestData,
         queryParameters: queryParameters,
-        options: Options(
-          headers: headers,
-          contentType: encodeAsJson
-              ? Headers.jsonContentType
-              : Headers.formUrlEncodedContentType,
-        ),
+        options: dioOptions,
       );
-
       return response;
     } on DioException catch (e) {
       _handleDioException(e);
-      rethrow; // Let the caller handle the exception if necessary
+      rethrow;
     }
   }
 
@@ -285,22 +305,32 @@ class MyApi {
   /// ```
   Future<Response> delete(
     String endpoint, {
-    Map<String, dynamic>? queryParameters,
+    dynamic data,
     String? token,
+    Map<String, dynamic>? queryParameters,
+    Map<String, dynamic>? options,
   }) async {
     try {
       final headers = _generateHeaders(token);
+      if (options?['headers'] != null) {
+        headers.addAll(options!['headers']);
+      }
 
-      final response = await dio.delete(
-        endpoint,
-        queryParameters: queryParameters,
-        options: Options(headers: headers),
+      final dioOptions = Options(
+        headers: headers,
+        extra: {'withCredentials': options?['withCredentials'] ?? false},
       );
 
+      final response = await _dio.delete(
+        endpoint,
+        data: data,
+        queryParameters: queryParameters,
+        options: dioOptions,
+      );
       return response;
     } on DioException catch (e) {
       _handleDioException(e);
-      rethrow; // Let the caller handle the exception if necessary
+      rethrow;
     }
   }
 
