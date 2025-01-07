@@ -135,7 +135,7 @@ class _MediaLibraryTabState extends State<MediaLibraryTab> {
                           ),
                         ),
                         onChanged: (value) =>
-                            fileName = value + '.${selectedFile!.extension}',
+                            fileName = '$value.${selectedFile!.extension}',
                         controller: TextEditingController(
                           text: selectedFile!.name
                               .replaceAll('.${selectedFile!.extension}', ''),
@@ -352,168 +352,165 @@ class _MediaLibraryTabState extends State<MediaLibraryTab> {
 
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12.0),
-                            child: Card(
-                              clipBehavior: Clip.antiAlias,
-                              elevation: 2,
-                              child: InkWell(
-                                onTap: () {
-                                  if (file.fileUrl != null) {
-                                    _downloadFile(file.fileUrl!);
-                                  }
-                                },
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      width: 120,
-                                      height: 120,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primaryContainer
-                                          .withOpacity(0.1),
-                                      child: isImage && file.fileUrl != null
-                                          ? Image.network(
-                                              file.fileUrl!,
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (context, error,
-                                                      stackTrace) =>
-                                                  const Center(
-                                                      child: Icon(Icons.error)),
-                                            )
-                                          : Center(
-                                              child: Icon(
-                                                _getFileIcon(
-                                                    file.fileName ?? ''),
-                                                size: 48,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .primary,
+                            child: GestureDetector(
+                              onTap: () {
+                                if (file.fileUrl != null) {
+                                  _downloadFile(file.fileUrl!);
+                                }
+                              },
+                              child: Card(
+                                clipBehavior: Clip.antiAlias,
+                                elevation: 2,
+                                child: InkWell(
+                                  onTap: () {
+                                    if (file.fileUrl != null) {
+                                      _downloadFile(file.fileUrl!);
+                                    }
+                                  },
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        width: 120,
+                                        height: 120,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primaryContainer
+                                            .withOpacity(0.1),
+                                        child: isImage && file.fileUrl != null
+                                            ? Image.network(
+                                                file.fileUrl!,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error,
+                                                        stackTrace) =>
+                                                    const Center(
+                                                        child:
+                                                            Icon(Icons.error)),
+                                              )
+                                            : Center(
+                                                child: Icon(
+                                                  _getFileIcon(
+                                                      file.fileName ?? ''),
+                                                  size: 48,
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .primary,
+                                                ),
                                               ),
-                                            ),
-                                    ),
-                                    Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(16.0),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              file.fileName ?? 'Unnamed file',
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 16,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              _formatDate(file.createdAt),
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall,
-                                            ),
-                                            if (file.description != null) ...[
-                                              const SizedBox(height: 12),
+                                      ),
+                                      Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(16.0),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
                                               Text(
-                                                file.description.toString(),
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodyMedium,
-                                                maxLines: 2,
+                                                file.fileName ?? 'Unnamed file',
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16,
+                                                ),
+                                                maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
                                               ),
-                                            ],
-                                            const SizedBox(height: 16),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.end,
-                                              children: [
-                                                FilledButton.tonalIcon(
-                                                  onPressed: () {
-                                                    if (file.fileUrl != null) {
-                                                      _downloadFile(
-                                                          file.fileUrl!);
-                                                    }
-                                                  },
-                                                  icon: const Icon(
-                                                      Icons.download,
-                                                      size: 18),
-                                                  label: const Text('Download'),
-                                                ),
-                                                const SizedBox(width: 8),
-                                                IconButton(
-                                                  style: IconButton.styleFrom(
-                                                    backgroundColor:
-                                                        Theme.of(context)
-                                                            .colorScheme
-                                                            .errorContainer,
-                                                    foregroundColor:
-                                                        Theme.of(context)
-                                                            .colorScheme
-                                                            .error,
-                                                    minimumSize:
-                                                        const Size(40, 40),
-                                                  ),
-                                                  onPressed: () {
-                                                    showDialog(
-                                                      context: context,
-                                                      builder: (context) =>
-                                                          AlertDialog(
-                                                        title: const Text(
-                                                            'Delete File'),
-                                                        content: Text(
-                                                            'Are you sure you want to delete "${file.fileName}"?'),
-                                                        actions: [
-                                                          TextButton(
-                                                            onPressed: () =>
-                                                                Navigator.pop(
-                                                                    context),
-                                                            child: const Text(
-                                                                'Cancel'),
-                                                          ),
-                                                          FilledButton(
-                                                            style: FilledButton
-                                                                .styleFrom(
-                                                              backgroundColor:
-                                                                  Theme.of(
-                                                                          context)
-                                                                      .colorScheme
-                                                                      .error,
-                                                            ),
-                                                            onPressed: () {
-                                                              if (file.mediaLibraryId !=
-                                                                  null) {
-                                                                context
-                                                                    .read<
-                                                                        ProjectDashboardCubit>()
-                                                                    .deleteMediaLibrary(
-                                                                        file.mediaLibraryId!);
-                                                                Navigator.pop(
-                                                                    context);
-                                                              }
-                                                            },
-                                                            child: const Text(
-                                                                'Delete'),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    );
-                                                  },
-                                                  icon: const Icon(
-                                                      Icons.delete_outline,
-                                                      size: 18),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                _formatDate(file.createdAt),
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall,
+                                              ),
+                                              if (file.description != null) ...[
+                                                const SizedBox(height: 12),
+                                                Text(
+                                                  file.description.toString(),
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyMedium,
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                 ),
                                               ],
-                                            ),
-                                          ],
+                                              const SizedBox(height: 16),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
+                                                children: [
+                                                  IconButton(
+                                                    style: IconButton.styleFrom(
+                                                      backgroundColor:
+                                                          Theme.of(context)
+                                                              .colorScheme
+                                                              .errorContainer,
+                                                      foregroundColor:
+                                                          Theme.of(context)
+                                                              .colorScheme
+                                                              .error,
+                                                      minimumSize:
+                                                          const Size(40, 40),
+                                                    ),
+                                                    onPressed: () {
+                                                      showDialog(
+                                                        context: context,
+                                                        builder: (context) =>
+                                                            AlertDialog(
+                                                          title: const Text(
+                                                              'Delete File'),
+                                                          content: Text(
+                                                              'Are you sure you want to delete "${file.fileName}"?'),
+                                                          actions: [
+                                                            TextButton(
+                                                              onPressed: () =>
+                                                                  Navigator.pop(
+                                                                      context),
+                                                              child: const Text(
+                                                                  'Cancel'),
+                                                            ),
+                                                            FilledButton(
+                                                              style: FilledButton
+                                                                  .styleFrom(
+                                                                backgroundColor:
+                                                                    Theme.of(
+                                                                            context)
+                                                                        .colorScheme
+                                                                        .error,
+                                                              ),
+                                                              onPressed: () {
+                                                                if (file.mediaLibraryId !=
+                                                                    null) {
+                                                                  context
+                                                                      .read<
+                                                                          ProjectDashboardCubit>()
+                                                                      .deleteMediaLibrary(
+                                                                          file.mediaLibraryId!);
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                }
+                                                              },
+                                                              child: const Text(
+                                                                  'Delete'),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      );
+                                                    },
+                                                    icon: const Icon(
+                                                        Icons.delete_outline,
+                                                        size: 18),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),

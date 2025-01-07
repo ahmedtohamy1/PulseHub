@@ -291,12 +291,15 @@ class _SensorDetailsScreenState extends State<SensorDetailsScreen>
     messagesCubit.getTicketMessages(ticket.ticketId ?? 0);
 
     // Controller for the message input
-    final TextEditingController messageController = TextEditingController();
+    final messageController = TextEditingController();
 
     showDialog(
       context: context,
-      builder: (dialogContext) => BlocProvider(
-        create: (context) => messagesCubit,
+      builder: (dialogContext) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: context.read<ProjectDashboardCubit>()),
+          BlocProvider(create: (context) => messagesCubit),
+        ],
         child: BlocListener<TicketMessagesCubit, TicketMessagesState>(
           listener: (context, state) {
             if (state is CreateTicketMessageSuccess) {
