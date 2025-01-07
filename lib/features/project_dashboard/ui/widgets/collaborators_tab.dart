@@ -956,9 +956,145 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
                                         ),
                                       ),
                                       IconButton(
-                                        icon: const Icon(Icons.delete),
+                                        icon: Icon(
+                                          Icons.delete,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .error,
+                                        ),
                                         onPressed: () {
-                                          // TODO: Implement delete functionality
+                                          // Capture the cubit before showing dialog
+                                          final cubit = context
+                                              .read<ProjectDashboardCubit>();
+
+                                          // Get all groups that this user is a member of
+                                          final userGroups = groups
+                                              .where((group) =>
+                                                  group.members?.any((m) =>
+                                                      m.userId ==
+                                                      member.userId) ??
+                                                  false)
+                                              .map(
+                                                  (group) => group.groupId ?? 0)
+                                              .toList();
+
+                                          if (userGroups.isEmpty) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                    'User is not a member of any groups'),
+                                                backgroundColor: Colors.orange,
+                                              ),
+                                            );
+                                            return;
+                                          }
+
+                                          showDialog(
+                                            context: context,
+                                            builder: (dialogContext) =>
+                                                BlocProvider.value(
+                                              value: cubit,
+                                              child: StatefulBuilder(
+                                                builder: (context, setState) {
+                                                  bool isLoading = false;
+
+                                                  return BlocListener<
+                                                      ProjectDashboardCubit,
+                                                      ProjectDashboardState>(
+                                                    listener: (context, state) {
+                                                      if (state
+                                                          is ProjectDashboardRemoveUserFromCollaboratorsGroupSuccess) {
+                                                        Navigator.of(
+                                                                dialogContext)
+                                                            .pop();
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                          const SnackBar(
+                                                            content: Text(
+                                                                'User removed from all groups successfully'),
+                                                            backgroundColor:
+                                                                Colors.green,
+                                                          ),
+                                                        );
+                                                        cubit.getCollaborators(
+                                                            widget.projectId);
+                                                      } else if (state
+                                                          is ProjectDashboardRemoveUserFromCollaboratorsGroupFailure) {
+                                                        setState(() =>
+                                                            isLoading = false);
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                          SnackBar(
+                                                            content: Text(
+                                                                'Failed to remove user: ${state.message}'),
+                                                            backgroundColor:
+                                                                Colors.red,
+                                                          ),
+                                                        );
+                                                      }
+                                                    },
+                                                    child: AlertDialog(
+                                                      title: const Text(
+                                                          'Remove User'),
+                                                      content: Text(
+                                                          'Are you sure you want to remove "${member.firstName} ${member.lastName}" from all groups?'),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed: isLoading
+                                                              ? null
+                                                              : () => Navigator.of(
+                                                                      dialogContext)
+                                                                  .pop(),
+                                                          child: const Text(
+                                                              'Cancel'),
+                                                        ),
+                                                        if (isLoading)
+                                                          const SizedBox(
+                                                            width: 80,
+                                                            child: Center(
+                                                              child: SizedBox(
+                                                                width: 20,
+                                                                height: 20,
+                                                                child: CircularProgressIndicator(
+                                                                    strokeWidth:
+                                                                        2),
+                                                              ),
+                                                            ),
+                                                          )
+                                                        else
+                                                          TextButton(
+                                                            onPressed: () {
+                                                              setState(() =>
+                                                                  isLoading =
+                                                                      true);
+                                                              cubit
+                                                                  .removeUserFromCollaboratorsGroup(
+                                                                userGroups,
+                                                                member.userId ??
+                                                                    0,
+                                                              );
+                                                            },
+                                                            style: TextButton
+                                                                .styleFrom(
+                                                              foregroundColor:
+                                                                  Theme.of(
+                                                                          context)
+                                                                      .colorScheme
+                                                                      .error,
+                                                            ),
+                                                            child: const Text(
+                                                                'Remove'),
+                                                          ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          );
                                         },
                                       ),
                                     ],
