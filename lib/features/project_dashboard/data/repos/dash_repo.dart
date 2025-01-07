@@ -3,6 +3,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/ai_analyze_data_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/cloudhub_model.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/get_medial_library_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_used_sensors_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_details.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_model.dart';
@@ -56,4 +57,6 @@ abstract class DashRepository {
       String fileName,
       String fileDescription,
       PlatformFile file);
+  Future<Either<String, GetMediaLibrariesResponseModel>> getMediaLibrary(
+      String token, int projectId);
 }

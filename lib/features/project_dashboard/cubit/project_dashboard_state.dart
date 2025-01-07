@@ -336,3 +336,24 @@ final class ProjectDashboardCreateMediaLibraryFileFailure
   @override
   List<Object> get props => [message];
 }
+
+final class ProjectDashboardGetMediaLibraryLoading extends ProjectDashboardState {}
+
+final class ProjectDashboardGetMediaLibrarySuccess extends ProjectDashboardState {
+  final GetMediaLibrariesResponseModel getMediaLibrariesResponseModel;
+
+      const ProjectDashboardGetMediaLibrarySuccess(this.getMediaLibrariesResponseModel);
+
+  @override
+  List<Object> get props => [getMediaLibrariesResponseModel];
+}
+
+final class ProjectDashboardGetMediaLibraryFailure
+    extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardGetMediaLibraryFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
