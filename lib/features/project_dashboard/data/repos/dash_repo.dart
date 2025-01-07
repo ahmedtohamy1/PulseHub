@@ -64,6 +64,18 @@ abstract class DashRepository {
       String token, int mediaLibraryId);
   Future<Either<String, GetCollaboratorsResponseModel>> getCollaborators(
       String token, int projectId);
+  Future<Either<String, bool>> updateCollaborators(
+      String token,
+      int groupId,
+      int projectId,
+      String name,
+      String description,
+      bool isAnalyzer,
+      bool isViewer,
+      bool isEditor,
+      bool isMonitor,
+      bool isManager,
+      bool isNotificationSender);
+  Future<Either<String, bool>> deleteCollaborators(
+      String token, int groupId);
 }
-
-

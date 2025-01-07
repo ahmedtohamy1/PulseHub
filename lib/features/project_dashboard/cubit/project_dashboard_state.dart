@@ -337,12 +337,15 @@ final class ProjectDashboardCreateMediaLibraryFileFailure
   List<Object> get props => [message];
 }
 
-final class ProjectDashboardGetMediaLibraryLoading extends ProjectDashboardState {}
+final class ProjectDashboardGetMediaLibraryLoading
+    extends ProjectDashboardState {}
 
-final class ProjectDashboardGetMediaLibrarySuccess extends ProjectDashboardState {
+final class ProjectDashboardGetMediaLibrarySuccess
+    extends ProjectDashboardState {
   final GetMediaLibrariesResponseModel getMediaLibrariesResponseModel;
 
-      const ProjectDashboardGetMediaLibrarySuccess(this.getMediaLibrariesResponseModel);
+  const ProjectDashboardGetMediaLibrarySuccess(
+      this.getMediaLibrariesResponseModel);
 
   @override
   List<Object> get props => [getMediaLibrariesResponseModel];
@@ -385,7 +388,8 @@ final class ProjectDashboardGetCollaboratorsSuccess
     extends ProjectDashboardState {
   final GetCollaboratorsResponseModel getCollaboratorsResponseModel;
 
-  const ProjectDashboardGetCollaboratorsSuccess(this.getCollaboratorsResponseModel);
+  const ProjectDashboardGetCollaboratorsSuccess(
+      this.getCollaboratorsResponseModel);
 
   @override
   List<Object> get props => [getCollaboratorsResponseModel];
@@ -396,4 +400,47 @@ final class ProjectDashboardGetCollaboratorsFailure
   final String message;
 
   const ProjectDashboardGetCollaboratorsFailure(this.message);
-}   
+}
+
+final class ProjectDashboardUpdateCollaboratorsLoading
+    extends ProjectDashboardState {}
+
+final class ProjectDashboardUpdateCollaboratorsSuccess
+    extends ProjectDashboardState {
+  final bool success;
+
+  const ProjectDashboardUpdateCollaboratorsSuccess(this.success);
+
+  @override
+  List<Object> get props => [success];
+}
+
+final class ProjectDashboardUpdateCollaboratorsFailure
+    extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardUpdateCollaboratorsFailure(this.message);
+}
+
+final class ProjectDashboardDeleteCollaboratorsLoading
+    extends ProjectDashboardState {}
+
+final class ProjectDashboardDeleteCollaboratorsSuccess
+    extends ProjectDashboardState {
+  final bool response;
+
+  const ProjectDashboardDeleteCollaboratorsSuccess(this.response);
+
+  @override
+  List<Object> get props => [response];
+}
+
+final class ProjectDashboardDeleteCollaboratorsFailure
+    extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardDeleteCollaboratorsFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}

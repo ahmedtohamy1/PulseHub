@@ -316,4 +316,45 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
       (response) => emit(ProjectDashboardGetCollaboratorsSuccess(response)),
     );
   }
+
+  Future<void> updateCollaboratorsGroup(
+      int groupId,
+      int projectId,
+      String name,
+      String description,
+      bool isAnalyzer,
+      bool isViewer,
+      bool isEditor,
+      bool isMonitor,
+      bool isManager,
+      bool isNotificationSender) async {
+    emit(ProjectDashboardUpdateCollaboratorsLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res = await _repository.updateCollaborators(
+        token,
+        groupId,
+        projectId,
+        name,
+        description,
+        isAnalyzer,
+        isViewer,
+        isEditor,
+        isMonitor,
+        isManager,
+        isNotificationSender);
+    res.fold(
+      (failure) => emit(ProjectDashboardUpdateCollaboratorsFailure(failure)),
+      (response) => emit(ProjectDashboardUpdateCollaboratorsSuccess(response)),
+    );
+  }
+
+  Future<void> deleteCollaboratorsGroup(int groupId) async {
+    emit(ProjectDashboardDeleteCollaboratorsLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res = await _repository.deleteCollaborators(token, groupId);
+    res.fold(
+      (failure) => emit(ProjectDashboardDeleteCollaboratorsFailure(failure)),
+      (response) => emit(ProjectDashboardDeleteCollaboratorsSuccess(response)),
+    );
+  }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/get_collaborators_response_model.dart';
 
 class CollaboratorsTab extends StatefulWidget {
   final int projectId;
@@ -21,6 +22,281 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
     context.read<ProjectDashboardCubit>().getCollaborators(widget.projectId);
   }
 
+  void _showEditGroupDialog(BuildContext context, Group group) {
+    final nameController = TextEditingController(text: group.name);
+    bool isViewer = group.isViewer ?? false;
+    bool isAnalyzer = group.isAnalyzer ?? false;
+    bool isEditor = group.isEditor ?? false;
+    bool isMonitor = group.isMonitor ?? false;
+    bool isManager = group.isManager ?? false;
+    bool isNotificationsSender = group.isNotificationsSender ?? false;
+    bool isLoading = false;
+
+    // Capture the cubit before showing dialog
+    final cubit = context.read<ProjectDashboardCubit>();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => BlocProvider.value(
+        value: cubit,
+        child: StatefulBuilder(
+          builder: (dialogContext, setState) =>
+              BlocListener<ProjectDashboardCubit, ProjectDashboardState>(
+            listener: (context, state) {
+              if (state is ProjectDashboardUpdateCollaboratorsSuccess) {
+                Navigator.of(dialogContext).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Group updated successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                // Refresh the collaborators list
+                cubit.getCollaborators(widget.projectId);
+              } else if (state is ProjectDashboardUpdateCollaboratorsFailure) {
+                setState(() => isLoading = false);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to update group: ${state.message}'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: AlertDialog(
+              title: const Text('Edit Group'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Group Name',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Permissions',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    CheckboxListTile(
+                      title: const Text('Viewer'),
+                      value: isViewer,
+                      onChanged: isLoading
+                          ? null
+                          : (value) =>
+                              setState(() => isViewer = value ?? false),
+                    ),
+                    CheckboxListTile(
+                      title: const Text('Analyzer'),
+                      value: isAnalyzer,
+                      onChanged: isLoading
+                          ? null
+                          : (value) =>
+                              setState(() => isAnalyzer = value ?? false),
+                    ),
+                    CheckboxListTile(
+                      title: const Text('Editor'),
+                      value: isEditor,
+                      onChanged: isLoading
+                          ? null
+                          : (value) =>
+                              setState(() => isEditor = value ?? false),
+                    ),
+                    CheckboxListTile(
+                      title: const Text('Monitor'),
+                      value: isMonitor,
+                      onChanged: isLoading
+                          ? null
+                          : (value) =>
+                              setState(() => isMonitor = value ?? false),
+                    ),
+                    CheckboxListTile(
+                      title: const Text('Manager'),
+                      value: isManager,
+                      onChanged: isLoading
+                          ? null
+                          : (value) =>
+                              setState(() => isManager = value ?? false),
+                    ),
+                    CheckboxListTile(
+                      title: const Text('Notifications Sender'),
+                      value: isNotificationsSender,
+                      onChanged: isLoading
+                          ? null
+                          : (value) => setState(
+                              () => isNotificationsSender = value ?? false),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isLoading
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Close'),
+                ),
+                if (isLoading)
+                  const SizedBox(
+                    width: 80,
+                    child: Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                  )
+                else
+                  TextButton(
+                    onPressed: () {
+                      final name = nameController.text.trim();
+                      if (name.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Group name cannot be empty'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+
+                      setState(() => isLoading = true);
+                      cubit.updateCollaboratorsGroup(
+                        group.groupId ?? 0,
+                        widget.projectId,
+                        name,
+                        group.description ?? '',
+                        isAnalyzer,
+                        isViewer,
+                        isEditor,
+                        isMonitor,
+                        isManager,
+                        isNotificationsSender,
+                      );
+                    },
+                    child: const Text('Save'),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showEditCollaboratorDialog(
+      BuildContext context, Member member, List<Group> allGroups) {
+    final nameController = TextEditingController(
+        text: '${member.firstName ?? ''} ${member.lastName ?? ''}');
+    final emailController = TextEditingController(text: member.email ?? '');
+    final titleController = TextEditingController(text: member.title ?? '');
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Collaborator Details',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextField(
+                          controller: nameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Name',
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: emailController,
+                          decoration: const InputDecoration(
+                            labelText: 'Email',
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: titleController,
+                          decoration: const InputDecoration(
+                            labelText: 'Title',
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        const Text(
+                          'Assigned Groups',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        ...allGroups.map((group) {
+                          final isAssigned = group.members
+                                  ?.any((m) => m.userId == member.userId) ??
+                              false;
+                          return CheckboxListTile(
+                            title: Text(group.name ?? ''),
+                            value: isAssigned,
+                            onChanged: (value) {
+                              // TODO: Implement group assignment functionality
+                            },
+                          );
+                        }).toList(),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Close'),
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Save'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
@@ -38,26 +314,35 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
           final allMembers =
               groups.expand((group) => group.members ?? []).toList();
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Groups Table
-                Container(
-                  padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 5,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+          return BlocListener<ProjectDashboardCubit, ProjectDashboardState>(
+            listener: (context, state) {
+              if (state is ProjectDashboardDeleteCollaboratorsSuccess) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Group deleted successfully'),
+                    backgroundColor: Colors.green,
                   ),
-                  child: Column(
+                );
+                // Refresh the collaborators list
+                context
+                    .read<ProjectDashboardCubit>()
+                    .getCollaborators(widget.projectId);
+              } else if (state is ProjectDashboardDeleteCollaboratorsFailure) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to delete group: ${state.message}'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Groups Table
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
@@ -120,14 +405,125 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
                                     children: [
                                       IconButton(
                                         icon: const Icon(Icons.edit),
-                                        onPressed: () {
-                                          // TODO: Implement edit functionality
-                                        },
+                                        onPressed: () => _showEditGroupDialog(
+                                            context, group),
                                       ),
                                       IconButton(
-                                        icon: const Icon(Icons.delete),
+                                        icon: Icon(
+                                          Icons.delete,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .error,
+                                        ),
                                         onPressed: () {
-                                          // TODO: Implement delete functionality
+                                          // Capture the cubit before showing dialog
+                                          final cubit = context
+                                              .read<ProjectDashboardCubit>();
+
+                                          showDialog(
+                                            context: context,
+                                            builder: (dialogContext) =>
+                                                BlocProvider.value(
+                                              value: cubit,
+                                              child: StatefulBuilder(
+                                                  builder: (context, setState) {
+                                                bool isLoading = false;
+
+                                                return BlocListener<
+                                                    ProjectDashboardCubit,
+                                                    ProjectDashboardState>(
+                                                  listener: (context, state) {
+                                                    if (state
+                                                        is ProjectDashboardDeleteCollaboratorsSuccess) {
+                                                      Navigator.of(
+                                                              dialogContext)
+                                                          .pop();
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
+                                                        const SnackBar(
+                                                          content: Text(
+                                                              'Group deleted successfully'),
+                                                          backgroundColor:
+                                                              Colors.green,
+                                                        ),
+                                                      );
+                                                      cubit.getCollaborators(
+                                                          widget.projectId);
+                                                    } else if (state
+                                                        is ProjectDashboardDeleteCollaboratorsFailure) {
+                                                      setState(() =>
+                                                          isLoading = false);
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
+                                                        SnackBar(
+                                                          content: Text(
+                                                              'Failed to delete group: ${state.message}'),
+                                                          backgroundColor:
+                                                              Colors.red,
+                                                        ),
+                                                      );
+                                                      cubit.getCollaborators(
+                                                          widget.projectId);
+                                                    }
+                                                  },
+                                                  child: AlertDialog(
+                                                    title: const Text(
+                                                        'Delete Group'),
+                                                    content: Text(
+                                                        'Are you sure you want to delete the group "${group.name}"?'),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: isLoading
+                                                            ? null
+                                                            : () => Navigator.of(
+                                                                    dialogContext)
+                                                                .pop(),
+                                                        child: const Text(
+                                                            'Cancel'),
+                                                      ),
+                                                      if (isLoading)
+                                                        const SizedBox(
+                                                          width: 80,
+                                                          child: Center(
+                                                            child: SizedBox(
+                                                              width: 20,
+                                                              height: 20,
+                                                              child:
+                                                                  CircularProgressIndicator(
+                                                                      strokeWidth:
+                                                                          2),
+                                                            ),
+                                                          ),
+                                                        )
+                                                      else
+                                                        TextButton(
+                                                          onPressed: () {
+                                                            setState(() =>
+                                                                isLoading =
+                                                                    true);
+                                                            cubit.deleteCollaboratorsGroup(
+                                                                group.groupId ??
+                                                                    0);
+                                                          },
+                                                          style: TextButton
+                                                              .styleFrom(
+                                                            foregroundColor:
+                                                                Theme.of(
+                                                                        context)
+                                                                    .colorScheme
+                                                                    .error,
+                                                          ),
+                                                          child: const Text(
+                                                              'Delete'),
+                                                        ),
+                                                    ],
+                                                  ),
+                                                );
+                                              }),
+                                            ),
+                                          );
                                         },
                                       ),
                                     ],
@@ -140,23 +536,9 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 24),
-                // Collaborators Table
-                Container(
-                  padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 5,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
+                  const SizedBox(height: 24),
+                  // Collaborators Table
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
@@ -224,9 +606,12 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
                                     children: [
                                       IconButton(
                                         icon: const Icon(Icons.edit),
-                                        onPressed: () {
-                                          // TODO: Implement edit functionality
-                                        },
+                                        onPressed: () =>
+                                            _showEditCollaboratorDialog(
+                                          context,
+                                          member,
+                                          groups,
+                                        ),
                                       ),
                                       IconButton(
                                         icon: const Icon(Icons.delete),
@@ -244,8 +629,8 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
                       ),
                     ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         }

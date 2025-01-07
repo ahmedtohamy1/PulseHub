@@ -537,6 +537,69 @@ class DashRepoImpl extends DashRepository {
       return Left('Exception occurred: $error');
     }
   }
+
+  @override
+  Future<Either<String, bool>> updateCollaborators(
+      String token,
+      int groupId,
+      int projectId,
+      String name,
+      String description,
+      bool isAnalyzer,
+      bool isViewer,
+      bool isEditor,
+      bool isMonitor,
+      bool isManager,
+      bool isNotificationSender) async {
+    try {
+      final response = await myApiService.post(
+        EndPoints.updateCollaborators,
+        token: token,
+        queryParameters: {'id': groupId},
+        data: {
+          "project": projectId,
+          "name": name,
+          "description": description,
+          "is_analyzer": isAnalyzer,
+          "is_viewer": isViewer,
+          "is_editor": isEditor,
+          "is_monitor": isMonitor,
+          "is_manager": isManager,
+          "is_notifications_sender": isNotificationSender,
+        },
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return const Right(true);
+      } else {
+        return Left('Failed to update collaborators: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
+  Future<Either<String, bool>> deleteCollaborators(
+      String token, int groupId) async {
+    try {
+      final response = await myApiService.delete(
+        EndPoints.updateCollaborators,
+        token: token,
+        queryParameters: {'id': groupId},
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return const Right(true);
+      } else {
+        return Left('Failed to delete collaborators: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
 }
 
 class QueryParams {
