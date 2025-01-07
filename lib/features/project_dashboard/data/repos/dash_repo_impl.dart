@@ -665,6 +665,32 @@ class DashRepoImpl extends DashRepository {
       return Left('Exception occurred: $error');
     }
   }
+
+  @override
+  Future<Either<String, bool>> removeUserFromCollaboratorsGroup(
+      String token, List<int> groupIds, int userId) async {
+    try {
+      final response = await myApiService.post(
+        EndPoints.removeUserFromCollaboratorsGroup,
+        token: token,
+        encodeAsJson: true,
+        data: {
+          "group_ids": groupIds,
+          "user_ids": [userId],
+        },
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return const Right(true);
+      } else {
+        return Left(
+            'Failed to remove user from collaborators group: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
 }
 
 class QueryParams {

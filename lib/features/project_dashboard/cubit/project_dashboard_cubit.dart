@@ -393,10 +393,27 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
       List<int> groupIds, int userId) async {
     emit(ProjectDashboardAddUserToCollaboratorsGroupLoading());
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
-    final res = await _repository.addUserToCollaboratorsGroup(token, groupIds, userId);
+    final res =
+        await _repository.addUserToCollaboratorsGroup(token, groupIds, userId);
     res.fold(
-      (failure) => emit(ProjectDashboardAddUserToCollaboratorsGroupFailure(failure)),
-      (response) => emit(ProjectDashboardAddUserToCollaboratorsGroupSuccess(response)),
+      (failure) =>
+          emit(ProjectDashboardAddUserToCollaboratorsGroupFailure(failure)),
+      (response) =>
+          emit(ProjectDashboardAddUserToCollaboratorsGroupSuccess(response)),
+    );
+  }
+
+  Future<void> removeUserFromCollaboratorsGroup(
+      List<int> groupIds, int userId) async {
+    emit(ProjectDashboardRemoveUserFromCollaboratorsGroupLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res = await _repository.removeUserFromCollaboratorsGroup(
+        token, groupIds, userId);
+    res.fold(
+      (failure) => emit(
+          ProjectDashboardRemoveUserFromCollaboratorsGroupFailure(failure)),
+      (response) => emit(
+          ProjectDashboardRemoveUserFromCollaboratorsGroupSuccess(response)),
     );
   }
 }

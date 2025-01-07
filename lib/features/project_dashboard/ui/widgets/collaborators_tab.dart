@@ -198,8 +198,8 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
       BuildContext context, Member member, List<Group> allGroups) {
     bool isLoading = false;
 
-    // Track assigned groups with a Map for efficient lookup
-    final assignedGroups = Map<int, bool>.fromEntries(
+    // Track original and current group assignments
+    final originalAssignedGroups = Map<int, bool>.fromEntries(
       allGroups.map(
         (group) => MapEntry(
           group.groupId ?? 0,
@@ -207,6 +207,8 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
         ),
       ),
     );
+
+    final currentAssignedGroups = Map<int, bool>.from(originalAssignedGroups);
 
     // Capture the cubit before showing dialog
     final cubit = context.read<ProjectDashboardCubit>();
@@ -220,23 +222,25 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
           builder: (dialogContext, setState) =>
               BlocListener<ProjectDashboardCubit, ProjectDashboardState>(
             listener: (context, state) {
-              if (state is ProjectDashboardAddUserToCollaboratorsGroupSuccess) {
+              if (state
+                      is ProjectDashboardRemoveUserFromCollaboratorsGroupSuccess ||
+                  state is ProjectDashboardAddUserToCollaboratorsGroupSuccess) {
                 Navigator.of(dialogContext).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Collaborator groups updated successfully'),
+                    content: Text('Groups updated successfully'),
                     backgroundColor: Colors.green,
                   ),
                 );
-                // Refresh the collaborators list
                 cubit.getCollaborators(widget.projectId);
               } else if (state
-                  is ProjectDashboardAddUserToCollaboratorsGroupFailure) {
+                      is ProjectDashboardRemoveUserFromCollaboratorsGroupFailure ||
+                  state is ProjectDashboardAddUserToCollaboratorsGroupFailure) {
                 setState(() => isLoading = false);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                        'Failed to update collaborator groups: ${state.message}'),
+                        'Failed to update groups: ${state is ProjectDashboardRemoveUserFromCollaboratorsGroupFailure ? (state as ProjectDashboardRemoveUserFromCollaboratorsGroupFailure).message : (state as ProjectDashboardAddUserToCollaboratorsGroupFailure).message}'),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -331,12 +335,14 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
                               ...allGroups.map((group) {
                                 return CheckboxListTile(
                                   title: Text(group.name ?? ''),
-                                  value: assignedGroups[group.groupId] ?? false,
+                                  value: currentAssignedGroups[group.groupId] ??
+                                      false,
                                   onChanged: isLoading
                                       ? null
                                       : (value) {
                                           setState(() {
-                                            assignedGroups[group.groupId ?? 0] =
+                                            currentAssignedGroups[
+                                                    group.groupId ?? 0] =
                                                 value ?? false;
                                           });
                                         },
@@ -371,18 +377,63 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
                             )
                           else
                             TextButton(
-                              onPressed: () {
-                                // Get all group IDs where assigned is true
-                                final selectedGroupIds = assignedGroups.entries
-                                    .where((entry) => entry.value)
-                                    .map((entry) => entry.key)
-                                    .toList();
-
+                              onPressed: () async {
                                 setState(() => isLoading = true);
-                                cubit.addUserToCollaboratorsGroup(
-                                  selectedGroupIds,
-                                  member.userId ?? 0,
-                                );
+
+                                try {
+                                  // Find groups to remove (newly unchecked)
+                                  final groupsToRemove = currentAssignedGroups
+                                      .entries
+                                      .where((entry) =>
+                                          !entry.value &&
+                                          (originalAssignedGroups[entry.key] ??
+                                              false))
+                                      .map((entry) => entry.key)
+                                      .toList();
+
+                                  // Find groups to add (newly checked)
+                                  final groupsToAdd = currentAssignedGroups
+                                      .entries
+                                      .where((entry) =>
+                                          entry.value &&
+                                          !(originalAssignedGroups[entry.key] ??
+                                              false))
+                                      .map((entry) => entry.key)
+                                      .toList();
+
+                                  // If no changes were made, just close the dialog
+                                  if (groupsToAdd.isEmpty &&
+                                      groupsToRemove.isEmpty) {
+                                    Navigator.of(dialogContext).pop();
+                                    return;
+                                  }
+
+                                  // Handle remove operation if needed
+                                  if (groupsToRemove.isNotEmpty) {
+                                    await cubit
+                                        .removeUserFromCollaboratorsGroup(
+                                      groupsToRemove,
+                                      member.userId ?? 0,
+                                    );
+                                  }
+
+                                  // Handle add operation if needed
+                                  if (groupsToAdd.isNotEmpty) {
+                                    await cubit.addUserToCollaboratorsGroup(
+                                      groupsToAdd,
+                                      member.userId ?? 0,
+                                    );
+                                  }
+                                } catch (e) {
+                                  setState(() => isLoading = false);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content:
+                                          Text('Failed to update groups: $e'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
                               },
                               child: const Text('Save'),
                             ),

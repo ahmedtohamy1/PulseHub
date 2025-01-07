@@ -90,5 +90,8 @@ abstract class DashRepository {
       bool isNotificationSender);
   Future<Either<String, bool>> addUserToCollaboratorsGroup(
       String token, List<int>  groupIds, int userId);
+  Future<Either<String, bool>> removeUserFromCollaboratorsGroup(
+      String token, List<int>  groupIds, int userId);
 }
+
 
