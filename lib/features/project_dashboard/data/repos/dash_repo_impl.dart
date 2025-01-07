@@ -634,7 +634,32 @@ class DashRepoImpl extends DashRepository {
           response.data['success']) {
         return const Right(true);
       } else {
-        return Left('Failed to create collaborators group: ${response.statusCode}');
+        return Left(
+            'Failed to create collaborators group: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
+  Future<Either<String, bool>> addUserToCollaboratorsGroup(
+      String token, List<int> groupIds, int userId) async {
+    List<int> userIds = [userId];
+    try {
+      final response = await myApiService.post(
+        EndPoints.addUserToCollaboratorsGroup,
+        token: token,
+        encodeAsJson: true,
+        data: {"group_ids": groupIds, "user_ids": userIds},
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return const Right(true);
+      } else {
+        return Left(
+            'Failed to add user to collaborators group: ${response.statusCode}');
       }
     } catch (error) {
       return Left('Exception occurred: $error');

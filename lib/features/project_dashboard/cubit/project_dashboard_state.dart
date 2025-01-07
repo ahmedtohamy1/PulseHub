@@ -467,3 +467,26 @@ final class ProjectDashboardCreateCollaboratorsGroupFailure
   @override
   List<Object> get props => [message];
 }
+
+final class ProjectDashboardAddUserToCollaboratorsGroupLoading
+    extends ProjectDashboardState {}
+
+final class ProjectDashboardAddUserToCollaboratorsGroupSuccess
+    extends ProjectDashboardState {
+  final bool response;
+
+  const ProjectDashboardAddUserToCollaboratorsGroupSuccess(this.response);
+
+  @override
+  List<Object> get props => [response];
+}
+
+final class ProjectDashboardAddUserToCollaboratorsGroupFailure
+    extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardAddUserToCollaboratorsGroupFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}

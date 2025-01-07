@@ -88,4 +88,7 @@ abstract class DashRepository {
       bool isMonitor,
       bool isManager,
       bool isNotificationSender);
+  Future<Either<String, bool>> addUserToCollaboratorsGroup(
+      String token, List<int>  groupIds, int userId);
 }
+

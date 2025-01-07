@@ -40,6 +40,7 @@ class EndPoints {
   static const String getCollaborators = "/project/groups/";
   static const String updateCollaborators = "/project/group/update/";
   static const String createCollaboratorsGroup = "/project/group/";
+  static const String addUserToCollaboratorsGroup = "/user/groups/";
 
   // imgs
   static String imageUrl(String path) => '$baseUrl$path';

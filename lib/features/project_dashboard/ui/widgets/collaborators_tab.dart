@@ -196,100 +196,202 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
 
   void _showEditCollaboratorDialog(
       BuildContext context, Member member, List<Group> allGroups) {
-    final nameController = TextEditingController(
-        text: '${member.firstName ?? ''} ${member.lastName ?? ''}');
-    final emailController = TextEditingController(text: member.email ?? '');
-    final titleController = TextEditingController(text: member.title ?? '');
+    bool isLoading = false;
+
+    // Track assigned groups with a Map for efficient lookup
+    final assignedGroups = Map<int, bool>.fromEntries(
+      allGroups.map(
+        (group) => MapEntry(
+          group.groupId ?? 0,
+          group.members?.any((m) => m.userId == member.userId) ?? false,
+        ),
+      ),
+    );
+
+    // Capture the cubit before showing dialog
+    final cubit = context.read<ProjectDashboardCubit>();
 
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Collaborator Details',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+      barrierDismissible: false,
+      builder: (dialogContext) => BlocProvider.value(
+        value: cubit,
+        child: StatefulBuilder(
+          builder: (dialogContext, setState) =>
+              BlocListener<ProjectDashboardCubit, ProjectDashboardState>(
+            listener: (context, state) {
+              if (state is ProjectDashboardAddUserToCollaboratorsGroupSuccess) {
+                Navigator.of(dialogContext).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Collaborator groups updated successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                // Refresh the collaborators list
+                cubit.getCollaborators(widget.projectId);
+              } else if (state
+                  is ProjectDashboardAddUserToCollaboratorsGroupFailure) {
+                setState(() => isLoading = false);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                        'Failed to update collaborator groups: ${state.message}'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: Dialog(
+              child: ConstrainedBox(
+                constraints:
+                    const BoxConstraints(maxWidth: 500, maxHeight: 600),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Collaborator Details',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Flexible(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Name',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${member.firstName ?? ''} ${member.lastName ?? ''}',
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Email',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    member.email ?? '',
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Title',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    member.title ?? '',
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              const Text(
+                                'Assigned Groups',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              ...allGroups.map((group) {
+                                return CheckboxListTile(
+                                  title: Text(group.name ?? ''),
+                                  value: assignedGroups[group.groupId] ?? false,
+                                  onChanged: isLoading
+                                      ? null
+                                      : (value) {
+                                          setState(() {
+                                            assignedGroups[group.groupId ?? 0] =
+                                                value ?? false;
+                                          });
+                                        },
+                                );
+                              }).toList(),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: isLoading
+                                ? null
+                                : () => Navigator.of(dialogContext).pop(),
+                            child: const Text('Cancel'),
+                          ),
+                          const SizedBox(width: 8),
+                          if (isLoading)
+                            const SizedBox(
+                              width: 80,
+                              child: Center(
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                            )
+                          else
+                            TextButton(
+                              onPressed: () {
+                                // Get all group IDs where assigned is true
+                                final selectedGroupIds = assignedGroups.entries
+                                    .where((entry) => entry.value)
+                                    .map((entry) => entry.key)
+                                    .toList();
+
+                                setState(() => isLoading = true);
+                                cubit.addUserToCollaboratorsGroup(
+                                  selectedGroupIds,
+                                  member.userId ?? 0,
+                                );
+                              },
+                              child: const Text('Save'),
+                            ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 16),
-                Flexible(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextField(
-                          controller: nameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Name',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        TextField(
-                          controller: emailController,
-                          decoration: const InputDecoration(
-                            labelText: 'Email',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        TextField(
-                          controller: titleController,
-                          decoration: const InputDecoration(
-                            labelText: 'Title',
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        const Text(
-                          'Assigned Groups',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ...allGroups.map((group) {
-                          final isAssigned = group.members
-                                  ?.any((m) => m.userId == member.userId) ??
-                              false;
-                          return CheckboxListTile(
-                            title: Text(group.name ?? ''),
-                            value: isAssigned,
-                            onChanged: (value) {
-                              // TODO: Implement group assignment functionality
-                            },
-                          );
-                        }).toList(),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Close'),
-                    ),
-                    const SizedBox(width: 8),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Save'),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -493,8 +595,17 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
 
         if (state is ProjectDashboardGetCollaboratorsSuccess) {
           final groups = state.getCollaboratorsResponseModel.groups ?? [];
-          final allMembers =
-              groups.expand((group) => group.members ?? []).toList();
+          // Use a Set to ensure unique collaborators based on userId
+          final allMembers = groups
+              .expand((group) => group.members ?? [])
+              .where(
+                  (member) => member.userId != null) // Filter out null userIds
+              .fold<Map<int, Member>>(
+                {},
+                (map, member) => map..putIfAbsent(member.userId!, () => member),
+              )
+              .values
+              .toList();
 
           return BlocListener<ProjectDashboardCubit, ProjectDashboardState>(
             listener: (context, state) {
