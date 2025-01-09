@@ -645,13 +645,25 @@ class DashRepoImpl extends DashRepository {
 
   @override
   Future<Either<String, bool>> addUserToCollaboratorsGroup(
-      String token, List<int> groupIds, List<int> userIds) async {
+      String token, List<int>? groupIds, List<int> userIds,
+      {List<int>? projectIds}) async {
     try {
+      final Map<String, dynamic> data = {
+        "user_ids": userIds,
+      };
+
+      if (groupIds != null) {
+        data["group_ids"] = groupIds;
+      }
+      if (projectIds != null) {
+        data["project_ids"] = projectIds;
+      }
+
       final response = await myApiService.post(
         EndPoints.addUserToCollaboratorsGroup,
         token: token,
         encodeAsJson: true,
-        data: {"group_ids": groupIds, "user_ids": userIds},
+        data: data,
       );
       if ((response.statusCode == StatusCode.created ||
               response.statusCode == StatusCode.ok) &&

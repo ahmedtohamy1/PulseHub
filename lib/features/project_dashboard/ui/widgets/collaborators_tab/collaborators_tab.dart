@@ -155,7 +155,7 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
               await cubit.addUserToCollaboratorsGroup(
                 groupsToAdd,
                 [member.userId ?? 0],
-                widget.projectId,
+                projectIds: [widget.projectId],
               );
             }
           },
@@ -173,12 +173,24 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
         value: cubit,
         child: AddCollaboratorDialog(
           allGroups: allGroups,
-          onAdd: (selectedGroups, selectedUsers) {
-            cubit.addUserToCollaboratorsGroup(
-              selectedGroups,
-              selectedUsers,
-              widget.projectId,
-            );
+          onAdd: (selectedGroups, selectedUsers) async {
+            if (selectedGroups == null || selectedGroups.isEmpty) {
+              await cubit.addUserToCollaboratorsGroup(
+                null,
+                selectedUsers,
+                projectIds: [widget.projectId],
+              );
+            } else {
+              await cubit.addUserToCollaboratorsGroup(
+                selectedGroups,
+                selectedUsers,
+                projectIds: [widget.projectId],
+              );
+            }
+            // Refresh collaborators list after adding users
+            if (context.mounted) {
+              cubit.getCollaborators(widget.projectId);
+            }
           },
         ),
       ),

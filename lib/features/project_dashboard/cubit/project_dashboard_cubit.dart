@@ -449,36 +449,29 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
   }
 
   Future<void> addUserToCollaboratorsGroup(
-      List<int> groupIds, List<int> userIds, int projectId) async {
-    emit(ProjectDashboardAddUserToCollaboratorsGroupLoading());
-    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
-    final res = await _repository.addUserToCollaboratorsGroup(
-      token,
-      groupIds,
-      userIds,
-    );
-    res.fold(
-      (failure) =>
-          emit(ProjectDashboardAddUserToCollaboratorsGroupFailure(failure)),
-      (response) async {
-        try {
-          emit(ProjectDashboardAddUserToCollaboratorsGroupSuccess(response));
-          // Get updated collaborators list
-          final collaboratorsRes =
-              await _repository.getCollaborators(token, projectId);
-          collaboratorsRes.fold(
-            (failure) => emit(ProjectDashboardGetCollaboratorsFailure(failure)),
-            (collaborators) {
-              cachedCollaborators = collaborators;
-              emit(ProjectDashboardGetCollaboratorsSuccess(collaborators));
-            },
-          );
-        } catch (e) {
-          emit(
-              ProjectDashboardAddUserToCollaboratorsGroupFailure(e.toString()));
-        }
-      },
-    );
+      List<int>? groupIds, List<int> userIds,
+      {List<int>? projectIds}) async {
+    try {
+      emit(ProjectDashboardAddUserToCollaboratorsGroupLoading());
+      final token =
+          await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+
+      final res = await _repository.addUserToCollaboratorsGroup(
+        token,
+        groupIds,
+        userIds,
+        projectIds: projectIds,
+      );
+
+      res.fold(
+        (failure) =>
+            emit(ProjectDashboardAddUserToCollaboratorsGroupFailure(failure)),
+        (response) =>
+            emit(ProjectDashboardAddUserToCollaboratorsGroupSuccess(response)),
+      );
+    } catch (e) {
+      emit(ProjectDashboardAddUserToCollaboratorsGroupFailure(e.toString()));
+    }
   }
 
   Future<void> removeUserFromCollaboratorsGroup(

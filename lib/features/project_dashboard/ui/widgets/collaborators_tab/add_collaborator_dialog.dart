@@ -6,7 +6,7 @@ import 'package:pulsehub/features/project_dashboard/data/models/get_collaborator
 
 class AddCollaboratorDialog extends StatefulWidget {
   final List<Group> allGroups;
-  final Function(List<int> selectedGroups, List<int> selectedUsers) onAdd;
+  final void Function(List<int>? selectedGroups, List<int> selectedUsers) onAdd;
 
   const AddCollaboratorDialog({
     super.key,
@@ -294,25 +294,28 @@ class _AddCollaboratorDialogState extends State<AddCollaboratorDialog> {
                               child: SizedBox(
                                 width: 20,
                                 height: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           )
                         else
                           FilledButton(
-                            onPressed:
-                                selectedUsers.isEmpty || selectedGroups.isEmpty
-                                    ? null
-                                    : () {
-                                        setState(() => isLoading = true);
-                                        widget.onAdd(
-                                          selectedGroups.toList(),
-                                          selectedUsers
-                                              .map((u) => u.userId ?? 0)
-                                              .toList(),
-                                        );
-                                      },
+                            onPressed: selectedUsers.isEmpty
+                                ? null
+                                : () {
+                                    setState(() => isLoading = true);
+                                    widget.onAdd(
+                                      selectedGroups.isEmpty
+                                          ? null
+                                          : selectedGroups.toList(),
+                                      selectedUsers
+                                          .map((u) => u.userId ?? 0)
+                                          .toList(),
+                                    );
+                                  },
                             child: const Text('Add'),
                           ),
                       ],
