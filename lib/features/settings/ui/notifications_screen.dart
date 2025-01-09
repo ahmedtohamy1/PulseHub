@@ -129,15 +129,59 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                           ),
                                           const SizedBox(width: 4),
                                         ],
-                                        Text(
-                                          isCurrentUserMessage
-                                              ? 'Opened by you'
-                                              : 'Delivered to ${message.seen?.length ?? 0} user(s)',
-                                          style: TextStyle(
-                                            color: isSeenByCurrentUser
-                                                ? Colors.grey
-                                                : Colors.grey.withOpacity(0.5),
-                                            fontSize: 12,
+                                        InkWell(
+                                          onTap: () {
+                                            if (message.seen?.isNotEmpty ==
+                                                true) {
+                                              showDialog(
+                                                context: context,
+                                                builder: (context) =>
+                                                    AlertDialog(
+                                                  title: const Text(
+                                                      'Delivered to'),
+                                                  content: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      Text(
+                                                          '${message.seen?.length} user${message.seen!.length > 1 ? 's' : ''} have seen this message'),
+                                                      const SizedBox(height: 8),
+                                                      Text(
+                                                          'User IDs: ${message.seen?.join(", ")}'),
+                                                    ],
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                              context),
+                                                      child:
+                                                          const Text('Close'),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            }
+                                          },
+                                          child: Text(
+                                            isCurrentUserMessage
+                                                ? 'Opened by you'
+                                                : message.seen?.isNotEmpty ==
+                                                        true
+                                                    ? 'Delivered to ${message.seen?.length} user${message.seen!.length > 1 ? 's' : ''}'
+                                                    : 'Not delivered yet',
+                                            style: TextStyle(
+                                              color: isSeenByCurrentUser
+                                                  ? Colors.grey
+                                                  : Colors.grey
+                                                      .withOpacity(0.5),
+                                              fontSize: 12,
+                                              decoration:
+                                                  message.seen?.isNotEmpty ==
+                                                          true
+                                                      ? TextDecoration.underline
+                                                      : null,
+                                            ),
                                           ),
                                         ),
                                       ],
