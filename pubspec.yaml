@@ -12,7 +12,7 @@ dependencies:
   dio: ^5.7.0
   equatable: ^2.0.7
   file_picker: ^8.1.7
-  fl_chart: ^0.70.0
+  fl_chart: ^0.62.0
   flutter:
     sdk: flutter
   flutter_bloc: ^8.1.6
