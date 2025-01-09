@@ -82,6 +82,11 @@ class TimeDbResponseBuilder extends StatelessWidget {
                 _analyzeSensor(context, field, params),
             measurementName: selectedMeasurement,
             topic: selectedTopic,
+            windowSize: windowSize,
+            deviationThreshold: deviationThreshold,
+            timeRange: timeRange,
+            windowPeriod: windowPeriod,
+            aggregateFunction: aggregateFunction,
           );
         }
 
@@ -94,6 +99,11 @@ class TimeDbResponseBuilder extends StatelessWidget {
                 _analyzeSensor(context, field, params),
             measurementName: selectedMeasurement,
             topic: selectedTopic,
+            windowSize: windowSize,
+            deviationThreshold: deviationThreshold,
+            timeRange: timeRange,
+            windowPeriod: windowPeriod,
+            aggregateFunction: aggregateFunction,
           );
         }
 
