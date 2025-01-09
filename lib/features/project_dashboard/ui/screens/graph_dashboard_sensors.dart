@@ -104,12 +104,9 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
       measurementName: selectedMeasurement,
       topic: selectedTopic,
       fields: selectedFields.join(','),
-      sensorsToAnalyze: selectedFields.join(','),
-      windowSize:
-          List.filled(selectedFields.length, windowSize.toString()).join(','),
-      deviationThreshold:
-          List.filled(selectedFields.length, deviationController.text)
-              .join(','),
+      sensorsToAnalyze: null,
+      windowSize: windowSize.toString(),
+      deviationThreshold: deviationController.text,
       timeRangeStart: isCustomRange ? customRangeController.text : timeRange,
       aggregateFunc: aggregateFunction,
       bucket: 'CloudHub',
