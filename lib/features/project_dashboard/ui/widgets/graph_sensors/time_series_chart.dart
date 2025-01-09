@@ -157,32 +157,61 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
       final boundary = chartKeys[field]!.currentContext!.findRenderObject()
           as RenderRepaintBoundary;
       final image = await boundary.toImage(pixelRatio: 3.0);
+      final imageWidth = image.width.toDouble();
+      final imageHeight = image.height.toDouble();
+
+      // Calculate title height first
+      final titleStyle = TextStyle(
+        color: Colors.black,
+        fontSize: 16 * 3, // Scale up for high resolution
+        fontWeight: FontWeight.bold,
+      );
+      final titleSpan = TextSpan(
+        text: field == 'combined'
+            ? (showTimeView[field]!
+                ? 'Combined Sensor Data Over Time'
+                : 'Combined Frequency-Magnitude')
+            : (showTimeView[field]!
+                ? '${_capitalize(field)} Over Time'
+                : '${_capitalize(field)} Over Frequency'),
+        style: titleStyle,
+      );
+      final titlePainter = TextPainter(
+        text: titleSpan,
+        textDirection: TextDirection.ltr,
+      );
+      titlePainter.layout(maxWidth: imageWidth);
+
+      // Create a larger canvas to accommodate title
+      final totalHeight =
+          imageHeight + titlePainter.height + 32; // 32 for padding
       final recorder = ui.PictureRecorder();
       final canvas = Canvas(recorder);
       final paint = Paint()..color = Colors.white;
 
-      // Get the image size
-      final imageWidth = image.width.toDouble();
-      final imageHeight = image.height.toDouble();
-
-      // Draw white background
+      // Draw white background for entire image
       canvas.drawRect(
-        Rect.fromLTWH(0, 0, imageWidth, imageHeight),
+        Rect.fromLTWH(0, 0, imageWidth, totalHeight),
         paint,
       );
 
-      // Draw the chart image
+      // Draw title
+      titlePainter.paint(canvas, const Offset(24, 24));
+
+      // Draw the chart image below the title
       final imageShader =
           await image.toByteData(format: ui.ImageByteFormat.png);
       if (imageShader != null) {
         final chartImage =
             await decodeImageFromList(imageShader.buffer.asUint8List());
-        canvas.drawImage(chartImage, Offset.zero, Paint());
+        canvas.drawImage(
+            chartImage, Offset(0, titlePainter.height + 32), Paint());
       }
 
-      // Create the final image
+      // Create the final image with the new height
       final picture = recorder.endRecording();
-      final finalImage = await picture.toImage(image.width, image.height);
+      final finalImage =
+          await picture.toImage(image.width, totalHeight.toInt());
       final byteData =
           await finalImage.toByteData(format: ui.ImageByteFormat.png);
       final pngBytes = byteData!.buffer.asUint8List();
@@ -340,17 +369,6 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
                 _buildLineChart(
                   field == 'combined'
                       ? (isTimeView
