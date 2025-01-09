@@ -5,6 +5,7 @@ import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubi
 import 'package:pulsehub/features/project_dashboard/data/models/get_used_sensors_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_model.dart'
     as monitoring;
+import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/number_input.dart';
 
 class UsedSensorsTable extends StatelessWidget {
   final List<UsedSensorList> usedSensors;
@@ -130,17 +131,23 @@ class UsedSensorsTable extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      TextFormField(
+                      NumberInput(
+                        label: '',
                         controller: countController,
-                        enabled: !isLoading,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          isDense: true,
-                        ),
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly
-                        ],
+                        onChanged: (value) {},
+                        onIncrement: () {
+                          final currentValue =
+                              int.tryParse(countController.text) ?? 0;
+                          countController.text = (currentValue + 1).toString();
+                        },
+                        onDecrement: () {
+                          final currentValue =
+                              int.tryParse(countController.text) ?? 0;
+                          if (currentValue > 0) {
+                            countController.text =
+                                (currentValue - 1).toString();
+                          }
+                        },
                       ),
                     ],
                   ),
@@ -493,17 +500,23 @@ class UsedSensorsTable extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      TextFormField(
+                      NumberInput(
+                        label: '',
                         controller: countController,
-                        enabled: !isLoading,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          isDense: true,
-                        ),
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly
-                        ],
+                        onChanged: (value) {},
+                        onIncrement: () {
+                          final currentValue =
+                              int.tryParse(countController.text) ?? 0;
+                          countController.text = (currentValue + 1).toString();
+                        },
+                        onDecrement: () {
+                          final currentValue =
+                              int.tryParse(countController.text) ?? 0;
+                          if (currentValue > 0) {
+                            countController.text =
+                                (currentValue - 1).toString();
+                          }
+                        },
                       ),
                     ],
                   ),
