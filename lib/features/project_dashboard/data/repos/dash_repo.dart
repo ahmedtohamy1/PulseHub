@@ -98,4 +98,6 @@ abstract class DashRepository {
   Future<Either<String, GetAllResponseModel>> getAllUsers(String token);
   Future<Either<String, bool>> updateCloudhub(
       String token, int cloudhubId, UpdateCloudhubRequestModel request);
+  Future<Either<String, bool>> markMessageAsSeen(
+      String token, int messageId);
 }

@@ -749,6 +749,27 @@ class DashRepoImpl extends DashRepository {
       return Left('Exception occurred: $error');
     }
   }
+
+  @override
+  Future<Either<String, bool>> markMessageAsSeen(
+      String token, int messageId) async {
+    try {
+      final response = await myApiService.get(
+        EndPoints.markMessageAsSeen,
+        token: token,
+        queryParameters: {'message_id': messageId},
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return const Right(true);
+      } else {
+        return Left('Failed to mark message as seen: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
 }
 
 class QueryParams {

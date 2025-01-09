@@ -553,3 +553,20 @@ final class ProjectDashboardUpdateCloudhubFailure extends ProjectDashboardState 
   @override
   List<Object> get props => [message];
 }
+
+final class ProjectDashboardMarkMessageAsSeenLoading
+    extends ProjectDashboardState {}
+
+final class ProjectDashboardMarkMessageAsSeenSuccess
+    extends ProjectDashboardState {
+  final bool success;
+
+  const ProjectDashboardMarkMessageAsSeenSuccess(this.success);
+}
+
+final class ProjectDashboardMarkMessageAsSeenFailure
+    extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardMarkMessageAsSeenFailure(this.message);
+}

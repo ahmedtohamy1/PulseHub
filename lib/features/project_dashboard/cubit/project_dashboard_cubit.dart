@@ -525,4 +525,14 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
       (response) => emit(ProjectDashboardUpdateCloudhubSuccess(response)),
     );
   }
+
+  Future<void> markMessageAsSeen(int messageId) async {
+    emit(ProjectDashboardMarkMessageAsSeenLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res = await _repository.markMessageAsSeen(token, messageId);
+    res.fold(
+      (failure) => emit(ProjectDashboardMarkMessageAsSeenFailure(failure)),
+      (response) => emit(ProjectDashboardMarkMessageAsSeenSuccess(response)),
+    );
+  }
 }

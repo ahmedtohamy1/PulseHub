@@ -43,6 +43,7 @@ class EndPoints {
   static const String addUserToCollaboratorsGroup = "/user/groups/";
   static const String removeUserFromCollaboratorsGroup = "/user/groups-remove/";
   static const String getAllUsers = "/user/manage/";
+  static const String markMessageAsSeen = "/project/message-seen/";
   static const String getNotifications = "/project/notifications/";
 
   // imgs
