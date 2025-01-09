@@ -170,11 +170,11 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
                                       color:
                                           Colors.white.withValues(alpha: 0.0),
                                     ),
-                                    child: Column(
+                                    child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        Row(
+                                        Column(
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: List.generate(3, (index) {
@@ -195,7 +195,7 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
                                         const SizedBox(
                                             height:
                                                 4), // Adjust spacing between rows of dots
-                                        Row(
+                                        Column(
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: List.generate(3, (index) {
