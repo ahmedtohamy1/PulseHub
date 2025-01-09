@@ -166,13 +166,13 @@ class HeaderIcons extends StatelessWidget {
       case 1:
         return 'Dashboard';
       case 2:
-        return 'Map';
+        return 'Visualise';
       case 3:
-        return 'Speed';
+        return 'Analyse';
       case 4:
-        return 'File Content';
+        return 'Report';
       case 5:
-        return 'Monitoring';
+        return 'Monitor';
       case 6:
         return 'Control';
       default:
