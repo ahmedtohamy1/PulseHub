@@ -157,7 +157,34 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
       final boundary = chartKeys[field]!.currentContext!.findRenderObject()
           as RenderRepaintBoundary;
       final image = await boundary.toImage(pixelRatio: 3.0);
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      final recorder = ui.PictureRecorder();
+      final canvas = Canvas(recorder);
+      final paint = Paint()..color = Colors.white;
+
+      // Get the image size
+      final imageWidth = image.width.toDouble();
+      final imageHeight = image.height.toDouble();
+
+      // Draw white background
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, imageWidth, imageHeight),
+        paint,
+      );
+
+      // Draw the chart image
+      final imageShader =
+          await image.toByteData(format: ui.ImageByteFormat.png);
+      if (imageShader != null) {
+        final chartImage =
+            await decodeImageFromList(imageShader.buffer.asUint8List());
+        canvas.drawImage(chartImage, Offset.zero, Paint());
+      }
+
+      // Create the final image
+      final picture = recorder.endRecording();
+      final finalImage = await picture.toImage(image.width, image.height);
+      final byteData =
+          await finalImage.toByteData(format: ui.ImageByteFormat.png);
       final pngBytes = byteData!.buffer.asUint8List();
 
       final tempDir = await getTemporaryDirectory();
@@ -308,15 +335,34 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
         ),
         RepaintBoundary(
           key: chartKeys[field],
-          child: _buildLineChart(
-            field == 'combined'
-                ? (isTimeView
-                    ? _createCombinedOverTimeData()
-                    : _createCombinedFreqMagnitudeData())
-                : _createLineBarsData(field: field, byTime: isTimeView),
-            isTimeXAxis: isTimeView,
-            isMicroUnits: !isTimeView,
-            field: field,
+          child: Container(
+            color: Colors.white,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+                _buildLineChart(
+                  field == 'combined'
+                      ? (isTimeView
+                          ? _createCombinedOverTimeData()
+                          : _createCombinedFreqMagnitudeData())
+                      : _createLineBarsData(field: field, byTime: isTimeView),
+                  isTimeXAxis: isTimeView,
+                  isMicroUnits: !isTimeView,
+                  field: field,
+                ),
+              ],
+            ),
           ),
         ),
       ],
