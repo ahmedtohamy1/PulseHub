@@ -200,12 +200,20 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const Spacer(),
-                if (!_isEditing)
+                if (!_isEditing) ...[
+                  IconButton.filled(
+                    icon: const Icon(Icons.sensors),
+                    onPressed: () {
+                      // TODO: Implement add sensor functionality
+                    },
+                    tooltip: 'Add Sensor',
+                  ),
+                  const SizedBox(width: 8),
                   IconButton.filled(
                     icon: const Icon(Icons.edit),
                     onPressed: () => setState(() => _isEditing = true),
-                  )
-                else ...[
+                  ),
+                ] else ...[
                   IconButton.filled(
                     icon: const Icon(Icons.save),
                     onPressed: _saveChanges,
