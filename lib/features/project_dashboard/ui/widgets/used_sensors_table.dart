@@ -143,18 +143,22 @@ class UsedSensorsTable extends StatelessWidget {
     );
   }
 
-  Future<void> _showDeleteConfirmationDialog(
-      BuildContext context, UsedSensorList sensor) {
+  void _showDeleteDialog(BuildContext context, UsedSensorList sensor) {
+    final TextEditingController confirmController = TextEditingController();
+    bool isNameMatch = false;
+
+    // Capture the cubit before showing dialog
     final cubit = context.read<ProjectDashboardCubit>();
 
-    return showDialog(
+    showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (dialogContext) => BlocProvider.value(
         value: cubit,
         child: BlocListener<ProjectDashboardCubit, ProjectDashboardState>(
           listener: (context, state) {
             if (state is ProjectDashboardUpdateUsedSensorsSuccess) {
-              Navigator.of(context).pop();
+              Navigator.of(dialogContext).pop();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Sensor deleted successfully'),
@@ -162,7 +166,7 @@ class UsedSensorsTable extends StatelessWidget {
                 ),
               );
               // Refresh the sensors list
-              context.read<ProjectDashboardCubit>().getUsedSensors();
+              cubit.getUsedSensors();
             } else if (state is ProjectDashboardUpdateUsedSensorsFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -172,88 +176,59 @@ class UsedSensorsTable extends StatelessWidget {
               );
             }
           },
-          child: AlertDialog(
-            title: const Text('Delete Sensor'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Are you sure you want to delete this sensor?'),
-                const SizedBox(height: 16),
-                RichText(
-                  text: TextSpan(
-                    style: DefaultTextStyle.of(context).style,
-                    children: [
-                      const TextSpan(
-                        text: 'Sensor Type: ',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      TextSpan(text: sensor.name ?? 'N/A'),
-                    ],
+          child: StatefulBuilder(
+            builder: (context, setState) => AlertDialog(
+              title: const Text('Delete Sensor'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Are you sure you want to delete "${sensor.name}"?'),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Please type the sensor name to confirm deletion:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: confirmController,
+                    decoration: InputDecoration(
+                      hintText: 'Enter sensor name',
+                      border: const OutlineInputBorder(),
+                      errorText:
+                          confirmController.text.isNotEmpty && !isNameMatch
+                              ? 'Name does not match'
+                              : null,
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        isNameMatch = value == sensor.name;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancel'),
                 ),
-                const SizedBox(height: 8),
-                RichText(
-                  text: TextSpan(
-                    style: DefaultTextStyle.of(context).style,
-                    children: [
-                      const TextSpan(
-                        text: 'Function: ',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      TextSpan(text: sensor.function ?? 'N/A'),
-                    ],
+                FilledButton(
+                  onPressed: isNameMatch
+                      ? () {
+                          cubit.updateUsedSensors(
+                              sensor.usedSensorId!, 0, true);
+                        }
+                      : null,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                    disabledBackgroundColor:
+                        Theme.of(context).colorScheme.error.withOpacity(0.3),
                   ),
-                ),
-                const SizedBox(height: 8),
-                RichText(
-                  text: TextSpan(
-                    style: DefaultTextStyle.of(context).style,
-                    children: [
-                      const TextSpan(
-                        text: 'Current Count: ',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      TextSpan(text: sensor.count?.toString() ?? '0'),
-                    ],
-                  ),
+                  child: const Text('Delete'),
                 ),
               ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
-              ),
-              BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
-                builder: (context, state) {
-                  final isLoading =
-                      state is ProjectDashboardUpdateUsedSensorsLoading;
-                  return FilledButton(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Colors.red,
-                    ),
-                    onPressed: isLoading
-                        ? null
-                        : () {
-                            if (sensor.usedSensorId != null) {
-                              context
-                                  .read<ProjectDashboardCubit>()
-                                  .updateUsedSensors(
-                                      sensor.usedSensorId!, 0, true);
-                            }
-                          },
-                    child: isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Delete'),
-                  );
-                },
-              ),
-            ],
           ),
         ),
       ),
@@ -548,8 +523,7 @@ class UsedSensorsTable extends StatelessWidget {
                                     minimumSize: const Size(32, 32),
                                   ),
                                   onPressed: () =>
-                                      _showDeleteConfirmationDialog(
-                                          context, sensor),
+                                      _showDeleteDialog(context, sensor),
                                 ),
                               ],
                             ),
