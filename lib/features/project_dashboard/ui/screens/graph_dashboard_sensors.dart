@@ -238,14 +238,101 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                       ),
                     const SizedBox(height: 16),
                     // Two-column layout for input fields and dropdowns
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Column(
                       children: [
-                        // First column
-                        Expanded(
-                          child: Column(
-                            children: [
-                              NumberInput(
+                        // First Row: Window Period and Select Time Range
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: DropdownSelector<String>(
+                                label: 'Window Period',
+                                value: windowPeriod,
+                                items: const [
+                                  '5s',
+                                  '10s',
+                                  '1m',
+                                  '5m',
+                                  '15m',
+                                  '30m',
+                                  '1h'
+                                ],
+                                onChanged: (value) {
+                                  setState(() {
+                                    windowPeriod = value!;
+                                  });
+                                },
+                              ),
+                            ),
+                            const SizedBox(
+                                width: 16), // Spacing between columns
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  DropdownSelector<String>(
+                                    label: 'Select Time Range',
+                                    value: timeRange,
+                                    items: const [
+                                      '1m',
+                                      '5m',
+                                      '15m',
+                                      '1h',
+                                      '3h',
+                                      '6h',
+                                      '24h',
+                                      '2d',
+                                      '7d',
+                                      '30d',
+                                      'Custom'
+                                    ],
+                                    onChanged: (value) {
+                                      setState(() {
+                                        if (value == 'Custom') {
+                                          isCustomRange = true;
+                                        } else {
+                                          isCustomRange = false;
+                                          timeRange = value!;
+                                        }
+                                      });
+                                    },
+                                  ),
+                                  if (isCustomRange)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 8.0),
+                                      child: TextField(
+                                        controller: customRangeController,
+                                        decoration: const InputDecoration(
+                                          labelText: 'Enter Custom Range',
+                                          border: OutlineInputBorder(),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16), // Spacing between rows
+
+                        // Second Row: Aggregate Function (takes entire row)
+                        DropdownSelector<String>(
+                          label: 'Aggregate Function',
+                          value: aggregateFunction,
+                          items: const ['mean', 'sum', 'max', 'min', 'median'],
+                          onChanged: (value) {
+                            setState(() {
+                              aggregateFunction = value!;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 16), // Spacing between rows
+
+                        // Third Row: Window Size and Deviation Threshold
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: NumberInput(
                                 label: 'Window Size',
                                 controller: windowSizeController,
                                 onChanged: (value) {
@@ -271,8 +358,11 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                                   });
                                 },
                               ),
-                              const SizedBox(height: 16),
-                              NumberInput(
+                            ),
+                            const SizedBox(
+                                width: 16), // Spacing between columns
+                            Expanded(
+                              child: NumberInput(
                                 label: 'Deviation Threshold',
                                 controller: deviationController,
                                 onChanged: (value) {
@@ -304,90 +394,8 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                                   });
                                 },
                               ),
-                              const SizedBox(height: 16),
-                              DropdownSelector<String>(
-                                label: 'Aggregate Function',
-                                value: aggregateFunction,
-                                items: const [
-                                  'mean',
-                                  'sum',
-                                  'max',
-                                  'min',
-                                  'median'
-                                ],
-                                onChanged: (value) {
-                                  setState(() {
-                                    aggregateFunction = value!;
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 16), // Spacing between columns
-                        // Second column
-                        Expanded(
-                          child: Column(
-                            children: [
-                              DropdownSelector<String>(
-                                label: 'Window Period',
-                                value: windowPeriod,
-                                items: const [
-                                  '5s',
-                                  '10s',
-                                  '1m',
-                                  '5m',
-                                  '15m',
-                                  '30m',
-                                  '1h'
-                                ],
-                                onChanged: (value) {
-                                  setState(() {
-                                    windowPeriod = value!;
-                                  });
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                              DropdownSelector<String>(
-                                label: 'Select Time Range',
-                                value: timeRange,
-                                items: const [
-                                  '1m',
-                                  '5m',
-                                  '15m',
-                                  '1h',
-                                  '3h',
-                                  '6h',
-                                  '24h',
-                                  '2d',
-                                  '7d',
-                                  '30d',
-                                  'Custom'
-                                ],
-                                onChanged: (value) {
-                                  setState(() {
-                                    if (value == 'Custom') {
-                                      isCustomRange = true;
-                                    } else {
-                                      isCustomRange = false;
-                                      timeRange = value!;
-                                    }
-                                  });
-                                },
-                              ),
-                              if (isCustomRange)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8.0),
-                                  child: TextField(
-                                    controller: customRangeController,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Enter Custom Range',
-                                      border: OutlineInputBorder(),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
