@@ -100,4 +100,6 @@ abstract class DashRepository {
       String token, int cloudhubId, UpdateCloudhubRequestModel request);
   Future<Either<String, bool>> markMessageAsSeen(
       String token, int messageId);
+  Future<Either<String, bool>> createCloudhubSensor(
+      String token, int cloudhubId, String sensorName);
 }

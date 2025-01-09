@@ -12,9 +12,9 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 class CloudHubDetailsScreen extends StatefulWidget {
-  final MonitoringCloudhubDetails cloudHub;
+  MonitoringCloudhubDetails cloudHub;
 
-  const CloudHubDetailsScreen({
+  CloudHubDetailsScreen({
     super.key,
     required this.cloudHub,
   });
@@ -179,6 +179,38 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
               backgroundColor: Colors.red,
             ),
           );
+        } else if (state is ProjectDashboardCreateCloudhubSensorSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Sensor created successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          // Refresh the CloudHub data to get the updated sensors list
+          context
+              .read<ProjectDashboardCubit>()
+              .getCloudhubData(widget.cloudHub.cloudhub.cloudhubId!);
+        } else if (state is ProjectDashboardCreateCloudhubSensorFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to create sensor: ${state.message}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        } else if (state is ProjectDashboardCloudhubDataSuccess) {
+          setState(() {
+            widget.cloudHub = MonitoringCloudhubDetails(
+              success: state.cloudhubDetails.success,
+              cloudhub: state.cloudhubDetails.cloudhub,
+            );
+          });
+        } else if (state is ProjectDashboardCloudhubDataFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to refresh sensors: ${state.message}'),
+              backgroundColor: Colors.red,
+            ),
+          );
         }
       },
       child: SingleChildScrollView(
@@ -204,7 +236,113 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
                   IconButton.filled(
                     icon: const Icon(Icons.sensors),
                     onPressed: () {
-                      // TODO: Implement add sensor functionality
+                      // Show dialog to enter sensor name
+                      final TextEditingController sensorNameController =
+                          TextEditingController();
+                      final parentContext = context;
+
+                      showDialog(
+                        context: context,
+                        builder: (dialogContext) => AlertDialog(
+                          title: const Text('Add New Sensor'),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextField(
+                                controller: sensorNameController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Sensor Name',
+                                  hintText: 'Enter sensor name',
+                                  border: OutlineInputBorder(),
+                                ),
+                                onSubmitted: (value) {
+                                  if (value.trim().isNotEmpty) {
+                                    parentContext
+                                        .read<ProjectDashboardCubit>()
+                                        .createCloudhubSensor(
+                                          widget.cloudHub.cloudhub.cloudhubId ??
+                                              0,
+                                          value.trim(),
+                                        );
+                                  }
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              BlocConsumer<ProjectDashboardCubit,
+                                  ProjectDashboardState>(
+                                bloc:
+                                    parentContext.read<ProjectDashboardCubit>(),
+                                listener: (context, state) {
+                                  if (state
+                                      is ProjectDashboardCreateCloudhubSensorSuccess) {
+                                    Navigator.pop(dialogContext);
+                                    // Refresh CloudHub data to get updated sensors list
+                                    parentContext
+                                        .read<ProjectDashboardCubit>()
+                                        .getCloudhubData(
+                                          widget.cloudHub.cloudhub.cloudhubId ??
+                                              0,
+                                        );
+                                    ScaffoldMessenger.of(parentContext)
+                                        .showSnackBar(
+                                      const SnackBar(
+                                        content:
+                                            Text('Sensor created successfully'),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                  } else if (state
+                                      is ProjectDashboardCreateCloudhubSensorFailure) {
+                                    ScaffoldMessenger.of(parentContext)
+                                        .showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            'Failed to create sensor: ${state.message}'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                },
+                                builder: (context, state) {
+                                  return Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(dialogContext),
+                                        child: const Text('Cancel'),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      if (state
+                                          is ProjectDashboardCreateCloudhubSensorLoading)
+                                        const CircularProgressIndicator()
+                                      else
+                                        FilledButton(
+                                          onPressed: () {
+                                            final sensorName =
+                                                sensorNameController.text
+                                                    .trim();
+                                            if (sensorName.isNotEmpty) {
+                                              parentContext
+                                                  .read<ProjectDashboardCubit>()
+                                                  .createCloudhubSensor(
+                                                    widget.cloudHub.cloudhub
+                                                            .cloudhubId ??
+                                                        0,
+                                                    sensorName,
+                                                  );
+                                            }
+                                          },
+                                          child: const Text('Add'),
+                                        ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
                     },
                     tooltip: 'Add Sensor',
                   ),
@@ -307,6 +445,221 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: 16),
+            _buildInfoSection(
+              title: 'Sensors',
+              children: [
+                if (widget.cloudHub.cloudhub.sensors?.isEmpty ?? true)
+                  const Center(child: Text('No sensors available'))
+                else
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: widget.cloudHub.cloudhub.sensors?.length ?? 0,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 16),
+                    itemBuilder: (context, index) {
+                      final sensor = widget.cloudHub.cloudhub.sensors![index];
+                      final Map<String, dynamic> sensorMap =
+                          sensor as Map<String, dynamic>;
+
+                      return Card(
+                        elevation: 2,
+                        child: InkWell(
+                          onTap: () {
+                            // TODO: Navigate to sensor details
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(16.0),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                left: BorderSide(
+                                  color: _getStatusColor(
+                                      sensorMap['event'] as String?),
+                                  width: 4,
+                                ),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Header with name, ID and status
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            sensorMap['name'] ??
+                                                'Unnamed Sensor',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleMedium
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            'ID: ${sensorMap['sensor_id'] ?? 'N/A'}',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: _getStatusColor(
+                                            sensorMap['event'] as String?),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            _getStatusIcon(
+                                                sensorMap['event'] as String?),
+                                            color: Colors.white,
+                                            size: 16,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            sensorMap['event'] as String? ??
+                                                'Unknown',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const Divider(height: 24),
+                                // Main info grid
+                                Wrap(
+                                  spacing: 24,
+                                  runSpacing: 16,
+                                  children: [
+                                    _buildSensorInfoRow(
+                                      'UUID',
+                                      sensorMap['uuid'] ?? 'N/A',
+                                      Icons.fingerprint,
+                                      width: 300,
+                                    ),
+                                    _buildSensorInfoRow(
+                                      'Status',
+                                      sensorMap['status'] ?? 'N/A',
+                                      Icons.info_outline,
+                                      width: 150,
+                                    ),
+                                    _buildSensorInfoRow(
+                                      'Active',
+                                      sensorMap['active'] == true
+                                          ? 'Yes'
+                                          : 'No',
+                                      Icons.power_settings_new,
+                                      color: sensorMap['active'] == true
+                                          ? Colors.green
+                                          : Colors.red,
+                                      width: 120,
+                                    ),
+                                    _buildSensorInfoRow(
+                                      'Calibrated',
+                                      sensorMap['calibrated'] == true
+                                          ? 'Yes'
+                                          : 'No',
+                                      Icons.build_outlined,
+                                      width: 120,
+                                    ),
+                                  ],
+                                ),
+                                if (sensorMap['calibration_date'] != null ||
+                                    sensorMap['readings_per_day'] != null ||
+                                    sensorMap['install_date'] != null)
+                                  const Divider(height: 24),
+                                if (sensorMap['calibration_date'] != null ||
+                                    sensorMap['readings_per_day'] != null ||
+                                    sensorMap['install_date'] != null)
+                                  Wrap(
+                                    spacing: 24,
+                                    runSpacing: 16,
+                                    children: [
+                                      if (sensorMap['calibration_date'] != null)
+                                        _buildSensorInfoRow(
+                                          'Calibration Date',
+                                          sensorMap['calibration_date'],
+                                          Icons.calendar_today,
+                                          width: 200,
+                                        ),
+                                      if (sensorMap['readings_per_day'] != null)
+                                        _buildSensorInfoRow(
+                                          'Readings/Day',
+                                          sensorMap['readings_per_day']
+                                              .toString(),
+                                          Icons.speed,
+                                          width: 150,
+                                        ),
+                                      if (sensorMap['install_date'] != null)
+                                        _buildSensorInfoRow(
+                                          'Install Date',
+                                          sensorMap['install_date'],
+                                          Icons.event,
+                                          width: 200,
+                                        ),
+                                    ],
+                                  ),
+                                if (sensorMap['coordinate_x'] != null ||
+                                    sensorMap['coordinate_y'] != null ||
+                                    sensorMap['coordinate_z'] != null ||
+                                    sensorMap['latitude'] != null ||
+                                    sensorMap['longitude'] != null)
+                                  const Divider(height: 24),
+                                if (sensorMap['coordinate_x'] != null ||
+                                    sensorMap['coordinate_y'] != null ||
+                                    sensorMap['coordinate_z'] != null ||
+                                    sensorMap['latitude'] != null ||
+                                    sensorMap['longitude'] != null)
+                                  Wrap(
+                                    spacing: 24,
+                                    runSpacing: 16,
+                                    children: [
+                                      if (sensorMap['coordinate_x'] != null ||
+                                          sensorMap['coordinate_y'] != null ||
+                                          sensorMap['coordinate_z'] != null)
+                                        _buildSensorInfoRow(
+                                          'Coordinates',
+                                          '(${sensorMap['coordinate_x'] ?? 0}, ${sensorMap['coordinate_y'] ?? 0}, ${sensorMap['coordinate_z'] ?? 0})',
+                                          Icons.location_on_outlined,
+                                          width: 300,
+                                        ),
+                                      if (sensorMap['latitude'] != null &&
+                                          sensorMap['longitude'] != null)
+                                        _buildSensorInfoRow(
+                                          'GPS',
+                                          '${sensorMap['latitude']}, ${sensorMap['longitude']}',
+                                          Icons.gps_fixed,
+                                          width: 300,
+                                        ),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+              ],
+            ),
           ],
         ),
       ),
@@ -389,5 +742,79 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
   "timedbPort": ${widget.cloudHub.cloudhub.timedbPort ?? 'null'},
   "notes": "${widget.cloudHub.cloudhub.notes ?? ''}"
 }''';
+  }
+
+  Color _getStatusColor(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'green':
+        return Colors.green;
+      case 'orange':
+        return Colors.orange;
+      case 'red':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Widget _buildSensorInfoRow(String label, String value, IconData icon,
+      {Color? color, double? width}) {
+    return SizedBox(
+      width: width,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: (color ?? Colors.grey[600])?.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              size: 16,
+              color: color ?? Colors.grey[600],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: color ?? Colors.black87,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _getStatusIcon(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'green':
+        return Icons.check_circle;
+      case 'orange':
+        return Icons.warning;
+      case 'red':
+        return Icons.error;
+      default:
+        return Icons.help_outline;
+    }
   }
 }

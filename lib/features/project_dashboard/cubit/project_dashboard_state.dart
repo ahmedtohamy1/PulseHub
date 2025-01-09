@@ -570,3 +570,26 @@ final class ProjectDashboardMarkMessageAsSeenFailure
 
   const ProjectDashboardMarkMessageAsSeenFailure(this.message);
 }
+
+final class ProjectDashboardCreateCloudhubSensorLoading
+    extends ProjectDashboardState {}
+
+final class ProjectDashboardCreateCloudhubSensorSuccess
+    extends ProjectDashboardState {
+  final bool success;
+
+  const ProjectDashboardCreateCloudhubSensorSuccess(this.success);
+
+  @override
+  List<Object> get props => [success];
+}
+
+final class ProjectDashboardCreateCloudhubSensorFailure
+    extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardCreateCloudhubSensorFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
