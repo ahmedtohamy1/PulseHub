@@ -246,17 +246,21 @@ class AiScreenState extends State<AiScreen> {
                                 children: [
                                   const Text('BERT Evaluation: '),
                                   ...List.generate(
-                                    (state.response.response.bertEvaluation ??
-                                            0)
+                                    ((state.response.response.bertEvaluation ??
+                                                0) /
+                                            2)
+                                        .clamp(0, 5)
                                         .round(),
                                     (index) => const Icon(Icons.star,
                                         color: Colors.amber),
                                   ),
                                   ...List.generate(
                                     5 -
-                                        (state.response.response
-                                                    .bertEvaluation ??
-                                                0)
+                                        ((state.response.response
+                                                        .bertEvaluation ??
+                                                    0) /
+                                                2)
+                                            .clamp(0, 5)
                                             .round(),
                                     (index) => const Icon(Icons.star_border,
                                         color: Colors.amber),
