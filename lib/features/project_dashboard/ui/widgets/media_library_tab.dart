@@ -40,152 +40,173 @@ class _MediaLibraryTabState extends State<MediaLibraryTab> {
     String fileName = '';
     String description = '';
 
+    // Capture the cubit before showing dialog
+    final cubit = context.read<ProjectDashboardCubit>();
+
     showDialog(
       context: context,
       builder: (dialogContext) => BlocProvider.value(
-        value: context.read<ProjectDashboardCubit>(),
+        value: cubit,
         child: StatefulBuilder(
-          builder: (context, setState) => AlertDialog(
-            title: Row(
-              children: [
-                Icon(Icons.upload_file, color: Theme.of(context).primaryColor),
-                const SizedBox(width: 8),
-                const Text('Upload File'),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (selectedFile == null)
-                  Center(
-                    child: FilledButton.icon(
-                      onPressed: () async {
-                        final result = await FilePicker.platform.pickFiles();
-                        if (result != null) {
-                          setState(() {
-                            selectedFile = result.files.first;
-                            fileName = selectedFile!.name;
-                          });
-                        }
-                      },
-                      icon: const Icon(Icons.attach_file),
-                      label: const Text('Choose File'),
-                    ),
-                  )
-                else
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .primaryContainer
-                              .withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.insert_drive_file,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    selectedFile!.name,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  Text(
-                                    '${(selectedFile!.size / 1024).toStringAsFixed(1)} KB',
-                                    style:
-                                        Theme.of(context).textTheme.bodySmall,
-                                  ),
-                                ],
+          builder: (context, setState) =>
+              BlocListener<ProjectDashboardCubit, ProjectDashboardState>(
+            listener: (context, state) {
+              if (state is ProjectDashboardCreateMediaLibraryFileSuccess) {
+                Navigator.pop(dialogContext);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('File uploaded successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                cubit.getMediaLibrary(widget.projectId);
+              } else if (state
+                  is ProjectDashboardCreateMediaLibraryFileFailure) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to upload file: ${state.message}'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: AlertDialog(
+              title: Row(
+                children: [
+                  Icon(Icons.upload_file,
+                      color: Theme.of(context).primaryColor),
+                  const SizedBox(width: 8),
+                  const Text('Upload File'),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (selectedFile == null)
+                    Center(
+                      child: FilledButton.icon(
+                        onPressed: () async {
+                          final result = await FilePicker.platform.pickFiles();
+                          if (result != null) {
+                            setState(() {
+                              selectedFile = result.files.first;
+                              fileName = selectedFile!.name;
+                            });
+                          }
+                        },
+                        icon: const Icon(Icons.attach_file),
+                        label: const Text('Choose File'),
+                      ),
+                    )
+                  else
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primaryContainer
+                                .withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.insert_drive_file,
+                                color: Theme.of(context).primaryColor,
                               ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.refresh),
-                              onPressed: () {
-                                setState(() {
-                                  selectedFile = null;
-                                  fileName = '';
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        decoration: InputDecoration(
-                          labelText: 'File Name',
-                          hintText: 'Enter file name without extension',
-                          prefixIcon: const Icon(Icons.edit_document),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      selectedFile!.name,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    Text(
+                                      '${(selectedFile!.size / 1024).toStringAsFixed(1)} KB',
+                                      style:
+                                          Theme.of(context).textTheme.bodySmall,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.refresh),
+                                onPressed: () {
+                                  setState(() {
+                                    selectedFile = null;
+                                    fileName = '';
+                                  });
+                                },
+                              ),
+                            ],
                           ),
                         ),
-                        onChanged: (value) =>
-                            fileName = '$value.${selectedFile!.extension}',
-                        controller: TextEditingController(
-                          text: selectedFile!.name
-                              .replaceAll('.${selectedFile!.extension}', ''),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        decoration: InputDecoration(
-                          labelText: 'Description (optional)',
-                          hintText: 'Enter file description',
-                          prefixIcon: const Icon(Icons.description),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
+                        const SizedBox(height: 16),
+                        TextField(
+                          decoration: InputDecoration(
+                            labelText: 'File Name',
+                            hintText: 'Enter file name without extension',
+                            prefixIcon: const Icon(Icons.edit_document),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          onChanged: (value) =>
+                              fileName = '$value.${selectedFile!.extension}',
+                          controller: TextEditingController(
+                            text: selectedFile!.name
+                                .replaceAll('.${selectedFile!.extension}', ''),
                           ),
                         ),
-                        maxLines: 3,
-                        onChanged: (value) => description = value,
-                      ),
-                    ],
+                        const SizedBox(height: 16),
+                        TextField(
+                          decoration: InputDecoration(
+                            labelText: 'Description (optional)',
+                            hintText: 'Enter file description',
+                            prefixIcon: const Icon(Icons.description),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          maxLines: 3,
+                          onChanged: (value) => description = value,
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                if (selectedFile != null)
+                  FilledButton.icon(
+                    onPressed: () async {
+                      final token = await SharedPrefHelper.getSecuredString(
+                          SharedPrefKeys.token);
+                      cubit.createMediaLibraryFile(
+                        token,
+                        widget.projectId,
+                        fileName,
+                        description,
+                        selectedFile!,
+                      );
+                    },
+                    icon: const Icon(Icons.upload),
+                    label: const Text('Upload'),
                   ),
               ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              if (selectedFile != null)
-                FilledButton.icon(
-                  onPressed: () async {
-                    final token = await SharedPrefHelper.getSecuredString(
-                        SharedPrefKeys.token);
-                    context
-                        .read<ProjectDashboardCubit>()
-                        .createMediaLibraryFile(
-                          token,
-                          widget.projectId,
-                          fileName,
-                          description,
-                          selectedFile!,
-                        );
-                    Navigator.pop(context);
-                    context
-                        .read<ProjectDashboardCubit>()
-                        .getMediaLibrary(widget.projectId);
-                  },
-                  icon: const Icon(Icons.upload),
-                  label: const Text('Upload'),
-                ),
-            ],
           ),
         ),
       ),
@@ -455,47 +476,53 @@ class _MediaLibraryTabState extends State<MediaLibraryTab> {
                                                           const Size(40, 40),
                                                     ),
                                                     onPressed: () {
+                                                      // Capture the cubit before showing dialog
+                                                      final cubit = context.read<
+                                                          ProjectDashboardCubit>();
+
                                                       showDialog(
                                                         context: context,
-                                                        builder: (context) =>
-                                                            AlertDialog(
-                                                          title: const Text(
-                                                              'Delete File'),
-                                                          content: Text(
-                                                              'Are you sure you want to delete "${file.fileName}"?'),
-                                                          actions: [
-                                                            TextButton(
-                                                              onPressed: () =>
-                                                                  Navigator.pop(
-                                                                      context),
-                                                              child: const Text(
-                                                                  'Cancel'),
-                                                            ),
-                                                            FilledButton(
-                                                              style: FilledButton
-                                                                  .styleFrom(
-                                                                backgroundColor:
-                                                                    Theme.of(
-                                                                            context)
-                                                                        .colorScheme
-                                                                        .error,
+                                                        builder:
+                                                            (dialogContext) =>
+                                                                BlocProvider
+                                                                    .value(
+                                                          value: cubit,
+                                                          child: AlertDialog(
+                                                            title: const Text(
+                                                                'Delete File'),
+                                                            content: Text(
+                                                                'Are you sure you want to delete "${file.fileName}"?'),
+                                                            actions: [
+                                                              TextButton(
+                                                                onPressed: () =>
+                                                                    Navigator.pop(
+                                                                        dialogContext),
+                                                                child: const Text(
+                                                                    'Cancel'),
                                                               ),
-                                                              onPressed: () {
-                                                                if (file.mediaLibraryId !=
-                                                                    null) {
-                                                                  context
-                                                                      .read<
-                                                                          ProjectDashboardCubit>()
-                                                                      .deleteMediaLibrary(
-                                                                          file.mediaLibraryId!);
-                                                                  Navigator.pop(
-                                                                      context);
-                                                                }
-                                                              },
-                                                              child: const Text(
-                                                                  'Delete'),
-                                                            ),
-                                                          ],
+                                                              FilledButton(
+                                                                style: FilledButton
+                                                                    .styleFrom(
+                                                                  backgroundColor:
+                                                                      Theme.of(
+                                                                              context)
+                                                                          .colorScheme
+                                                                          .error,
+                                                                ),
+                                                                onPressed: () {
+                                                                  if (file.mediaLibraryId !=
+                                                                      null) {
+                                                                    cubit.deleteMediaLibrary(
+                                                                        file.mediaLibraryId!);
+                                                                    Navigator.pop(
+                                                                        dialogContext);
+                                                                  }
+                                                                },
+                                                                child: const Text(
+                                                                    'Delete'),
+                                                              ),
+                                                            ],
+                                                          ),
                                                         ),
                                                       );
                                                     },
