@@ -1222,3 +1222,257 @@ class _AnalysisParametersDialogState extends State<AnalysisParametersDialog> {
     );
   }
 }
+
+class CustomTimeRangeDialog extends StatefulWidget {
+  const CustomTimeRangeDialog({
+    super.key,
+  });
+
+  @override
+  State<CustomTimeRangeDialog> createState() => _CustomTimeRangeDialogState();
+}
+
+class _CustomTimeRangeDialogState extends State<CustomTimeRangeDialog> {
+  DateTime startDate = DateTime.now();
+  DateTime endDate = DateTime.now();
+  TimeOfDay startTime = TimeOfDay.now();
+  TimeOfDay endTime = TimeOfDay.now();
+
+  Future<void> _selectStartDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: startDate.isAfter(now) ? now : startDate,
+      firstDate: DateTime(2020),
+      lastDate: now,
+    );
+    if (picked != null) {
+      setState(() {
+        startDate = DateTime(
+          picked.year,
+          picked.month,
+          picked.day,
+          startTime.hour,
+          startTime.minute,
+        );
+        // If end date is before start date, update it
+        if (endDate.isBefore(startDate)) {
+          endDate = startDate.add(const Duration(hours: 1));
+          endTime = TimeOfDay.fromDateTime(endDate);
+        }
+      });
+    }
+  }
+
+  Future<void> _selectEndDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: endDate.isAfter(now) ? now : endDate,
+      firstDate: startDate,
+      lastDate: now,
+    );
+    if (picked != null) {
+      setState(() {
+        endDate = DateTime(
+          picked.year,
+          picked.month,
+          picked.day,
+          endTime.hour,
+          endTime.minute,
+        );
+      });
+    }
+  }
+
+  Future<void> _selectStartTime() async {
+    final now = TimeOfDay.now();
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: startTime,
+    );
+    if (picked != null) {
+      setState(() {
+        startTime = picked;
+        final newStartDate = DateTime(
+          startDate.year,
+          startDate.month,
+          startDate.day,
+          picked.hour,
+          picked.minute,
+        );
+
+        // If new start datetime is after now, adjust to current time
+        if (newStartDate.isAfter(DateTime.now())) {
+          startTime = now;
+          startDate = DateTime(
+            startDate.year,
+            startDate.month,
+            startDate.day,
+            now.hour,
+            now.minute,
+          );
+        } else {
+          startDate = newStartDate;
+        }
+
+        // If end date is before new start date, update it
+        if (endDate.isBefore(startDate)) {
+          endDate = startDate.add(const Duration(hours: 1));
+          endTime = TimeOfDay.fromDateTime(endDate);
+        }
+      });
+    }
+  }
+
+  Future<void> _selectEndTime() async {
+    final now = TimeOfDay.now();
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: endTime,
+    );
+    if (picked != null) {
+      setState(() {
+        endTime = picked;
+        final newEndDate = DateTime(
+          endDate.year,
+          endDate.month,
+          endDate.day,
+          picked.hour,
+          picked.minute,
+        );
+
+        // If new end datetime is after now, adjust to current time
+        if (newEndDate.isAfter(DateTime.now())) {
+          endTime = now;
+          endDate = DateTime(
+            endDate.year,
+            endDate.month,
+            endDate.day,
+            now.hour,
+            now.minute,
+          );
+        } else {
+          endDate = newEndDate;
+        }
+      });
+    }
+  }
+
+  String _formatDateTime(DateTime date, TimeOfDay time) {
+    final hour = time.hour;
+    final minute = time.minute;
+    final period = hour >= 12 ? 'PM' : 'AM';
+    final hour12 = hour > 12
+        ? hour - 12
+        : hour == 0
+            ? 12
+            : hour;
+    return '${date.day}/${date.month}/${date.year}, '
+        '$hour12:${minute.toString().padLeft(2, '0')} $period';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Row(
+        children: [
+          Icon(Icons.date_range),
+          SizedBox(width: 8),
+          Text('Custom Time Range'),
+        ],
+      ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Start',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _selectStartDate,
+                    icon: const Icon(Icons.calendar_today),
+                    label: Text(
+                        '${startDate.day}/${startDate.month}/${startDate.year}'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _selectStartTime,
+                    icon: const Icon(Icons.access_time),
+                    label: Text(
+                        '${startTime.hour > 12 ? startTime.hour - 12 : startTime.hour == 0 ? 12 : startTime.hour}:${startTime.minute.toString().padLeft(2, '0')} ${startTime.hour >= 12 ? 'PM' : 'AM'}'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'End',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _selectEndDate,
+                    icon: const Icon(Icons.calendar_today),
+                    label:
+                        Text('${endDate.day}/${endDate.month}/${endDate.year}'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _selectEndTime,
+                    icon: const Icon(Icons.access_time),
+                    label: Text(
+                        '${endTime.hour > 12 ? endTime.hour - 12 : endTime.hour == 0 ? 12 : endTime.hour}:${endTime.minute.toString().padLeft(2, '0')} ${endTime.hour >= 12 ? 'PM' : 'AM'}'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () {
+            if (endDate.isBefore(startDate)) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('End time must be after start time'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+              return;
+            }
+            Navigator.of(context).pop({
+              'start': startDate.toUtc().toIso8601String(),
+              'time_range_stop': endDate.toUtc().toIso8601String(),
+            });
+          },
+          child: const Text('Apply'),
+        ),
+      ],
+    );
+  }
+}

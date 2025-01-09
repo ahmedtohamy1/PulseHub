@@ -734,7 +734,7 @@ class QueryParams {
   final bool rawData; // Fixed value
   final String? sensorsToAnalyze;
   final String? timeRangeStart;
-  final String timeRangeStop; // Default value set
+  final String timeRangeStop;
   final String? topic;
   final String? windowPeriod;
   final String? windowSize;
@@ -749,10 +749,11 @@ class QueryParams {
     this.topic,
     this.sensorsToAnalyze,
     this.timeRangeStart,
+    String? timeRangeStop,
     this.windowSize,
     this.windowPeriod,
-  })  : rawData = false, // Assign fixed value in constructor list
-        timeRangeStop = 'now'; // Assign default value in constructor list
+  })  : rawData = false,
+        timeRangeStop = timeRangeStop ?? 'now';
 
   Map<String, dynamic> toJson() {
     return {

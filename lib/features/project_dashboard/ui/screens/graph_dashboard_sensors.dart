@@ -10,6 +10,7 @@ import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/fie
 import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/number_input.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/submit_button.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/time_db_response_builder.dart';
+import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/time_series_chart.dart';
 
 class GraphDashboardSensors extends StatefulWidget {
   final Dashboard dashboard;
@@ -107,7 +108,12 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
       sensorsToAnalyze: null,
       windowSize: windowSize.toString(),
       deviationThreshold: deviationController.text,
-      timeRangeStart: isCustomRange ? customRangeController.text : timeRange,
+      timeRangeStart: isCustomRange
+          ? customRangeController.text.split('&')[0].split('=')[1]
+          : timeRange,
+      timeRangeStop: isCustomRange
+          ? customRangeController.text.split('&')[1].split('=')[1]
+          : 'now',
       aggregateFunc: aggregateFunction,
       bucket: 'CloudHub',
       org: 'DIC',
@@ -138,7 +144,12 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
       sensorsToAnalyze: null,
       windowSize: windowSize.toString(),
       deviationThreshold: deviationController.text,
-      timeRangeStart: isCustomRange ? customRangeController.text : timeRange,
+      timeRangeStart: isCustomRange
+          ? customRangeController.text.split('&')[0].split('=')[1]
+          : timeRange,
+      timeRangeStop: isCustomRange
+          ? customRangeController.text.split('&')[1].split('=')[1]
+          : 'now',
       aggregateFunc: aggregateFunction,
       bucket: 'CloudHub',
       org: 'DIC',
@@ -172,7 +183,12 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
       deviationThreshold:
           List.filled(selectedFields.length, deviationController.text)
               .join(','),
-      timeRangeStart: isCustomRange ? customRangeController.text : timeRange,
+      timeRangeStart: isCustomRange
+          ? customRangeController.text.split('&')[0].split('=')[1]
+          : timeRange,
+      timeRangeStop: isCustomRange
+          ? customRangeController.text.split('&')[1].split('=')[1]
+          : 'now',
       aggregateFunc: aggregateFunction,
       bucket: 'CloudHub',
       org: 'DIC',
@@ -285,25 +301,39 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                                       '30d',
                                       'Custom'
                                     ],
-                                    onChanged: (value) {
-                                      setState(() {
-                                        if (value == 'Custom') {
-                                          isCustomRange = true;
-                                        } else {
+                                    onChanged: (value) async {
+                                      if (value == 'Custom') {
+                                        final customRange = await showDialog<
+                                            Map<String, String>>(
+                                          context: context,
+                                          builder: (context) =>
+                                              const CustomTimeRangeDialog(),
+                                        );
+
+                                        if (customRange != null) {
+                                          setState(() {
+                                            isCustomRange = true;
+                                            customRangeController.text =
+                                                'time_range_start=${customRange['start']}&time_range_stop=${customRange['time_range_stop']}';
+                                            timeRange = 'Custom';
+                                          });
+                                        }
+                                      } else {
+                                        setState(() {
                                           isCustomRange = false;
                                           timeRange = value!;
-                                        }
-                                      });
+                                        });
+                                      }
                                     },
                                   ),
                                   if (isCustomRange)
                                     Padding(
                                       padding: const EdgeInsets.only(top: 8.0),
-                                      child: TextField(
-                                        controller: customRangeController,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Enter Custom Range',
-                                          border: OutlineInputBorder(),
+                                      child: Text(
+                                        'Custom Range Selected',
+                                        style: TextStyle(
+                                          color: Theme.of(context).primaryColor,
+                                          fontStyle: FontStyle.italic,
                                         ),
                                       ),
                                     ),
