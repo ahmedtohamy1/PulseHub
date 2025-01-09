@@ -350,18 +350,54 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
         isManager,
         isNotificationSender);
     res.fold(
-      (failure) => emit(ProjectDashboardUpdateCollaboratorsFailure(failure)),
-      (response) => emit(ProjectDashboardUpdateCollaboratorsSuccess(response)),
+      (failure) {
+        emit(ProjectDashboardUpdateCollaboratorsFailure(failure));
+      },
+      (response) async {
+        try {
+          emit(ProjectDashboardUpdateCollaboratorsSuccess(response));
+          // Get updated collaborators list
+          final collaboratorsRes =
+              await _repository.getCollaborators(token, projectId);
+          collaboratorsRes.fold(
+            (failure) => emit(ProjectDashboardGetCollaboratorsFailure(failure)),
+            (collaborators) {
+              cachedCollaborators = collaborators;
+              emit(ProjectDashboardGetCollaboratorsSuccess(collaborators));
+            },
+          );
+        } catch (e) {
+          emit(ProjectDashboardUpdateCollaboratorsFailure(e.toString()));
+        }
+      },
     );
   }
 
-  Future<void> deleteCollaboratorsGroup(int groupId) async {
+  Future<void> deleteCollaboratorsGroup(int groupId, int projectId) async {
     emit(ProjectDashboardDeleteCollaboratorsLoading());
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
     final res = await _repository.deleteCollaborators(token, groupId);
     res.fold(
-      (failure) => emit(ProjectDashboardDeleteCollaboratorsFailure(failure)),
-      (response) => emit(ProjectDashboardDeleteCollaboratorsSuccess(response)),
+      (failure) {
+        emit(ProjectDashboardDeleteCollaboratorsFailure(failure));
+      },
+      (response) async {
+        try {
+          emit(ProjectDashboardDeleteCollaboratorsSuccess(response));
+          // Get updated collaborators list
+          final collaboratorsRes =
+              await _repository.getCollaborators(token, projectId);
+          collaboratorsRes.fold(
+            (failure) => emit(ProjectDashboardGetCollaboratorsFailure(failure)),
+            (collaborators) {
+              cachedCollaborators = collaborators;
+              emit(ProjectDashboardGetCollaboratorsSuccess(collaborators));
+            },
+          );
+        } catch (e) {
+          emit(ProjectDashboardDeleteCollaboratorsFailure(e.toString()));
+        }
+      },
     );
   }
 
@@ -389,15 +425,31 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
         isManager,
         isNotificationSender);
     res.fold(
-      (failure) =>
-          emit(ProjectDashboardCreateCollaboratorsGroupFailure(failure)),
-      (response) =>
-          emit(ProjectDashboardCreateCollaboratorsGroupSuccess(response)),
+      (failure) {
+        emit(ProjectDashboardCreateCollaboratorsGroupFailure(failure));
+      },
+      (response) async {
+        try {
+          emit(ProjectDashboardCreateCollaboratorsGroupSuccess(response));
+          // Get updated collaborators list
+          final collaboratorsRes =
+              await _repository.getCollaborators(token, projectId);
+          collaboratorsRes.fold(
+            (failure) => emit(ProjectDashboardGetCollaboratorsFailure(failure)),
+            (collaborators) {
+              cachedCollaborators = collaborators;
+              emit(ProjectDashboardGetCollaboratorsSuccess(collaborators));
+            },
+          );
+        } catch (e) {
+          emit(ProjectDashboardCreateCollaboratorsGroupFailure(e.toString()));
+        }
+      },
     );
   }
 
   Future<void> addUserToCollaboratorsGroup(
-      List<int> groupIds, List<int> userIds) async {
+      List<int> groupIds, List<int> userIds, int projectId) async {
     emit(ProjectDashboardAddUserToCollaboratorsGroupLoading());
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
     final res = await _repository.addUserToCollaboratorsGroup(
@@ -408,13 +460,29 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
     res.fold(
       (failure) =>
           emit(ProjectDashboardAddUserToCollaboratorsGroupFailure(failure)),
-      (response) =>
-          emit(ProjectDashboardAddUserToCollaboratorsGroupSuccess(response)),
+      (response) async {
+        try {
+          emit(ProjectDashboardAddUserToCollaboratorsGroupSuccess(response));
+          // Get updated collaborators list
+          final collaboratorsRes =
+              await _repository.getCollaborators(token, projectId);
+          collaboratorsRes.fold(
+            (failure) => emit(ProjectDashboardGetCollaboratorsFailure(failure)),
+            (collaborators) {
+              cachedCollaborators = collaborators;
+              emit(ProjectDashboardGetCollaboratorsSuccess(collaborators));
+            },
+          );
+        } catch (e) {
+          emit(
+              ProjectDashboardAddUserToCollaboratorsGroupFailure(e.toString()));
+        }
+      },
     );
   }
 
   Future<void> removeUserFromCollaboratorsGroup(
-      List<int> groupIds, int userId) async {
+      List<int> groupIds, int userId, int projectId) async {
     emit(ProjectDashboardRemoveUserFromCollaboratorsGroupLoading());
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
     final res = await _repository.removeUserFromCollaboratorsGroup(
@@ -422,8 +490,25 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
     res.fold(
       (failure) => emit(
           ProjectDashboardRemoveUserFromCollaboratorsGroupFailure(failure)),
-      (response) => emit(
-          ProjectDashboardRemoveUserFromCollaboratorsGroupSuccess(response)),
+      (response) async {
+        try {
+          emit(ProjectDashboardRemoveUserFromCollaboratorsGroupSuccess(
+              response));
+          // Get updated collaborators list
+          final collaboratorsRes =
+              await _repository.getCollaborators(token, projectId);
+          collaboratorsRes.fold(
+            (failure) => emit(ProjectDashboardGetCollaboratorsFailure(failure)),
+            (collaborators) {
+              cachedCollaborators = collaborators;
+              emit(ProjectDashboardGetCollaboratorsSuccess(collaborators));
+            },
+          );
+        } catch (e) {
+          emit(ProjectDashboardRemoveUserFromCollaboratorsGroupFailure(
+              e.toString()));
+        }
+      },
     );
   }
 

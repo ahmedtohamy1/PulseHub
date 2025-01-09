@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pulsehub/features/project_dashboard/ui/widgets/collaborators_tab.dart';
+import 'package:pulsehub/features/project_dashboard/ui/widgets/collaborators_tab/collaborators_tab.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/customisation_tab.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/media_library_tab.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/overview_tab.dart';
