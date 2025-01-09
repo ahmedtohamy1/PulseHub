@@ -21,7 +21,7 @@ class CollaboratorsTable extends StatelessWidget {
         scrollDirection: Axis.vertical,
         child: DataTable(
           showCheckboxColumn: false,
-          headingRowColor: MaterialStateColor.resolveWith(
+          headingRowColor: WidgetStateColor.resolveWith(
             (states) => Theme.of(context).colorScheme.primary,
           ),
           columns: const [
@@ -44,7 +44,7 @@ class CollaboratorsTable extends StatelessWidget {
                 : Theme.of(context).colorScheme.surface;
 
             return DataRow(
-              color: MaterialStateColor.resolveWith((states) => rowColor),
+              color: WidgetStateColor.resolveWith((states) => rowColor),
               onSelectChanged: (_) => onEditCollaborator(member),
               cells: [
                 DataCell(

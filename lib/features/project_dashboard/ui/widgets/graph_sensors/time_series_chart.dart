@@ -172,7 +172,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
       final imageHeight = image.height.toDouble();
 
       // Calculate title height first
-      final titleStyle = TextStyle(
+      const titleStyle = TextStyle(
         color: Colors.black,
         fontSize: 16 * 3, // Scale up for high resolution
         fontWeight: FontWeight.bold,
@@ -1357,19 +1357,6 @@ class _CustomTimeRangeDialogState extends State<CustomTimeRangeDialog> {
         }
       });
     }
-  }
-
-  String _formatDateTime(DateTime date, TimeOfDay time) {
-    final hour = time.hour;
-    final minute = time.minute;
-    final period = hour >= 12 ? 'PM' : 'AM';
-    final hour12 = hour > 12
-        ? hour - 12
-        : hour == 0
-            ? 12
-            : hour;
-    return '${date.day}/${date.month}/${date.year}, '
-        '$hour12:${minute.toString().padLeft(2, '0')} $period';
   }
 
   @override

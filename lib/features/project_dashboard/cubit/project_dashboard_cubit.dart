@@ -117,19 +117,25 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
           Map.from(lastTimeDbResponse!.open_ticket ?? {});
 
       // Update only the fields that exist in the new data
-      if (sensorData.frequency != null)
+      if (sensorData.frequency != null) {
         updatedFrequency.addAll(sensorData.frequency!);
-      if (sensorData.magnitude != null)
+      }
+      if (sensorData.magnitude != null) {
         updatedMagnitude.addAll(sensorData.magnitude!);
-      if (sensorData.dominate_frequencies != null)
+      }
+      if (sensorData.dominate_frequencies != null) {
         updatedDominateFrequencies.addAll(sensorData.dominate_frequencies!);
-      if (sensorData.anomaly_percentage != null)
+      }
+      if (sensorData.anomaly_percentage != null) {
         updatedAnomalyPercentage.addAll(sensorData.anomaly_percentage!);
-      if (sensorData.anomaly_regions != null)
+      }
+      if (sensorData.anomaly_regions != null) {
         updatedAnomalyRegions.addAll(sensorData.anomaly_regions!);
+      }
       if (sensorData.ticket != null) updatedTicket.addAll(sensorData.ticket!);
-      if (sensorData.open_ticket != null)
+      if (sensorData.open_ticket != null) {
         updatedOpenTicket.addAll(sensorData.open_ticket!);
+      }
 
       final newResult = Result(fields: updatedFields);
 

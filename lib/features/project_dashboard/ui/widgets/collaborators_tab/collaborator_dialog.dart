@@ -89,7 +89,7 @@ class _CollaboratorDialogState extends State<CollaboratorDialog> {
                               });
                             },
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             ),

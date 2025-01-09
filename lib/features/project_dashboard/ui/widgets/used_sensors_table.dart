@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_used_sensors_response_model.dart';
@@ -442,7 +441,7 @@ class UsedSensorsTable extends StatelessWidget {
                             return DropdownMenuItem(
                               value: monitoring,
                               child:
-                                  Text(monitoring.name ?? 'Unnamed Monitoring'),
+                                  Text(monitoring.name),
                             );
                           }).toList(),
                           onChanged: isLoading

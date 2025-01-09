@@ -12,9 +12,9 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 class CloudHubDetailsScreen extends StatefulWidget {
-  MonitoringCloudhubDetails cloudHub;
+  final MonitoringCloudhubDetails cloudHub;
 
-  CloudHubDetailsScreen({
+  const CloudHubDetailsScreen({
     super.key,
     required this.cloudHub,
   });
@@ -25,6 +25,7 @@ class CloudHubDetailsScreen extends StatefulWidget {
 
 class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
   bool _isEditing = false;
+  late MonitoringCloudhubDetails _cloudHub;
   late TextEditingController _nameController;
   late TextEditingController _wifiSsidController;
   late TextEditingController _wifiPasswordController;
@@ -36,24 +37,25 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
   @override
   void initState() {
     super.initState();
+    _cloudHub = widget.cloudHub;
     _initControllers();
   }
 
   void _initControllers() {
     _nameController =
-        TextEditingController(text: widget.cloudHub.cloudhub.name ?? '');
+        TextEditingController(text: _cloudHub.cloudhub.name ?? '');
     _wifiSsidController =
-        TextEditingController(text: widget.cloudHub.cloudhub.wifiSsid ?? '');
-    _wifiPasswordController = TextEditingController(
-        text: widget.cloudHub.cloudhub.wifiPassword ?? '');
+        TextEditingController(text: _cloudHub.cloudhub.wifiSsid ?? '');
+    _wifiPasswordController =
+        TextEditingController(text: _cloudHub.cloudhub.wifiPassword ?? '');
     _protocolController =
-        TextEditingController(text: widget.cloudHub.cloudhub.protocol ?? '');
-    _timedbServerController = TextEditingController(
-        text: widget.cloudHub.cloudhub.timedbServer ?? '');
+        TextEditingController(text: _cloudHub.cloudhub.protocol ?? '');
+    _timedbServerController =
+        TextEditingController(text: _cloudHub.cloudhub.timedbServer ?? '');
     _timedbPortController =
-        TextEditingController(text: widget.cloudHub.cloudhub.timedbPort ?? '');
+        TextEditingController(text: _cloudHub.cloudhub.timedbPort ?? '');
     _notesController =
-        TextEditingController(text: widget.cloudHub.cloudhub.notes ?? '');
+        TextEditingController(text: _cloudHub.cloudhub.notes ?? '');
   }
 
   @override
@@ -69,7 +71,7 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
   }
 
   Future<void> _saveChanges() async {
-    if (widget.cloudHub.cloudhub.cloudhubId == null) {
+    if (_cloudHub.cloudhub.cloudhubId == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -100,7 +102,7 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
     );
 
     await context.read<ProjectDashboardCubit>().updateCloudhub(
-          widget.cloudHub.cloudhub.cloudhubId!,
+          _cloudHub.cloudhub.cloudhubId!,
           request,
         );
 
@@ -130,7 +132,7 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
         final tempDir = await getTemporaryDirectory();
         final now = DateTime.now();
         final fileName =
-            'cloudhub_qr_${widget.cloudHub.cloudhub.name?.replaceAll(' ', '_') ?? 'unnamed'}_${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}.png';
+            'cloudhub_qr_${_cloudHub.cloudhub.name?.replaceAll(' ', '_') ?? 'unnamed'}_${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}.png';
         final tempFile = File('${tempDir.path}/$fileName');
         await tempFile.writeAsBytes(pngBytes);
 
@@ -142,7 +144,7 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
           await Share.shareXFiles(
             [XFile(tempFile.path)],
             subject:
-                'CloudHub QR Code - ${widget.cloudHub.cloudhub.name ?? 'Unnamed CloudHub'}',
+                'CloudHub QR Code - ${_cloudHub.cloudhub.name ?? 'Unnamed CloudHub'}',
             sharePositionOrigin: Rect.fromLTWH(
               position.dx,
               position.dy,
@@ -189,7 +191,7 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
           // Refresh the CloudHub data to get the updated sensors list
           context
               .read<ProjectDashboardCubit>()
-              .getCloudhubData(widget.cloudHub.cloudhub.cloudhubId!);
+              .getCloudhubData(_cloudHub.cloudhub.cloudhubId!);
         } else if (state is ProjectDashboardCreateCloudhubSensorFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -199,7 +201,7 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
           );
         } else if (state is ProjectDashboardCloudhubDataSuccess) {
           setState(() {
-            widget.cloudHub = MonitoringCloudhubDetails(
+            _cloudHub = MonitoringCloudhubDetails(
               success: state.cloudhubDetails.success,
               cloudhub: state.cloudhubDetails.cloudhub,
             );
@@ -226,8 +228,8 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  widget.cloudHub.cloudhub.name?.isNotEmpty == true
-                      ? widget.cloudHub.cloudhub.name!
+                  _cloudHub.cloudhub.name?.isNotEmpty == true
+                      ? _cloudHub.cloudhub.name!
                       : 'CloudHub Details',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
@@ -260,8 +262,7 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
                                     parentContext
                                         .read<ProjectDashboardCubit>()
                                         .createCloudhubSensor(
-                                          widget.cloudHub.cloudhub.cloudhubId ??
-                                              0,
+                                          _cloudHub.cloudhub.cloudhubId ?? 0,
                                           value.trim(),
                                         );
                                   }
@@ -280,8 +281,7 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
                                     parentContext
                                         .read<ProjectDashboardCubit>()
                                         .getCloudhubData(
-                                          widget.cloudHub.cloudhub.cloudhubId ??
-                                              0,
+                                          _cloudHub.cloudhub.cloudhubId ?? 0,
                                         );
                                     ScaffoldMessenger.of(parentContext)
                                         .showSnackBar(
@@ -326,7 +326,7 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
                                               parentContext
                                                   .read<ProjectDashboardCubit>()
                                                   .createCloudhubSensor(
-                                                    widget.cloudHub.cloudhub
+                                                    _cloudHub.cloudhub
                                                             .cloudhubId ??
                                                         0,
                                                     sensorName,
@@ -449,17 +449,17 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
             _buildInfoSection(
               title: 'Sensors',
               children: [
-                if (widget.cloudHub.cloudhub.sensors?.isEmpty ?? true)
+                if (_cloudHub.cloudhub.sensors?.isEmpty ?? true)
                   const Center(child: Text('No sensors available'))
                 else
                   ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: widget.cloudHub.cloudhub.sensors?.length ?? 0,
+                    itemCount: _cloudHub.cloudhub.sensors?.length ?? 0,
                     separatorBuilder: (context, index) =>
                         const SizedBox(height: 16),
                     itemBuilder: (context, index) {
-                      final sensor = widget.cloudHub.cloudhub.sensors![index];
+                      final sensor = _cloudHub.cloudhub.sensors![index];
                       final Map<String, dynamic> sensorMap =
                           sensor as Map<String, dynamic>;
 
@@ -734,13 +734,13 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
   String _generateQrData() {
     return '''
 {
-  "cloudHubName": "${widget.cloudHub.cloudhub.name ?? ''}",
-  "wifiSsid": "${widget.cloudHub.cloudhub.wifiSsid ?? ''}",
-  "wifiPassword": "${widget.cloudHub.cloudhub.wifiPassword ?? ''}",
-  "protocol": "${widget.cloudHub.cloudhub.protocol ?? ''}",
-  "timedbServer": "${widget.cloudHub.cloudhub.timedbServer ?? ''}",
-  "timedbPort": ${widget.cloudHub.cloudhub.timedbPort ?? 'null'},
-  "notes": "${widget.cloudHub.cloudhub.notes ?? ''}"
+  "cloudHubName": "${_cloudHub.cloudhub.name ?? ''}",
+  "wifiSsid": "${_cloudHub.cloudhub.wifiSsid ?? ''}",
+  "wifiPassword": "${_cloudHub.cloudhub.wifiPassword ?? ''}",
+  "protocol": "${_cloudHub.cloudhub.protocol ?? ''}",
+  "timedbServer": "${_cloudHub.cloudhub.timedbServer ?? ''}",
+  "timedbPort": ${_cloudHub.cloudhub.timedbPort ?? 'null'},
+  "notes": "${_cloudHub.cloudhub.notes ?? ''}"
 }''';
   }
 

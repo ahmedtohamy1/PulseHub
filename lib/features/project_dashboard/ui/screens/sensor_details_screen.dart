@@ -59,7 +59,7 @@ class _SensorDetailsScreenState extends State<SensorDetailsScreen>
     if (_tabController.index == 4) {
       context
           .read<ProjectDashboardCubit>()
-          .getSensorActivityLog(widget.sensor.sensorId ?? 0);
+          .getSensorActivityLog(widget.sensor.sensorId);
     }
   }
 
