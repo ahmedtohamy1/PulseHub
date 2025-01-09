@@ -17,7 +17,7 @@ class UsedSensorsTable extends StatelessWidget {
   });
 
   Future<void> _showEditDialog(BuildContext context, UsedSensorList sensor) {
-    final countController = TextEditingController(text: '');
+    final countController = TextEditingController(text: '${sensor.count ?? 0}');
     final cubit = context.read<ProjectDashboardCubit>();
 
     return showDialog(
@@ -122,20 +122,14 @@ class UsedSensorsTable extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      RichText(
-                        text: TextSpan(
-                          style: DefaultTextStyle.of(context).style,
-                          children: const [
-                            TextSpan(
-                              text: 'Count (New Sensors)\n',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
+                      const Text(
+                        'Count',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
                       ),
+                      const SizedBox(height: 8),
                       TextFormField(
                         controller: countController,
                         enabled: !isLoading,
@@ -147,11 +141,6 @@ class UsedSensorsTable extends StatelessWidget {
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly
                         ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Original Count: ${sensor.count ?? 0}',
-                        style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
                   ),
@@ -175,11 +164,14 @@ class UsedSensorsTable extends StatelessWidget {
                     else
                       FilledButton(
                         onPressed: () {
-                          final count = int.tryParse(countController.text);
-                          if (count != null && sensor.usedSensorId != null) {
+                          final newCount = int.tryParse(countController.text);
+                          if (newCount != null && sensor.usedSensorId != null) {
+                            final currentCount = sensor.count ?? 0;
+                            final countDifference = newCount - currentCount;
                             context
                                 .read<ProjectDashboardCubit>()
-                                .updateUsedSensors(sensor.usedSensorId!, count);
+                                .updateUsedSensors(
+                                    sensor.usedSensorId!, countDifference);
                           }
                         },
                         child: const Text('Save'),
