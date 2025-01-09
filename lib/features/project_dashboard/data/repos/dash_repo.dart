@@ -15,6 +15,7 @@ import 'package:pulsehub/features/project_dashboard/data/models/project_update_r
 import 'package:pulsehub/features/project_dashboard/data/models/sensor_activity_log_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/tickets_messages_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/timedb_response.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/update_cloudhub_request_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo_impl.dart';
 
 abstract class DashRepository {
@@ -95,4 +96,6 @@ abstract class DashRepository {
   Future<Either<String, bool>> removeUserFromCollaboratorsGroup(
       String token, List<int> groupIds, int userId);
   Future<Either<String, GetAllResponseModel>> getAllUsers(String token);
+  Future<Either<String, bool>> updateCloudhub(
+      String token, int cloudhubId, UpdateCloudhubRequestModel request);
 }

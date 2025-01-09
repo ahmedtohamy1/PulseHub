@@ -533,3 +533,23 @@ final class ProjectDashboardGetAllUsersFailure extends ProjectDashboardState {
   @override
   List<Object> get props => [message];
 }
+
+final class ProjectDashboardUpdateCloudhubLoading extends ProjectDashboardState {}
+
+final class ProjectDashboardUpdateCloudhubSuccess extends ProjectDashboardState {
+  final bool success;
+
+  const ProjectDashboardUpdateCloudhubSuccess(this.success);
+
+  @override
+  List<Object> get props => [success];
+}
+
+final class ProjectDashboardUpdateCloudhubFailure extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardUpdateCloudhubFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}

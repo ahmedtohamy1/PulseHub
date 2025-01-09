@@ -21,17 +21,17 @@ class MonitoringCloudhubDetails {
 @JsonSerializable()
 class CloudHub {
   @JsonKey(name: 'cloudhub_id')
-  final int cloudhubId;
-  final int monitoring;
-  final String name;
-  final String notes;
-  final String code;
+  final int? cloudhubId;
+  final int? monitoring;
+  final String? name;
+  final String? notes;
+  final String? code;
   @JsonKey(name: 'qr_code')
   final String? qrCode;
   @JsonKey(name: 'wifi_setup')
-  final String wifiSetup;
+  final String? wifiSetup;
   @JsonKey(name: 'WIFI_SSID')
-  final String wifiSsid;
+  final String? wifiSsid;
   @JsonKey(name: 'WIFI_PASSWORD')
   final String? wifiPassword;
   @JsonKey(name: 'Timedb_SERVER')
@@ -46,17 +46,17 @@ class CloudHub {
   final String? protocol;
   @JsonKey(name: 'qr_code_url')
   final String? qrCodeUrl;
-  final List<dynamic> sensors;
+  final List<dynamic>? sensors;
 
   CloudHub({
-    required this.cloudhubId,
-    required this.monitoring,
-    required this.name,
-    required this.notes,
-    required this.code,
+    this.cloudhubId,
+    this.monitoring,
+    this.name,
+    this.notes,
+    this.code,
     this.qrCode,
-    required this.wifiSetup,
-    required this.wifiSsid,
+    this.wifiSetup,
+    this.wifiSsid,
     this.wifiPassword,
     this.timedbServer,
     this.timedbPort,
@@ -64,7 +64,7 @@ class CloudHub {
     this.timedbPass,
     this.protocol,
     this.qrCodeUrl,
-    required this.sensors,
+    this.sensors,
   });
 
   factory CloudHub.fromJson(Map<String, dynamic> json) =>

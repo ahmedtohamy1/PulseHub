@@ -19,6 +19,7 @@ import 'package:pulsehub/features/project_dashboard/data/models/project_update_r
 import 'package:pulsehub/features/project_dashboard/data/models/sensor_activity_log_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/tickets_messages_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/timedb_response.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/update_cloudhub_request_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo.dart';
 
 @LazySingleton(as: DashRepository)
@@ -717,6 +718,32 @@ class DashRepoImpl extends DashRepository {
         return Right(GetAllResponseModel.fromJson(response.data));
       } else {
         return Left('Failed to get all users: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
+  Future<Either<String, bool>> updateCloudhub(
+      String token, int cloudhubId, UpdateCloudhubRequestModel request) async {
+    try {
+      final Map<String, dynamic> filteredData = request.toJson()
+        ..removeWhere((key, value) => value == null || value == '');
+
+      final response = await myApiService.post(
+        EndPoints.getMonitoringCloudHub,
+        token: token,
+        queryParameters: {'cloudhub_id': cloudhubId},
+        data: filteredData,
+        encodeAsJson: true,
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return const Right(true);
+      } else {
+        return Left('Failed to update cloudhub: ${response.statusCode}');
       }
     } catch (error) {
       return Left('Exception occurred: $error');

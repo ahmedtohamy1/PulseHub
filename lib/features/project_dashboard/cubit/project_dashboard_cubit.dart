@@ -17,6 +17,7 @@ import 'package:pulsehub/features/project_dashboard/data/models/project_dashboar
 import 'package:pulsehub/features/project_dashboard/data/models/project_update_request.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/sensor_activity_log_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/timedb_response.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/update_cloudhub_request_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo.dart';
 import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo_impl.dart';
 
@@ -512,6 +513,16 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
     res.fold(
       (failure) => emit(ProjectDashboardGetAllUsersFailure(failure)),
       (response) => emit(ProjectDashboardGetAllUsersSuccess(response)),
+    );
+  }
+
+  Future<void> updateCloudhub(int cloudhubId, UpdateCloudhubRequestModel request) async {
+    emit(ProjectDashboardUpdateCloudhubLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res = await _repository.updateCloudhub(token, cloudhubId, request);
+    res.fold(
+      (failure) => emit(ProjectDashboardUpdateCloudhubFailure(failure)),
+      (response) => emit(ProjectDashboardUpdateCloudhubSuccess(response)),
     );
   }
 }
