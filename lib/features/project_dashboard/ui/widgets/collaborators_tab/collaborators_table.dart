@@ -20,6 +20,7 @@ class CollaboratorsTable extends StatelessWidget {
       child: SingleChildScrollView(
         scrollDirection: Axis.vertical,
         child: DataTable(
+          showCheckboxColumn: false,
           headingRowColor: MaterialStateColor.resolveWith(
             (states) => Theme.of(context).colorScheme.primary,
           ),
@@ -37,16 +38,17 @@ class CollaboratorsTable extends StatelessWidget {
               label: Text('Actions', style: TextStyle(color: Colors.white)),
             ),
           ],
-          rows: List.generate(members.length, (index) {
-            final member = members[index];
-            final rowColor = index % 2 == 0
+          rows: members.map((member) {
+            final rowColor = members.indexOf(member) % 2 == 0
                 ? Theme.of(context).colorScheme.secondaryContainer
                 : Theme.of(context).colorScheme.surface;
 
             return DataRow(
               color: MaterialStateColor.resolveWith((states) => rowColor),
+              onSelectChanged: (_) => onEditCollaborator(member),
               cells: [
-                DataCell(Text('${member.firstName ?? ''} ${member.lastName ?? ''}')),
+                DataCell(
+                    Text('${member.firstName ?? ''} ${member.lastName ?? ''}')),
                 DataCell(Text(member.email ?? '')),
                 DataCell(Text(member.title ?? '')),
                 DataCell(Row(
@@ -67,7 +69,7 @@ class CollaboratorsTable extends StatelessWidget {
                 )),
               ],
             );
-          }),
+          }).toList(),
         ),
       ),
     );

@@ -636,6 +636,8 @@ class UsedSensorsTable extends StatelessWidget {
                       return DataRow(
                         color:
                             WidgetStateColor.resolveWith((states) => rowColor),
+                        onSelectChanged: (_) =>
+                            _showEditDialog(context, sensor),
                         cells: [
                           DataCell(Text(sensor.name ?? 'N/A')),
                           DataCell(Text(sensor.function ?? 'N/A')),

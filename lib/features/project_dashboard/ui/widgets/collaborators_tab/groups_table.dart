@@ -20,6 +20,7 @@ class GroupsTable extends StatelessWidget {
       child: SingleChildScrollView(
         scrollDirection: Axis.vertical,
         child: DataTable(
+          showCheckboxColumn: false,
           headingRowColor: MaterialStateColor.resolveWith(
             (states) => Theme.of(context).colorScheme.primary,
           ),
@@ -42,6 +43,7 @@ class GroupsTable extends StatelessWidget {
 
             return DataRow(
               color: MaterialStateColor.resolveWith((states) => rowColor),
+              onSelectChanged: (_) => onEditGroup(group),
               cells: [
                 DataCell(Text(group.name ?? '')),
                 DataCell(Text(group.description ?? '')),
