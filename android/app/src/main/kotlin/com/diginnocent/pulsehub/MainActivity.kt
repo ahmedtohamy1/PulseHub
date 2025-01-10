@@ -1,4 +1,4 @@
-package ahmedtohamy.pulsehub.app
+package com.diginnocent.pulsehub
 
 import io.flutter.embedding.android.FlutterActivity
 
