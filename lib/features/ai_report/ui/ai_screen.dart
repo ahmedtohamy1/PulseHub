@@ -172,7 +172,7 @@ class AiScreenState extends State<AiScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Card(
-                        color: Colors.grey[200],
+                        color: Theme.of(context).cardColor,
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: MarkdownBody(
@@ -186,7 +186,7 @@ class AiScreenState extends State<AiScreen> {
                         ),
                       ),
                       Card(
-                        color: Colors.grey[200],
+                        color: Theme.of(context).cardColor,
                         elevation: 2,
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
@@ -217,7 +217,7 @@ class AiScreenState extends State<AiScreen> {
 
                       // Card for Response Details
                       Card(
-                        color: Colors.grey[200],
+                        color: Theme.of(context).cardColor,
                         elevation: 2,
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),

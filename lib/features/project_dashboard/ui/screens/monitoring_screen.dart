@@ -135,7 +135,7 @@ class _MonitoringScreenState extends State<MonitoringScreen>
     return TabBar(
       controller: _tabController,
       indicatorColor: Theme.of(context).primaryColor,
-      labelColor: Theme.of(context).primaryColor,
+      labelColor: Theme.of(context).tabBarTheme.labelColor,
       unselectedLabelColor: Colors.grey,
       tabs: const [
         Tab(icon: Icon(Icons.sensors), text: "Sensors"),
