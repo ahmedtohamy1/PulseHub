@@ -26,6 +26,8 @@ class HeaderIcons extends StatelessWidget {
       MdiIcons.wrench,
     ];
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -35,6 +37,10 @@ class HeaderIcons extends StatelessWidget {
             child: Tooltip(
               message: _getTooltipMessage(0),
               child: IconButton.filled(
+                style: IconButton.styleFrom(
+                  backgroundColor: colorScheme.surfaceContainerHighest,
+                  foregroundColor: colorScheme.onSurfaceVariant,
+                ),
                 onPressed: () => Navigator.of(context).pop(),
                 icon: Icon(
                   iconData[0],

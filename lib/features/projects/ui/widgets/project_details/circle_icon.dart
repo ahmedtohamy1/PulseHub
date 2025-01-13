@@ -12,15 +12,29 @@ class CircleIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: isActive ? Theme.of(context).primaryColor : Colors.white,
+        color: isActive ? colorScheme.primary : colorScheme.surface,
         shape: BoxShape.circle,
+        border: Border.all(
+          color: isActive ? colorScheme.primary : colorScheme.outlineVariant,
+          width: 1,
+        ),
+        boxShadow: [
+          if (isActive)
+            BoxShadow(
+              color: colorScheme.primary.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+        ],
       ),
       padding: const EdgeInsets.all(10.0),
       child: Icon(
         icon,
-        color: isActive ? Colors.white : Theme.of(context).primaryColor,
+        color: isActive ? colorScheme.onPrimary : colorScheme.primary,
       ),
     );
   }
