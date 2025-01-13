@@ -54,7 +54,7 @@ class HeaderIcons extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 5.0),
               child: Tooltip(
                 message: _getTooltipMessage(i),
-                child: InkWell(
+                child: GestureDetector(
                   onTap: () => onIconTap(i),
                   child: CircleIcon(
                     icon: iconData[i],
