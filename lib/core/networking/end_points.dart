@@ -32,6 +32,7 @@ class EndPoints {
   static const String getSensorData = "/project/sensor/";
   static const String getCloudhubData = "/project/cloudhub/";
   static const String analyzeSensorData = "/analysis/ai-q1/";
+  static const String analyzeSensorDataQ2 = "/analysis/ai-q2/";
   static const String getSensorActivityLog = "/project/ticket/";
   static const String getTicketMessages = "/project/ticket-messages/";
   static const String createTicketMessage = "/project/ticket-messages/";

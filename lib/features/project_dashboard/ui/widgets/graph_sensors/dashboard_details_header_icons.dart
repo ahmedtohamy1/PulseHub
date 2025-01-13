@@ -85,8 +85,7 @@ class DashboardDetailsheaderIcons extends StatelessWidget {
         for (final field in sensorFields) {
           final valueIndex = headers.indexOf(field);
           if (valueIndex != -1) {
-            final value =
-                double.tryParse(row[valueIndex].toString()) ?? 0.0;
+            final value = double.tryParse(row[valueIndex].toString()) ?? 0.0;
             times[field]!.add(time);
             values[field]!.add(value);
           }

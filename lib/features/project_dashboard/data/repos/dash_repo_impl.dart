@@ -6,6 +6,7 @@ import 'package:pulsehub/core/networking/end_points.dart';
 import 'package:pulsehub/core/networking/my_api.dart';
 import 'package:pulsehub/core/networking/status_code.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/ai_analyze_data_model.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/ai_q2_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/cloudhub_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_all_users_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_collaborators_response_model.dart';
@@ -831,6 +832,27 @@ class DashRepoImpl extends DashRepository {
         return const Right(true);
       } else {
         return Left('Failed to create cloudhub sensor: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
+  Future<Either<String, AiQ2ResponseModel>> analyzeSensorDataQ2(
+      String token, String projectId) async {
+    try {
+      final response = await myApiService.get(
+        EndPoints.analyzeSensorDataQ2,
+        token: token,
+        queryParameters: {'project_id': projectId},
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return Right(AiQ2ResponseModel.fromJson(response.data));
+      } else {
+        return Left('Failed to analyze sensor data: ${response.statusCode}');
       }
     } catch (error) {
       return Left('Exception occurred: $error');

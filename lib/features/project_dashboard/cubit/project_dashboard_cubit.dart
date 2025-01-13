@@ -5,6 +5,7 @@ import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/utils/shared_pref_helper.dart';
 import 'package:pulsehub/core/utils/shared_pref_keys.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/ai_analyze_data_model.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/ai_q2_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/cloudhub_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_all_users_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_collaborators_response_model.dart';
@@ -571,6 +572,16 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
     res.fold(
       (failure) => emit(ProjectDashboardCreateCloudhubSensorFailure(failure)),
       (response) => emit(ProjectDashboardCreateCloudhubSensorSuccess(response)),
+    );
+  }
+
+  Future<void> analyzeSensorDataQ2(String projectId) async {
+    emit(ProjectDashboardAnalyzeSensorDataQ2Loading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res = await _repository.analyzeSensorDataQ2(token, projectId);
+    res.fold(
+      (failure) => emit(ProjectDashboardAnalyzeSensorDataQ2Failure(failure)),
+      (response) => emit(ProjectDashboardAnalyzeSensorDataQ2Success(response)),
     );
   }
 }

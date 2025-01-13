@@ -2,10 +2,10 @@ import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:injectable/injectable.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 import 'package:pulsehub/core/networking/app_interceptors.dart';
 import 'package:pulsehub/core/networking/end_points.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as path;
 
 /// A service class for making HTTP requests using the Dio package.
 ///
@@ -53,7 +53,8 @@ class MyApi {
     _dio.options.validateStatus = (status) => true;
     _dio.options.followRedirects = true;
     _dio.options.receiveDataWhenStatusError = true;
-
+    _dio.options.connectTimeout = const Duration(seconds: 30);
+    _dio.options.receiveTimeout = const Duration(seconds: 80);
     // Add cookie manager interceptor before app interceptors
     _dio.interceptors.add(CookieManager(_cookieJar));
     _dio.interceptors.add(AppIntercepters());

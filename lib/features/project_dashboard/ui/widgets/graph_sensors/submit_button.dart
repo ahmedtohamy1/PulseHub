@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class SubmitButton extends StatelessWidget {
   final void Function() onPressed;
   final bool? isAnalyze;
+  final bool? isExpert;
 
   const SubmitButton({
     super.key,
     required this.onPressed,
     this.isAnalyze,
+    this.isExpert,
   });
 
   @override
@@ -19,7 +21,11 @@ class SubmitButton extends StatelessWidget {
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       child: Text(
-        isAnalyze == true ? 'Analyze Data' : 'Submit',
+        isAnalyze == true
+            ? 'Analyze Data'
+            : isExpert == true
+                ? 'Expert Advice'
+                : 'Submit',
       ),
     );
   }

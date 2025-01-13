@@ -1,88 +1,17 @@
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui' as ui;
-import 'dart:ui' show lerpDouble;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/timedb_response.dart';
 import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo_impl.dart';
-import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/number_input.dart';
+import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/components/analysis_parameters_dialog.dart';
+import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/components/fl_dot_triangle_painter.dart';
 import 'package:share_plus/share_plus.dart';
-
-class FlDotTrianglePainter extends FlDotPainter {
-  final double size;
-  final Color color;
-  final double strokeWidth;
-  final Color strokeColor;
-
-  const FlDotTrianglePainter({
-    required this.size,
-    required this.color,
-    this.strokeWidth = 0.0,
-    this.strokeColor = Colors.transparent,
-  });
-
-  @override
-  void draw(Canvas canvas, FlSpot spot, Offset offsetInCanvas) {
-    final path = Path();
-
-    // Calculate triangle points (pointing upward)
-    final halfSize = size / 2;
-    path.moveTo(offsetInCanvas.dx, offsetInCanvas.dy - halfSize); // Top point
-    path.lineTo(offsetInCanvas.dx - halfSize,
-        offsetInCanvas.dy + halfSize); // Bottom left
-    path.lineTo(offsetInCanvas.dx + halfSize,
-        offsetInCanvas.dy + halfSize); // Bottom right
-    path.close();
-
-    // Draw fill
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = color
-        ..style = PaintingStyle.fill,
-    );
-
-    // Draw stroke
-    if (strokeWidth > 0) {
-      canvas.drawPath(
-        path,
-        Paint()
-          ..color = strokeColor
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = strokeWidth,
-      );
-    }
-  }
-
-  @override
-  Size getSize(FlSpot spot) {
-    return Size(size, size);
-  }
-
-  @override
-  List<Object?> get props => [size, color, strokeWidth, strokeColor];
-
-  @override
-  Color get mainColor => color;
-
-  @override
-  FlDotPainter lerp(FlDotPainter a, FlDotPainter b, double t) {
-    if (a is FlDotTrianglePainter && b is FlDotTrianglePainter) {
-      return FlDotTrianglePainter(
-        size: lerpDouble(a.size, b.size, t)!,
-        color: Color.lerp(a.color, b.color, t)!,
-        strokeWidth: lerpDouble(a.strokeWidth, b.strokeWidth, t)!,
-        strokeColor: Color.lerp(a.strokeColor, b.strokeColor, t)!,
-      );
-    }
-    return this;
-  }
-}
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TimeSeriesChart extends StatefulWidget {
   final SensorDataResponse data;
@@ -124,6 +53,12 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     super.initState();
     _availableFields = _getAvailableFields();
     _initializeMaps();
+  }
+
+  // get theme from shared preferences
+  Future<bool> _isDarkMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('isDarkMode') ?? false;
   }
 
   @override
@@ -173,8 +108,8 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
       final imageHeight = image.height.toDouble();
 
       // Calculate title height first
-      const titleStyle = TextStyle(
-        color: Colors.black,
+      final titleStyle = TextStyle(
+        color: Theme.of(context).colorScheme.onSurface,
         fontSize: 16 * 3, // Scale up for high resolution
         fontWeight: FontWeight.bold,
       );
@@ -204,7 +139,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
       // Draw white background for entire image
       canvas.drawRect(
         Rect.fromLTWH(0, 0, imageWidth, totalHeight),
-        paint,
+        Paint()..color = Theme.of(context).colorScheme.surface,
       );
 
       // Draw title
@@ -375,7 +310,9 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
         RepaintBoundary(
           key: chartKeys[field],
           child: Container(
-            color: Colors.white,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Theme.of(context).colorScheme.surface
+                : Colors.white,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -645,11 +582,11 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
               horizontalInterval: yInterval,
               verticalInterval: xInterval,
               getDrawingHorizontalLine: (value) => FlLine(
-                color: Colors.grey.withOpacity(0.1),
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
                 strokeWidth: 0.5,
               ),
               getDrawingVerticalLine: (value) => FlLine(
-                color: Colors.grey.withOpacity(0.1),
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
                 strokeWidth: 0.5,
               ),
             ),
@@ -667,7 +604,10 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                           padding: const EdgeInsets.only(top: 4.0),
                           child: Text(
                             _formatTimeAxisLabel(value, scaleByDay),
-                            style: const TextStyle(fontSize: 10),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
                           ),
                         ),
                       );
@@ -676,8 +616,13 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                         angle: -45 * pi / 180,
                         child: Padding(
                           padding: const EdgeInsets.only(top: 4.0),
-                          child: Text(_formatFrequency(value),
-                              style: const TextStyle(fontSize: 10)),
+                          child: Text(
+                            _formatFrequency(value),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
                         ),
                       );
                     }
@@ -694,7 +639,10 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                       padding: const EdgeInsets.only(right: 8.0),
                       child: Text(
                         _formatYAxisLabel(value),
-                        style: const TextStyle(fontSize: 12),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                         textAlign: TextAlign.right,
                       ),
                     );
@@ -711,15 +659,21 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
             borderData: FlBorderData(
               show: true,
               border: Border.all(
-                color: Colors.black12,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
                 width: 1,
               ),
             ),
             clipData: const FlClipData.all(),
-            backgroundColor: Colors.white.withOpacity(0.1),
+            backgroundColor:
+                Theme.of(context).colorScheme.surface.withOpacity(0.5),
             lineTouchData: LineTouchData(
               enabled: true,
               touchTooltipData: LineTouchTooltipData(
+                tooltipPadding: const EdgeInsets.all(8),
+                tooltipRoundedRadius: 8,
+                tooltipMargin: 8,
+                fitInsideHorizontally: true,
+                fitInsideVertically: true,
                 getTooltipItems: (List<LineBarSpot> touchedSpots) {
                   return touchedSpots.map((spot) {
                     final barData = spot.bar;
@@ -729,45 +683,25 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                         : _formatFrequency(spot.x);
                     final yValue = spot.y.toStringAsFixed(2);
 
-                    // Check if this is a dominant frequency point
                     final isDominantFreq = !isTimeXAxis &&
                         barData.dotData.show &&
                         barData.dotData.getDotPainter(spot, 0, barData, 0)
                             is FlDotTrianglePainter;
 
-                    // Check if this is an anomaly region
-                    final isAnomaly = barData.color?.value ==
-                        Colors.red.withOpacity(0.5).value;
-
-                    String tooltipText = '';
-                    if (isDominantFreq) {
-                      tooltipText =
-                          '$field\nDominant Frequency\nFreq: $xValue Hz\nMagnitude: $yValue';
-                    } else if (isAnomaly) {
-                      tooltipText =
-                          '$field\nAnomaly Region\nTime: $xValue\nValue: $yValue';
-                    } else {
-                      tooltipText = '$field\nX: $xValue\nY: $yValue';
-                    }
-
                     return LineTooltipItem(
-                      tooltipText,
+                      isDominantFreq
+                          ? 'Dominant Frequency\n'
+                              'Frequency: $xValue\n'
+                              'Magnitude: $yValue'
+                          : 'Value: $yValue\n'
+                              'Time: $xValue',
                       TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: isDominantFreq || isAnomaly
-                            ? FontWeight.bold
-                            : FontWeight.normal,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
                       ),
                     );
                   }).toList();
                 },
-                tooltipPadding: const EdgeInsets.all(8),
-                tooltipRoundedRadius: 8,
-                tooltipBorder: const BorderSide(color: Colors.black12),
-                tooltipMargin: 8,
-                fitInsideHorizontally: true,
-                fitInsideVertically: true,
               ),
             ),
           ),
@@ -881,6 +815,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     final result = widget.data.result;
     if (result == null) return [];
 
+    final colorScheme = Theme.of(context).colorScheme;
     final color = _getColorForField(field);
     final (xValues, yValues) = _extractData(result, field, byTime);
 
@@ -889,10 +824,8 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     final List<LineChartBarData> chartData = [];
 
     // Determine if we should show points based on data density
-    final showPoints = xValues.length <=
-        100; // Show points only if we have 100 or fewer points
-    final pointSize =
-        xValues.length <= 50 ? 4.0 : 3.0; // Larger points for fewer data points
+    final showPoints = xValues.length <= 100;
+    final pointSize = xValues.length <= 50 ? 4.0 : 3.0;
 
     // Add main line data
     final spots = List<FlSpot>.generate(
@@ -913,7 +846,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
             radius: pointSize,
             color: color.withOpacity(0.7),
             strokeWidth: 1,
-            strokeColor: Colors.white,
+            strokeColor: Theme.of(context).colorScheme.surface,
           ),
         ),
         belowBarData: BarAreaData(show: false),
@@ -972,13 +905,13 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                     FlSpot(startTime, minY - (maxY - minY) * 0.1),
                   ],
                   isCurved: false,
-                  color: Colors.red.withOpacity(0.1),
+                  color: colorScheme.error.withOpacity(0.1),
                   barWidth: 0,
                   isStrokeCapRound: true,
                   dotData: const FlDotData(show: false),
                   belowBarData: BarAreaData(
                     show: true,
-                    color: Colors.red.withOpacity(0.1),
+                    color: colorScheme.error.withOpacity(0.1),
                   ),
                 ),
               );
@@ -988,18 +921,17 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                 LineChartBarData(
                   spots: anomalySpots,
                   isCurved: false,
-                  color: Colors.red.withOpacity(0.5),
+                  color: colorScheme.error.withOpacity(0.5),
                   barWidth: 2,
                   isStrokeCapRound: true,
                   dotData: FlDotData(
-                    show: true, // Always show points in anomaly regions
+                    show: true,
                     getDotPainter: (spot, percent, barData, index) =>
                         FlDotCirclePainter(
-                      radius:
-                          pointSize + 1, // Slightly larger points for anomalies
-                      color: Colors.red.withOpacity(0.5),
+                      radius: pointSize + 1,
+                      color: colorScheme.error.withOpacity(0.5),
                       strokeWidth: 1,
-                      strokeColor: Colors.white,
+                      strokeColor: Theme.of(context).colorScheme.surface,
                     ),
                   ),
                   belowBarData: BarAreaData(show: false),
@@ -1091,266 +1023,20 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
   }
 
   Color _getColorForField(String field) {
+    final colorScheme = Theme.of(context).colorScheme;
     switch (field) {
       case 'accelX':
-        return Colors.blue;
+        return colorScheme.primary;
       case 'accelY':
-        return Colors.orange;
+        return colorScheme.secondary;
       case 'accelZ':
-        return Colors.green;
+        return colorScheme.tertiary;
       case 'humidity':
-        return Colors.red;
+        return colorScheme.error;
       case 'temperature':
-        return Colors.purple;
+        return colorScheme.inversePrimary;
       default:
-        return Colors.grey;
+        return colorScheme.outline;
     }
-  }
-}
-
-class AnalysisParametersDialog extends StatefulWidget {
-  final String initialWindowPeriod;
-  final String initialDeviation;
-
-  const AnalysisParametersDialog({
-    super.key,
-    required this.initialWindowPeriod,
-    required this.initialDeviation,
-  });
-
-  @override
-  State<AnalysisParametersDialog> createState() =>
-      _AnalysisParametersDialogState();
-}
-
-class _AnalysisParametersDialogState extends State<AnalysisParametersDialog> {
-  late String windowSize;
-  late String deviation;
-  late final TextEditingController windowSizeController;
-  late final TextEditingController deviationController;
-
-  @override
-  void initState() {
-    super.initState();
-    windowSize = widget.initialWindowPeriod;
-    deviation = widget.initialDeviation;
-    windowSizeController =
-        TextEditingController(text: widget.initialWindowPeriod);
-    deviationController = TextEditingController(text: widget.initialDeviation);
-  }
-
-  @override
-  void dispose() {
-    windowSizeController.dispose();
-    deviationController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Row(
-        children: [
-          Icon(Icons.analytics_outlined),
-          SizedBox(width: 8),
-          Text('Analysis Parameters'),
-        ],
-      ),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            NumberInput(
-              label: 'Window Size',
-              controller: windowSizeController,
-              onChanged: (value) {
-                setState(() => windowSize = value);
-              },
-              onIncrement: () {
-                final currentValue =
-                    int.tryParse(windowSizeController.text) ?? 0;
-                windowSizeController.text = (currentValue + 1).toString();
-              },
-              onDecrement: () {
-                final currentValue =
-                    int.tryParse(windowSizeController.text) ?? 0;
-                if (currentValue > 1) {
-                  windowSizeController.text = (currentValue - 1).toString();
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-            NumberInput(
-              label: 'Deviation Threshold',
-              controller: deviationController,
-              onChanged: (value) {
-                setState(() => deviation = value);
-              },
-              onIncrement: () {
-                final currentValue =
-                    double.tryParse(deviationController.text) ?? 0;
-                deviationController.text =
-                    (currentValue + 0.01).toStringAsFixed(2);
-              },
-              onDecrement: () {
-                final currentValue =
-                    double.tryParse(deviationController.text) ?? 0;
-                if (currentValue > 0.01) {
-                  deviationController.text =
-                      (currentValue - 0.01).toStringAsFixed(2);
-                }
-              },
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: () {
-            Navigator.of(context).pop({
-              'windowSize': windowSizeController.text,
-              'deviation': deviationController.text,
-            });
-          },
-          child: const Text('Analyze'),
-        ),
-      ],
-    );
-  }
-}
-
-class CustomTimeRangeDialog extends StatefulWidget {
-  const CustomTimeRangeDialog({
-    super.key,
-  });
-
-  @override
-  State<CustomTimeRangeDialog> createState() => _CustomTimeRangeDialogState();
-}
-
-class _CustomTimeRangeDialogState extends State<CustomTimeRangeDialog> {
-  DateTime? startDateTime;
-  DateTime? endDateTime;
-
-  String _formatDateTime(DateTime dateTime) {
-    final hour = dateTime.hour == 0
-        ? 12
-        : dateTime.hour > 12
-            ? dateTime.hour - 12
-            : dateTime.hour;
-    final period = dateTime.hour >= 12 ? 'PM' : 'AM';
-    return '${dateTime.day}/${dateTime.month}/${dateTime.year}, ${hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')} $period';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Row(
-        children: [
-          Icon(Icons.date_range),
-          SizedBox(width: 8),
-          Text('Custom Time Range'),
-        ],
-      ),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            FilledButton.icon(
-              onPressed: () async {
-                final dateTimeList = await showOmniDateTimeRangePicker(
-                  context: context,
-                  startInitialDate: startDateTime ?? DateTime.now(),
-                  startFirstDate: DateTime(2020),
-                  startLastDate: DateTime.now(),
-                  endInitialDate: endDateTime ?? DateTime.now(),
-                  endFirstDate: DateTime(2020),
-                  endLastDate: DateTime.now(),
-                  is24HourMode: false,
-                  isShowSeconds: false,
-                  minutesInterval: 1,
-                  secondsInterval: 1,
-                  borderRadius: const BorderRadius.all(Radius.circular(16)),
-                  constraints: const BoxConstraints(
-                    maxWidth: 350,
-                    maxHeight: 650,
-                  ),
-                  transitionBuilder: (context, anim1, anim2, child) {
-                    return FadeTransition(
-                      opacity: anim1.drive(
-                        Tween(
-                          begin: 0,
-                          end: 1,
-                        ),
-                      ),
-                      child: child,
-                    );
-                  },
-                  transitionDuration: const Duration(milliseconds: 200),
-                  barrierDismissible: true,
-                );
-
-                if (dateTimeList != null && context.mounted) {
-                  setState(() {
-                    startDateTime = dateTimeList[0];
-                    endDateTime = dateTimeList[1];
-                  });
-                }
-              },
-              icon: const Icon(Icons.calendar_month),
-              label: const Text('Select Date & Time Range'),
-            ),
-            if (startDateTime != null && endDateTime != null) ...[
-              const SizedBox(height: 16),
-              Text.rich(
-                TextSpan(
-                  children: [
-                    const TextSpan(
-                      text: 'Start: ',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    TextSpan(text: _formatDateTime(startDateTime!)),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text.rich(
-                TextSpan(
-                  children: [
-                    const TextSpan(
-                      text: 'End: ',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    TextSpan(text: _formatDateTime(endDateTime!)),
-                  ],
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        if (startDateTime != null && endDateTime != null)
-          FilledButton(
-            onPressed: () {
-              Navigator.of(context).pop({
-                'start': startDateTime!.toUtc().toIso8601String(),
-                'time_range_stop': endDateTime!.toUtc().toIso8601String(),
-              });
-            },
-            child: const Text('Apply'),
-          ),
-      ],
-    );
   }
 }

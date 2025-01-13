@@ -627,3 +627,26 @@ final class ProjectDashboardUpdateDashFailure extends ProjectDashboardState {
 
   const ProjectDashboardUpdateDashFailure(this.message);
 }
+
+final class ProjectDashboardAnalyzeSensorDataQ2Loading
+    extends ProjectDashboardState {}
+
+final class ProjectDashboardAnalyzeSensorDataQ2Success
+    extends ProjectDashboardState {
+    final AiQ2ResponseModel aiQ2ResponseModel;  
+
+  const ProjectDashboardAnalyzeSensorDataQ2Success(this.aiQ2ResponseModel);
+
+  @override
+  List<Object> get props => [aiQ2ResponseModel];
+}
+
+final class ProjectDashboardAnalyzeSensorDataQ2Failure
+    extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardAnalyzeSensorDataQ2Failure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}

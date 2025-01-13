@@ -1,6 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/ai_analyze_data_model.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/ai_q2_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/cloudhub_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_all_users_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_collaborators_response_model.dart';
@@ -39,6 +40,8 @@ abstract class DashRepository {
       String token, int cloudhubId);
   Future<Either<String, AiAnalyzeDataModel>> analyzeSensorData(
       String token, QueryParams queryParams, String projectId);
+  Future<Either<String, AiQ2ResponseModel>> analyzeSensorDataQ2(
+      String token,  String projectId);
   Future<Either<String, SensorActivityLog>> getSensorActivityLog(
       String token, int sensorId);
   Future<Either<String, TicketMessagesModel>> getTicketMessages(
