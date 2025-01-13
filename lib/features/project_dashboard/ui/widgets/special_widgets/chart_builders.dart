@@ -51,7 +51,7 @@ Widget buildLineChart(List<FlSpot> data) {
                 return Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: SideTitleWidget(
-                    axisSide: meta.axisSide,
+                      meta: meta,
                     child: Text(
                       value.toStringAsFixed(1),
                       style: const TextStyle(
@@ -170,7 +170,7 @@ Widget buildBarChart(List<FlSpot> data) {
                 return Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: SideTitleWidget(
-                    axisSide: meta.axisSide,
+                    meta: meta,
                     child: Text(
                       value.toStringAsFixed(1),
                       style: const TextStyle(
@@ -300,7 +300,7 @@ Widget buildScatterChart(List<FlSpot> data) {
                 return Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: SideTitleWidget(
-                    axisSide: meta.axisSide,
+                    meta: meta,
                     child: Text(
                       value.toStringAsFixed(1),
                       style: const TextStyle(
@@ -375,7 +375,7 @@ Widget buildAreaChart(List<FlSpot> data) {
                 return Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: SideTitleWidget(
-                    axisSide: meta.axisSide,
+                    meta: meta,
                     child: Text(
                       value.toStringAsFixed(1),
                       style: const TextStyle(
