@@ -85,28 +85,6 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 3),
-          GestureDetector(
-            onTap: () {
-              context.push(Routes.notificationsPage);
-            },
-            child: const Card(
-              elevation: 0,
-              child: Padding(
-                padding: EdgeInsets.all(20.0),
-                child: Row(
-                  children: [
-                    Icon(LucideIcons.bell, size: 30, color: Colors.grey),
-                    SizedBox(width: 16),
-                    Text(
-                      'Notifications',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 3),
           Card(
             elevation: 0,
             child: Padding(

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/core/utils/user_manager.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
@@ -347,205 +346,196 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => _dashboardCubit,
-      child: Scaffold(
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  IconButton.filled(
-                      onPressed: () => context.pop(),
-                      icon: const Icon(Icons.arrow_back_ios_new_outlined)),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Projects with Warnings',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              BlocBuilder<SettingsCubit, SettingsState>(
-                builder: (context, state) {
-                  if (state is GetNotificationsLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  'Projects with Warnings',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            BlocBuilder<SettingsCubit, SettingsState>(
+              builder: (context, state) {
+                if (state is GetNotificationsLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-                  if (state is GetNotificationsError) {
-                    return Center(
+                if (state is GetNotificationsError) {
+                  return Center(
+                    child: Text(
+                      'Error: ${state.message}',
+                      style:
+                          TextStyle(color: Theme.of(context).colorScheme.error),
+                    ),
+                  );
+                }
+
+                if (state is GetNotificationsSuccess) {
+                  final notifications = state.response.notifications
+                          ?.where((notification) =>
+                              notification.warnings?.any((warning) =>
+                                  warning.ticketsDetails?.isNotEmpty == true) ==
+                              true)
+                          .toList() ??
+                      [];
+
+                  if (notifications.isEmpty) {
+                    return const Center(
                       child: Text(
-                        'Error: ${state.message}',
+                        'No warnings found',
                         style: TextStyle(
-                            color: Theme.of(context).colorScheme.error),
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
                       ),
                     );
                   }
 
-                  if (state is GetNotificationsSuccess) {
-                    final notifications = state.response.notifications
-                            ?.where((notification) =>
-                                notification.warnings?.any((warning) =>
-                                    warning.ticketsDetails?.isNotEmpty ==
-                                    true) ==
-                                true)
-                            .toList() ??
-                        [];
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: notifications.length,
+                    itemBuilder: (context, index) {
+                      final notification = notifications[index];
+                      final allTickets =
+                          notification.warnings?.expand((warning) {
+                                return (warning.ticketsDetails ?? [])
+                                    .map((ticket) => (
+                                          ticket: ticket,
+                                          sensorId: warning.sensorId,
+                                        ));
+                              }).toList() ??
+                              [];
 
-                    if (notifications.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          'No warnings found',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey,
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (index > 0) const SizedBox(height: 24),
+                          Text(
+                            notification.title ?? 'Unknown Project',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
-                        ),
-                      );
-                    }
-
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: notifications.length,
-                      itemBuilder: (context, index) {
-                        final notification = notifications[index];
-                        final allTickets =
-                            notification.warnings?.expand((warning) {
-                                  return (warning.ticketsDetails ?? [])
-                                      .map((ticket) => (
-                                            ticket: ticket,
-                                            sensorId: warning.sensorId,
-                                          ));
-                                }).toList() ??
-                                [];
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (index > 0) const SizedBox(height: 24),
-                            Text(
-                              notification.title ?? 'Unknown Project',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                            const SizedBox(height: 16),
-                            ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: allTickets.length,
-                              itemBuilder: (context, ticketIndex) {
-                                final ticketData = allTickets[ticketIndex];
-                                final sensorId = ticketData.sensorId ?? 0;
-                                return InkWell(
-                                  onTap: () => _handleCardTap(
-                                    context,
-                                    ticketData.ticket.ticketName ??
-                                        'Unknown Ticket',
-                                    ticketData.ticket.ticketDescription,
-                                    sensorId,
-                                  ),
-                                  child: Card(
-                                    margin: const EdgeInsets.only(bottom: 16),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16.0),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.warning_amber_rounded,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .error,
+                          const SizedBox(height: 16),
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: allTickets.length,
+                            itemBuilder: (context, ticketIndex) {
+                              final ticketData = allTickets[ticketIndex];
+                              final sensorId = ticketData.sensorId ?? 0;
+                              return InkWell(
+                                onTap: () => _handleCardTap(
+                                  context,
+                                  ticketData.ticket.ticketName ??
+                                      'Unknown Ticket',
+                                  ticketData.ticket.ticketDescription,
+                                  sensorId,
+                                ),
+                                child: Card(
+                                  margin: const EdgeInsets.only(bottom: 16),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.warning_amber_rounded,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .error,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                ticketData.ticket.ticketName ??
+                                                    'No warning title',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .titleMedium
+                                                    ?.copyWith(
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .error,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
                                               ),
-                                              const SizedBox(width: 8),
-                                              Expanded(
+                                            ),
+                                            if (ticketData.ticket
+                                                        .unseenMessages !=
+                                                    null &&
+                                                ticketData.ticket
+                                                        .unseenMessages! >
+                                                    0)
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .error,
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
                                                 child: Text(
-                                                  ticketData
-                                                          .ticket.ticketName ??
-                                                      'No warning title',
+                                                  '${ticketData.ticket.unseenMessages}',
                                                   style: Theme.of(context)
                                                       .textTheme
-                                                      .titleMedium
+                                                      .bodySmall
                                                       ?.copyWith(
-                                                        color: Theme.of(context)
-                                                            .colorScheme
-                                                            .error,
-                                                        fontWeight:
-                                                            FontWeight.bold,
+                                                        color: Colors.white,
                                                       ),
                                                 ),
                                               ),
-                                              if (ticketData.ticket
-                                                          .unseenMessages !=
-                                                      null &&
-                                                  ticketData.ticket
-                                                          .unseenMessages! >
-                                                      0)
-                                                Container(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 8,
-                                                      vertical: 4),
-                                                  decoration: BoxDecoration(
-                                                    color: Theme.of(context)
-                                                        .colorScheme
-                                                        .error,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
-                                                  ),
-                                                  child: Text(
-                                                    '${ticketData.ticket.unseenMessages}',
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .bodySmall
-                                                        ?.copyWith(
-                                                          color: Colors.white,
-                                                        ),
-                                                  ),
-                                                ),
-                                            ],
-                                          ),
-                                          if (ticketData
-                                                  .ticket.ticketDescription !=
-                                              null) ...[
-                                            const SizedBox(height: 12),
-                                            Text(
-                                              ticketData
-                                                  .ticket.ticketDescription!,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium,
-                                            ),
                                           ],
+                                        ),
+                                        if (ticketData
+                                                .ticket.ticketDescription !=
+                                            null) ...[
+                                          const SizedBox(height: 12),
+                                          Text(
+                                            ticketData
+                                                .ticket.ticketDescription!,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium,
+                                          ),
                                         ],
-                                      ),
+                                      ],
                                     ),
                                   ),
-                                );
-                              },
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  }
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
 
-                  return const SizedBox.shrink();
-                },
-              ),
-            ],
-          ),
+                return const SizedBox.shrink();
+              },
+            ),
+          ],
         ),
       ),
     );
