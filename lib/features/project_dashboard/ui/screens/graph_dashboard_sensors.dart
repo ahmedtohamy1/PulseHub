@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/project_dashboards.dart';
 import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo_impl.dart';
@@ -10,7 +11,6 @@ import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/fie
 import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/number_input.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/submit_button.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/time_db_response_builder.dart';
-import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/time_series_chart.dart';
 
 class GraphDashboardSensors extends StatefulWidget {
   final Dashboard dashboard;
@@ -200,6 +200,21 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
         .analyzeSensorData(queryParams, widget.dashboard.project.toString());
   }
 
+  String _formatDateTime(DateTime dateTime) {
+    final localDateTime = dateTime.toLocal();
+    final hour = localDateTime.hour == 0
+        ? 12
+        : localDateTime.hour > 12
+            ? localDateTime.hour - 12
+            : localDateTime.hour;
+    final minute = localDateTime.minute.toString().padLeft(2, '0');
+    final period = localDateTime.hour >= 12 ? 'PM' : 'AM';
+    final month = localDateTime.month.toString().padLeft(2, '0');
+    final day = localDateTime.day.toString().padLeft(2, '0');
+
+    return '${localDateTime.year}-$month-$day ${hour.toString().padLeft(2, '0')}:$minute $period';
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -303,18 +318,48 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                                     ],
                                     onChanged: (value) async {
                                       if (value == 'Custom') {
-                                        final customRange = await showDialog<
-                                            Map<String, String>>(
+                                        final dateTimeList =
+                                            await showOmniDateTimeRangePicker(
                                           context: context,
-                                          builder: (context) =>
-                                              const CustomTimeRangeDialog(),
+                                          startInitialDate: DateTime.now(),
+                                          startFirstDate: DateTime(2020),
+                                          startLastDate: DateTime.now(),
+                                          endInitialDate: DateTime.now(),
+                                          endFirstDate: DateTime(2020),
+                                          endLastDate: DateTime.now(),
+                                          is24HourMode: false,
+                                          isShowSeconds: false,
+                                          minutesInterval: 1,
+                                          secondsInterval: 1,
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(16)),
+                                          constraints: const BoxConstraints(
+                                            maxWidth: 350,
+                                            maxHeight: 650,
+                                          ),
+                                          transitionBuilder:
+                                              (context, anim1, anim2, child) {
+                                            return FadeTransition(
+                                              opacity: anim1.drive(
+                                                Tween(
+                                                  begin: 0,
+                                                  end: 1,
+                                                ),
+                                              ),
+                                              child: child,
+                                            );
+                                          },
+                                          transitionDuration:
+                                              const Duration(milliseconds: 200),
+                                          barrierDismissible: true,
                                         );
 
-                                        if (customRange != null) {
+                                        if (dateTimeList != null &&
+                                            context.mounted) {
                                           setState(() {
                                             isCustomRange = true;
                                             customRangeController.text =
-                                                'time_range_start=${customRange['start']}&time_range_stop=${customRange['time_range_stop']}';
+                                                'time_range_start=${dateTimeList[0].toUtc().toIso8601String()}&time_range_stop=${dateTimeList[1].toUtc().toIso8601String()}';
                                             timeRange = 'Custom';
                                           });
                                         }
@@ -329,11 +374,107 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                                   if (isCustomRange)
                                     Padding(
                                       padding: const EdgeInsets.only(top: 8.0),
-                                      child: Text(
-                                        'Custom Range Selected',
-                                        style: TextStyle(
-                                          color: Theme.of(context).primaryColor,
-                                          fontStyle: FontStyle.italic,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primaryContainer
+                                              .withOpacity(0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          border: Border.all(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primaryContainer
+                                                .withOpacity(0.3),
+                                          ),
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Icon(
+                                                  Icons.calendar_today,
+                                                  size: 14,
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .primary,
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  'Custom Time Range',
+                                                  style: TextStyle(
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .primary,
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Text.rich(
+                                              TextSpan(
+                                                children: [
+                                                  const TextSpan(
+                                                    text: 'From: ',
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                  TextSpan(
+                                                    text: _formatDateTime(
+                                                        DateTime.parse(
+                                                            customRangeController
+                                                                .text
+                                                                .split('&')[0]
+                                                                .split(
+                                                                    '=')[1])),
+                                                  ),
+                                                ],
+                                              ),
+                                              style: TextStyle(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                                    .withOpacity(0.8),
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text.rich(
+                                              TextSpan(
+                                                children: [
+                                                  const TextSpan(
+                                                    text: 'To: ',
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                  TextSpan(
+                                                    text: _formatDateTime(
+                                                        DateTime.parse(
+                                                            customRangeController
+                                                                .text
+                                                                .split('&')[1]
+                                                                .split(
+                                                                    '=')[1])),
+                                                  ),
+                                                ],
+                                              ),
+                                              style: TextStyle(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                                    .withOpacity(0.8),
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
