@@ -13,7 +13,7 @@ class AiScreen extends StatefulWidget {
 class AiScreenState extends State<AiScreen> {
   String? selectedModel = 'Gemini-1.0-Pro';
   bool useKnowledgeBase = false;
-  double numberOfReferences = 1; // Initial value for the slider
+  double numberOfReferences = 2; // Initial value for the slider
   final TextEditingController questionController = TextEditingController();
 
   @override
