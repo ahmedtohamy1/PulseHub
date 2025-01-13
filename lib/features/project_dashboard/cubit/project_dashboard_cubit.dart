@@ -170,6 +170,16 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
     );
   }
 
+  Future<void> deleteDash(int dashId) async {
+    emit(ProjectDashboardDeleteDashLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res = await _repository.deleteDash(token, dashId);
+    res.fold(
+      (failure) => emit(ProjectDashboardDeleteDashFailure(failure)),
+      (response) => emit(ProjectDashboardDeleteDashSuccess(response)),
+    );
+  }
+
   Future<void> getMonitoring(int projectId) async {
     emit(ProjectDashboardMonitoringLoading());
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
@@ -522,7 +532,8 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
     );
   }
 
-  Future<void> updateCloudhub(int cloudhubId, UpdateCloudhubRequestModel request) async {
+  Future<void> updateCloudhub(
+      int cloudhubId, UpdateCloudhubRequestModel request) async {
     emit(ProjectDashboardUpdateCloudhubLoading());
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
     final res = await _repository.updateCloudhub(token, cloudhubId, request);
@@ -545,7 +556,8 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
   Future<void> createCloudhubSensor(int cloudhubId, String sensorName) async {
     emit(ProjectDashboardCreateCloudhubSensorLoading());
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
-    final res = await _repository.createCloudhubSensor(token, cloudhubId, sensorName);
+    final res =
+        await _repository.createCloudhubSensor(token, cloudhubId, sensorName);
     res.fold(
       (failure) => emit(ProjectDashboardCreateCloudhubSensorFailure(failure)),
       (response) => emit(ProjectDashboardCreateCloudhubSensorSuccess(response)),

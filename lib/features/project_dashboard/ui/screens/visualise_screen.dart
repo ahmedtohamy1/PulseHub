@@ -122,57 +122,66 @@ class _VisualiseScreenState extends State<VisualiseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
-      builder: (context, state) {
-        if (state is ProjectDashboardFetchLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is ProjectDashboardFetchSuccess) {
-          final dashboards = state.projectDashboards.dashboards
-              .where((dashboard) =>
-                  dashboard.groups.trim().toLowerCase() == 'visualise')
-              .toList();
-
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                SectionTitle(
-                  title: 'Visualise Dashboards',
-                  onAdd: () {
-                    _onAdd(context);
-                  },
-                ),
-                const SizedBox(height: 16),
-                if (dashboards.isEmpty)
-                  const Center(
-                    child:
-                        Text('No dashboards available for group "visualise".'),
-                  )
-                else
-                  ...dashboards.map((dashboard) => DashboardCard(
-                        dashboard: dashboard,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const SpecialWidgetsScreen(),
-                            ),
-                          );
-                        },
-                      )),
-              ],
-            ),
-          );
-        } else if (state is ProjectDashboardFetchFailure) {
-          return Center(
-            child: Text('Error: ${state.message}'),
-          );
-        } else {
-          return const Center(
-            child: Text('No data available.'),
-          );
+    return BlocListener<ProjectDashboardCubit, ProjectDashboardState>(
+      listener: (context, state) {
+        if (state is ProjectDashboardDeleteDashSuccess) {
+          // Refresh the dashboards list after successful deletion
+          context.read<ProjectDashboardCubit>().getDashs(widget.projectId);
         }
       },
+      child: BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
+        builder: (context, state) {
+          if (state is ProjectDashboardFetchLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is ProjectDashboardFetchSuccess) {
+            final dashboards = state.projectDashboards.dashboards
+                .where((dashboard) =>
+                    dashboard.groups.trim().toLowerCase() == 'visualise')
+                .toList();
+
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  SectionTitle(
+                    title: 'Visualise Dashboards',
+                    onAdd: () {
+                      _onAdd(context);
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  if (dashboards.isEmpty)
+                    const Center(
+                      child: Text(
+                          'No dashboards available for group "visualise".'),
+                    )
+                  else
+                    ...dashboards.map((dashboard) => DashboardCard(
+                          dashboard: dashboard,
+                          projectId: widget.projectId,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const SpecialWidgetsScreen(),
+                              ),
+                            );
+                          },
+                        )),
+                ],
+              ),
+            );
+          } else if (state is ProjectDashboardFetchFailure) {
+            return Center(
+              child: Text('Error: ${state.message}'),
+            );
+          } else {
+            return const Center(
+              child: Text('No data available.'),
+            );
+          }
+        },
+      ),
     );
   }
 }

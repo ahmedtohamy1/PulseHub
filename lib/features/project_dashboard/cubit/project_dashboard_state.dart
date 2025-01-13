@@ -593,3 +593,20 @@ final class ProjectDashboardCreateCloudhubSensorFailure
   @override
   List<Object> get props => [message];
 }
+
+final class ProjectDashboardDeleteDashLoading extends ProjectDashboardState {}
+
+  final class ProjectDashboardDeleteDashSuccess extends ProjectDashboardState {
+  final bool success;
+
+  const ProjectDashboardDeleteDashSuccess(this.success);
+
+  @override
+  List<Object> get props => [success];
+}
+
+final class ProjectDashboardDeleteDashFailure extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardDeleteDashFailure(this.message);
+}

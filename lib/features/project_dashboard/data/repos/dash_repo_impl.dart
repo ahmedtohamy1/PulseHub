@@ -52,6 +52,27 @@ class DashRepoImpl extends DashRepository {
   }
 
   @override
+  Future<Either<String, bool>> deleteDash(
+      String token, int dashId) async {
+    try {
+      final response = await myApiService.delete(
+        EndPoints.createDash,
+        token: token,
+        queryParameters: {'dashboard_id': dashId},
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return const Right(true);
+      } else {
+        return Left('Failed to delete dash: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
   Future<Either<String, CloudHubResponse>> getDashDetails(
       String org, int projectId, String token) async {
     try {
