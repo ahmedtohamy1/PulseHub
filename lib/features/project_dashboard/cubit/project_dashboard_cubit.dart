@@ -204,6 +204,16 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
     );
   }
 
+  Future<void> updateDash(int dashId, String name, String description) async {
+    emit(ProjectDashboardUpdateDashLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res = await _repository.updateDash(token, dashId, name, description);
+    res.fold(
+      (failure) => emit(ProjectDashboardUpdateDashFailure(failure)),
+      (response) => emit(ProjectDashboardUpdateDashSuccess(response)),
+    );
+  }
+
   Future<void> getSensorData(int sensorId) async {
     emit(ProjectDashboardSensorDataLoading());
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);

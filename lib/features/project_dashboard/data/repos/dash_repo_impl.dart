@@ -1,7 +1,7 @@
+import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:injectable/injectable.dart';
-import 'package:dio/dio.dart';
 import 'package:pulsehub/core/networking/end_points.dart';
 import 'package:pulsehub/core/networking/my_api.dart';
 import 'package:pulsehub/core/networking/status_code.dart';
@@ -52,8 +52,7 @@ class DashRepoImpl extends DashRepository {
   }
 
   @override
-  Future<Either<String, bool>> deleteDash(
-      String token, int dashId) async {
+  Future<Either<String, bool>> deleteDash(String token, int dashId) async {
     try {
       final response = await myApiService.delete(
         EndPoints.createDash,
@@ -66,6 +65,28 @@ class DashRepoImpl extends DashRepository {
         return const Right(true);
       } else {
         return Left('Failed to delete dash: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
+  Future<Either<String, bool>> updateDash(
+      String token, int dashId, String name, String description) async {
+    try {
+      final response = await myApiService.post(
+        EndPoints.createDash,
+        token: token,
+        queryParameters: {'dashboard_id': dashId},
+        data: {'name': name, 'description': description},
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return const Right(true);
+      } else {
+        return Left('Failed to update dash: ${response.statusCode}');
       }
     } catch (error) {
       return Left('Exception occurred: $error');

@@ -27,6 +27,8 @@ abstract class DashRepository {
   Future<Either<String, bool>> createDash(String token, String name,
       String description, String group, int projectId);
   Future<Either<String, bool>> deleteDash(String token, int dashId);
+  Future<Either<String, bool>> updateDash(String token, int dashId, String name,
+      String description);
   Future<Either<String, MonitoringResponse>> getMonitoring(
       String token, int projectId);
   Future<Either<String, MonitoringCloudHubResponse>> getMonitoringCloudHub(

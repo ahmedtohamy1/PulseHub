@@ -124,8 +124,9 @@ class _AnalyseScreenState extends State<AnalyseScreen> {
   Widget build(BuildContext context) {
     return BlocListener<ProjectDashboardCubit, ProjectDashboardState>(
       listener: (context, state) {
-        if (state is ProjectDashboardDeleteDashSuccess) {
-          // Refresh the dashboards list after successful deletion
+        if (state is ProjectDashboardDeleteDashSuccess ||
+            state is ProjectDashboardUpdateDashSuccess) {
+          // Refresh the dashboards list after successful deletion or update
           context.read<ProjectDashboardCubit>().getDashs(widget.projectId);
         }
       },
