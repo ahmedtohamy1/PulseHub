@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_material_design_icons/flutter_material_design_icons.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:pulsehub/core/utils/user_manager.dart';
 
 import 'circle_icon.dart';
 
@@ -23,7 +24,9 @@ class HeaderIcons extends StatelessWidget {
       LucideIcons.gauge,
       LucideIcons.fileText,
       MdiIcons.monitorEye,
-      MdiIcons.wrench,
+      if (UserManager().user?.isStaff == true ||
+          UserManager().user?.isSuperuser == true)
+        MdiIcons.wrench,
     ];
 
     final colorScheme = Theme.of(context).colorScheme;
@@ -69,11 +72,14 @@ class HeaderIcons extends StatelessWidget {
   }
 
   String _getTooltipMessage(int index) {
+    final isAdmin = UserManager().user?.isStaff == true ||
+        UserManager().user?.isSuperuser == true;
+
     switch (index) {
       case 0:
         return 'Back';
       case 1:
-        return 'Dashboard';
+        return 'Overview';
       case 2:
         return 'Visualise';
       case 3:
@@ -83,7 +89,7 @@ class HeaderIcons extends StatelessWidget {
       case 5:
         return 'Monitor';
       case 6:
-        return 'Control';
+        return isAdmin ? 'Control' : '';
       default:
         return '';
     }
