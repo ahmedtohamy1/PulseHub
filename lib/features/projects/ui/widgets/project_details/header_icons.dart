@@ -18,7 +18,7 @@ class HeaderIcons extends StatelessWidget {
   Widget build(BuildContext context) {
     final iconData = [
       Icons.arrow_back_ios_new_outlined,
-      LucideIcons.layoutGrid,
+      MdiIcons.bridge,
       Icons.map_sharp,
       LucideIcons.gauge,
       LucideIcons.fileText,
