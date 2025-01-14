@@ -22,6 +22,9 @@ import '../../features/auth/data/repositories/auth_repository_impl.dart'
 import '../../features/dics/cubit/dic_cubit.dart' as _i819;
 import '../../features/dics/data/repos/dic_repo.dart' as _i90;
 import '../../features/dics/data/repos/dic_repo_impl.dart' as _i1046;
+import '../../features/manage/cubit/manage_cubit.dart' as _i526;
+import '../../features/manage/data/repos/manage_repo.dart' as _i87;
+import '../../features/manage/data/repos/manage_repo_impl.dart' as _i176;
 import '../../features/project_dashboard/cubit/project_dashboard_cubit.dart'
     as _i495;
 import '../../features/project_dashboard/cubit/ticket_messages_cubit.dart'
@@ -51,6 +54,7 @@ extension GetItInjectableX on _i174.GetIt {
     );
     final dioModule = _$DioModule();
     gh.lazySingleton<_i361.Dio>(() => dioModule.provideDio());
+    gh.lazySingleton<_i87.ManageRepository>(() => _i176.ManageRepoImpl());
     gh.lazySingleton<_i713.MyApi>(() => _i713.MyApi(gh<_i361.Dio>()));
     gh.lazySingleton<_i346.DashRepository>(
         () => _i503.DashRepoImpl(gh<_i713.MyApi>()));
@@ -66,6 +70,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i1064.AiReportRepositoryImpl(gh<_i713.MyApi>()));
     gh.lazySingleton<_i234.ProjectsRepository>(
         () => _i12.ProjectsRepoImpl(gh<_i713.MyApi>()));
+    gh.factory<_i526.ManageCubit>(
+        () => _i526.ManageCubit(gh<_i87.ManageRepository>()));
     gh.lazySingleton<_i878.SettingsRepository>(
         () => _i181.SettingsRepoImpl(gh<_i713.MyApi>()));
     gh.factory<_i782.AiReportCubit>(

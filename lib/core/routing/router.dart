@@ -10,6 +10,7 @@ import 'package:pulsehub/features/auth/ui/screens/login_screen.dart';
 import 'package:pulsehub/features/auth/ui/screens/otp_screen.dart';
 import 'package:pulsehub/features/dics/cubit/dic_cubit.dart';
 import 'package:pulsehub/features/dics/ui/dic_screen.dart';
+import 'package:pulsehub/features/manage/ui/screens/manage_screen.dart';
 import 'package:pulsehub/features/projects/cubit/projects_cubit.dart';
 import 'package:pulsehub/features/projects/ui/home_screen.dart';
 import 'package:pulsehub/features/projects/ui/project_details_screen.dart';
@@ -119,6 +120,10 @@ final router = GoRouter(
                     create: (context) => sl<SettingsCubit>(),
                     child: const SessionScreen(),
                   ),
+                ),
+                GoRoute(
+                  path: 'manage', // Use relative path for nested routes
+                  builder: (context, state) => const ManageScreen(),
                 ),
               ],
             ),
