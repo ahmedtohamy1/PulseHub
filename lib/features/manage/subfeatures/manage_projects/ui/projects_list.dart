@@ -181,11 +181,12 @@ class _ProjectsListState extends State<ProjectsList> {
               else ...[
                 FloatingActionButton(
                   heroTag: 'addFab',
-                  onPressed: () {
+                  onPressed: () async {
                     // Store cubit instance
                     final cubit = context.read<ManageProjectsCubit>();
 
-                    Navigator.of(context).push(
+                    // Navigate and wait for result
+                    final result = await Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => BlocProvider.value(
                           value: cubit,
@@ -193,6 +194,11 @@ class _ProjectsListState extends State<ProjectsList> {
                         ),
                       ),
                     );
+
+                    // Refresh projects list if we returned from add screen
+                    if (result == true && mounted) {
+                      cubit.getAllProjects();
+                    }
                   },
                   child: Icon(
                     Icons.add,

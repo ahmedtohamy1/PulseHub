@@ -15,6 +15,9 @@ part 'manage_projects_state.dart';
 @injectable
 class ManageProjectsCubit extends Cubit<ManageProjectsState> {
   final ManageProjectsRepository _repository;
+  GetAllProjectsResponseModel? _cachedProjects;
+  List<owner.OwnerModel>? _cachedOwners;
+
   ManageProjectsCubit(this._repository) : super(ManageProjectsInitial());
 
   Future<void> getAllProjects() async {
@@ -22,15 +25,24 @@ class ManageProjectsCubit extends Cubit<ManageProjectsState> {
       return;
     }
 
-    try {
+    // If we have cached data, emit it first
+    if (_cachedProjects != null) {
+      emit(GetAllProjectsSuccess(_cachedProjects!));
+    } else {
       emit(GetAllProjectsLoading());
+    }
+
+    try {
       final token =
           await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
       final result = await _repository.getAllProjects(token);
       if (!isClosed) {
         result.fold(
           (error) => emit(GetAllProjectsFailure(error)),
-          (projects) => emit(GetAllProjectsSuccess(projects)),
+          (projects) {
+            _cachedProjects = projects;
+            emit(GetAllProjectsSuccess(projects));
+          },
         );
       }
     } catch (e) {
@@ -45,9 +57,14 @@ class ManageProjectsCubit extends Cubit<ManageProjectsState> {
       return;
     }
 
-    try {
+    // If we have cached data, emit it first
+    if (_cachedOwners != null) {
+      emit(GetAllOwnersSuccess(_cachedOwners!));
+    } else {
       emit(GetAllOwnersLoading());
+    }
 
+    try {
       final token =
           await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
       if (token.isEmpty) {
@@ -64,6 +81,7 @@ class ManageProjectsCubit extends Cubit<ManageProjectsState> {
             emit(GetAllOwnersFailure(error));
           },
           (owners) {
+            _cachedOwners = owners;
             emit(GetAllOwnersSuccess(owners));
           },
         );
@@ -77,13 +95,18 @@ class ManageProjectsCubit extends Cubit<ManageProjectsState> {
 
   Future<void> createOwner(String name, String? phone, String? address,
       String? city, String? country, XFile? logo) async {
+    emit(CreateOwnerLoading());
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
     final result = await _repository.createOwner(
         token, name, phone, address, city, country, logo);
 
     result.fold(
       (error) => emit(CreateOwnerFailure(error)),
-      (success) => emit(CreateOwnerSuccess()),
+      (success) {
+        // Clear owners cache to force refresh
+        _cachedOwners = null;
+        emit(CreateOwnerSuccess());
+      },
     );
   }
 
@@ -96,7 +119,18 @@ class ManageProjectsCubit extends Cubit<ManageProjectsState> {
 
     result.fold(
       (error) => emit(CreateProjectFailure(error)),
-      (success) => emit(CreateProjectSuccess()),
+      (success) {
+        // Clear projects cache to force refresh
+        _cachedProjects = null;
+        emit(CreateProjectSuccess());
+      },
     );
+  }
+
+  @override
+  Future<void> close() {
+    _cachedProjects = null;
+    _cachedOwners = null;
+    return super.close();
   }
 }

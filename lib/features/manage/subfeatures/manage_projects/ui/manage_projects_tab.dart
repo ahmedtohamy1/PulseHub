@@ -5,13 +5,38 @@ import 'package:pulsehub/features/manage/subfeatures/manage_projects/ui/projects
 
 import '../cubit/manage_projects_cubit.dart';
 
-class ManageProjectsTab extends StatelessWidget {
+class ManageProjectsTab extends StatefulWidget {
   const ManageProjectsTab({super.key});
 
   @override
+  State<ManageProjectsTab> createState() => _ManageProjectsTabState();
+}
+
+class _ManageProjectsTabState extends State<ManageProjectsTab>
+    with AutomaticKeepAliveClientMixin {
+  late final ManageProjectsCubit _cubit;
+
+  @override
+  void initState() {
+    super.initState();
+    _cubit = sl<ManageProjectsCubit>();
+    _cubit.getAllProjects();
+  }
+
+  @override
+  void dispose() {
+    _cubit.close();
+    super.dispose();
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<ManageProjectsCubit>()..getAllProjects(),
+    super.build(context);
+    return BlocProvider.value(
+      value: _cubit,
       child: const ManageProjectsView(),
     );
   }
@@ -23,6 +48,12 @@ class ManageProjectsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ManageProjectsCubit, ManageProjectsState>(
+      buildWhen: (previous, current) {
+        // Only rebuild for project-related states
+        return current is GetAllProjectsLoading ||
+            current is GetAllProjectsSuccess ||
+            current is GetAllProjectsFailure;
+      },
       builder: (context, state) {
         return switch (state) {
           GetAllProjectsLoading() => Center(
@@ -52,7 +83,18 @@ class ManageProjectsView extends StatelessWidget {
           GetAllProjectsSuccess(projects: final response) => ProjectsList(
               projects: response.projects,
             ),
-          _ => const SizedBox(),
+          _ => BlocBuilder<ManageProjectsCubit, ManageProjectsState>(
+              buildWhen: (previous, current) =>
+                  previous is GetAllProjectsSuccess,
+              builder: (context, state) {
+                if (state is GetAllProjectsSuccess) {
+                  return ProjectsList(
+                    projects: state.projects.projects,
+                  );
+                }
+                return const SizedBox();
+              },
+            ),
         };
       },
     );

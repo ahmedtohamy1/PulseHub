@@ -57,6 +57,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
     consultantController.dispose();
     contractorController.dispose();
     constructionDateController.dispose();
+
     super.dispose();
   }
 
@@ -69,11 +70,9 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
       if (image != null && mounted) {
         setState(() {
           _selectedImage = File(image.path);
-          print('DEBUG: Image selected successfully - Path: ${image.path}');
         });
       }
     } catch (e) {
-      print('DEBUG: Error selecting image - $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error selecting image: ${e.toString()}')),
@@ -239,8 +238,6 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                                     if (image != null && mounted) {
                                       setSheetState(() {
                                         _ownerLogo = image;
-                                        print(
-                                            'DEBUG: Owner logo selected - Path: ${image.path}');
                                       });
                                     }
                                   } catch (e) {
@@ -278,8 +275,6 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                                             fit: BoxFit.cover,
                                             errorBuilder:
                                                 (context, error, stackTrace) {
-                                              print(
-                                                  'DEBUG: Error loading owner logo - $error');
                                               return Center(
                                                 child: Icon(
                                                   Icons.error_outline,
@@ -365,7 +360,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                                 builder: (context, state) {
                                   final isLoading = state is CreateOwnerLoading;
                                   return isLoading
-                                      ? Text('Loading...')
+                                      ? const CircularProgressIndicator()
                                       : FilledButton(
                                           onPressed: isLoading
                                               ? null
@@ -449,17 +444,13 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
     return BlocListener<ManageProjectsCubit, ManageProjectsState>(
       listener: (context, state) {
         if (state is CreateProjectSuccess) {
-          // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Project created successfully'),
               backgroundColor: Colors.green,
             ),
           );
-
-          // Pop and refresh projects list
-          Navigator.pop(context);
-          context.read<ManageProjectsCubit>().getAllProjects();
+          Navigator.pop(context, true); // Return true to indicate success
         } else if (state is CreateProjectFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -568,7 +559,6 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                                 _selectedImage!,
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
-                                  print('DEBUG: Error loading image - $error');
                                   return Center(
                                     child: Icon(
                                       Icons.error_outline,
