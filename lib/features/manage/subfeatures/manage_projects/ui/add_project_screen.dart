@@ -152,45 +152,6 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
     );
   }
 
-  Widget _buildDateField({
-    required BuildContext context,
-    required String label,
-    required TextEditingController controller,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          readOnly: true,
-          onTap: () async {
-            final date = await showDatePicker(
-              context: context,
-              initialDate: DateTime.now(),
-              firstDate: DateTime(2000),
-              lastDate: DateTime(2100),
-            );
-            if (date != null) {
-              controller.text = date.toIso8601String().split('T')[0];
-            }
-          },
-          decoration: _getInputDecoration(
-            context,
-            suffixIcon: const Icon(Icons.calendar_today),
-          ),
-        ),
-      ],
-    );
-  }
-
   void _showAddOwnerSheet() {
     // Store cubit instance
     final cubit = context.read<ManageProjectsCubit>();
@@ -485,325 +446,362 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add New Project'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: () {
-              if (_selectedOwner != null) {
-                print(
-                    'DEBUG: Creating project with owner: ${_selectedOwner!.name}');
-                // TODO: Implement project creation
-                Navigator.pop(context);
-              } else {
-                print('DEBUG: Cannot create project - No owner selected');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please select an owner')),
-                );
-              }
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image Picker
-            Text(
-              'Project Picture',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
+    return BlocListener<ManageProjectsCubit, ManageProjectsState>(
+      listener: (context, state) {
+        if (state is CreateProjectSuccess) {
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Project created successfully'),
+              backgroundColor: Colors.green,
             ),
-            const SizedBox(height: 8),
-            GestureDetector(
-              onTap: _pickImage,
-              child: Container(
-                height: 200,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.secondaryContainer,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color:
-                        Theme.of(context).colorScheme.outline.withOpacity(0.5),
-                  ),
+          );
+
+          // Pop and refresh projects list
+          Navigator.pop(context);
+          context.read<ManageProjectsCubit>().getAllProjects();
+        } else if (state is CreateProjectFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to create project: ${state.message}'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Add New Project'),
+          actions: [
+            BlocBuilder<ManageProjectsCubit, ManageProjectsState>(
+              builder: (context, state) {
+                final isLoading = state is CreateProjectLoading;
+                return isLoading
+                    ? const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : IconButton(
+                        icon: const Icon(Icons.save),
+                        onPressed: () {
+                          if (titleController.text.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Please enter project title'),
+                              ),
+                            );
+                            return;
+                          }
+
+                          if (_selectedOwner == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Please select an owner'),
+                              ),
+                            );
+                            return;
+                          }
+
+                          // Create project
+                          context.read<ManageProjectsCubit>().createProject(
+                                titleController.text.trim(),
+                                _selectedOwner!.ownerId,
+                                _selectedImage != null
+                                    ? XFile(_selectedImage!.path)
+                                    : null,
+                                acronymController.text.trim().isNotEmpty
+                                    ? acronymController.text.trim()
+                                    : null,
+                                consultantController.text.trim().isNotEmpty
+                                    ? consultantController.text.trim()
+                                    : null,
+                                contractorController.text.trim().isNotEmpty
+                                    ? contractorController.text.trim()
+                                    : null,
+                              );
+                        },
+                      );
+              },
+            ),
+          ],
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image Picker
+              Text(
+                'Project Picture',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: _selectedImage != null
-                      ? Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Image.file(
-                              _selectedImage!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                print('DEBUG: Error loading image - $error');
-                                return Center(
-                                  child: Icon(
-                                    Icons.error_outline,
-                                    size: 48,
-                                    color: Theme.of(context).colorScheme.error,
+              ),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: _pickImage,
+                child: Container(
+                  height: 200,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.secondaryContainer,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .outline
+                          .withOpacity(0.5),
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: _selectedImage != null
+                        ? Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Image.file(
+                                _selectedImage!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  print('DEBUG: Error loading image - $error');
+                                  return Center(
+                                    child: Icon(
+                                      Icons.error_outline,
+                                      size: 48,
+                                      color:
+                                          Theme.of(context).colorScheme.error,
+                                    ),
+                                  );
+                                },
+                              ),
+                              Positioned(
+                                right: 8,
+                                top: 8,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .surface
+                                        .withOpacity(0.9),
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
-                                );
-                              },
-                            ),
-                            Positioned(
-                              right: 8,
-                              top: 8,
-                              child: Container(
-                                decoration: BoxDecoration(
+                                  child: IconButton(
+                                    icon: Icon(
+                                      Icons.edit,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                    ),
+                                    onPressed: _pickImage,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.add_photo_alternate_outlined,
+                                size: 48,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Add Project Picture',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Tap to select',
+                                style: TextStyle(
                                   color: Theme.of(context)
                                       .colorScheme
-                                      .surface
-                                      .withOpacity(0.9),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: IconButton(
-                                  icon: Icon(
-                                    Icons.edit,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                  ),
-                                  onPressed: _pickImage,
+                                      .onSurfaceVariant,
+                                  fontSize: 12,
                                 ),
                               ),
-                            ),
-                          ],
-                        )
-                      : Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.add_photo_alternate_outlined,
-                              size: 48,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Add Project Picture',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Tap to select',
-                              style: TextStyle(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
+              const SizedBox(height: 24),
 
-            // Form Fields
-            _buildTextField(
-              label: 'Title',
-              controller: titleController,
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              label: 'Acronym',
-              controller: acronymController,
-            ),
-            const SizedBox(height: 16),
+              // Form Fields
+              _buildTextField(
+                label: 'Title',
+                controller: titleController,
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                label: 'Acronym',
+                controller: acronymController,
+              ),
+              const SizedBox(height: 16),
 
-            // Owner Section
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Owner',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+              // Owner Section
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Owner',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      BlocBuilder<ManageProjectsCubit, ManageProjectsState>(
-                        builder: (context, state) {
-                          return switch (state) {
-                            GetAllOwnersSuccess(owners: final owners) =>
-                              DropdownButtonFormField<String>(
-                                value: _selectedOwner?.name,
-                                decoration: _getInputDecoration(context),
-                                items: owners.map((owner) {
-                                  return DropdownMenuItem<String>(
-                                    value: owner.name,
-                                    child: Text(owner.name),
-                                  );
-                                }).toList(),
-                                onChanged: (String? value) {
-                                  if (value != null) {
-                                    final selectedOwner = owners.firstWhere(
-                                      (owner) => owner.name == value,
-                                      orElse: () => owners.first,
+                        const SizedBox(height: 8),
+                        BlocBuilder<ManageProjectsCubit, ManageProjectsState>(
+                          builder: (context, state) {
+                            return switch (state) {
+                              GetAllOwnersSuccess(owners: final owners) =>
+                                DropdownButtonFormField<String>(
+                                  value: _selectedOwner?.name,
+                                  decoration: _getInputDecoration(context),
+                                  items: owners.map((owner) {
+                                    return DropdownMenuItem<String>(
+                                      value: owner.name,
+                                      child: Text(owner.name),
                                     );
-                                    setState(() {
-                                      _selectedOwner = selectedOwner;
-                                    });
-                                  }
-                                },
-                                hint: const Text('Select Owner'),
-                                isExpanded: true,
-                              ),
-                            GetAllOwnersLoading() =>
-                              DropdownButtonFormField<String>(
-                                value: null,
-                                decoration: _getInputDecoration(
-                                  context,
-                                  suffixIcon: SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary,
+                                  }).toList(),
+                                  onChanged: (String? value) {
+                                    if (value != null) {
+                                      final selectedOwner = owners.firstWhere(
+                                        (owner) => owner.name == value,
+                                        orElse: () => owners.first,
+                                      );
+                                      setState(() {
+                                        _selectedOwner = selectedOwner;
+                                      });
+                                    }
+                                  },
+                                  hint: const Text('Select Owner'),
+                                  isExpanded: true,
+                                ),
+                              GetAllOwnersLoading() =>
+                                DropdownButtonFormField<String>(
+                                  value: null,
+                                  decoration: _getInputDecoration(
+                                    context,
+                                    suffixIcon: SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                        ),
                                       ),
                                     ),
                                   ),
+                                  items: const [],
+                                  onChanged: null,
+                                  hint: const Text('Loading owners...'),
+                                  isExpanded: true,
                                 ),
-                                items: const [],
-                                onChanged: null,
-                                hint: const Text('Loading owners...'),
-                                isExpanded: true,
-                              ),
-                            GetAllOwnersFailure(message: final message) =>
-                              DropdownButtonFormField<String>(
-                                value: null,
-                                decoration: _getInputDecoration(
-                                  context,
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      Icons.refresh,
+                              GetAllOwnersFailure(message: final message) =>
+                                DropdownButtonFormField<String>(
+                                  value: null,
+                                  decoration: _getInputDecoration(
+                                    context,
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        Icons.refresh,
+                                        color:
+                                            Theme.of(context).colorScheme.error,
+                                      ),
+                                      onPressed: () {
+                                        context
+                                            .read<ManageProjectsCubit>()
+                                            .getAllOwners();
+                                      },
+                                    ),
+                                  ).copyWith(
+                                    helperText: 'Error: $message',
+                                    helperStyle: TextStyle(
                                       color:
                                           Theme.of(context).colorScheme.error,
                                     ),
-                                    onPressed: () {
-                                      context
-                                          .read<ManageProjectsCubit>()
-                                          .getAllOwners();
-                                    },
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                      borderSide: BorderSide(
+                                        color:
+                                            Theme.of(context).colorScheme.error,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                      borderSide: BorderSide(
+                                        color:
+                                            Theme.of(context).colorScheme.error,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                      borderSide: BorderSide(
+                                        color:
+                                            Theme.of(context).colorScheme.error,
+                                      ),
+                                    ),
                                   ),
-                                ).copyWith(
-                                  helperText: 'Error: $message',
-                                  helperStyle: TextStyle(
-                                    color: Theme.of(context).colorScheme.error,
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(4),
-                                    borderSide: BorderSide(
+                                  items: const [],
+                                  onChanged: null,
+                                  hint: Text(
+                                    'Failed to load owners',
+                                    style: TextStyle(
                                       color:
                                           Theme.of(context).colorScheme.error,
                                     ),
                                   ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(4),
-                                    borderSide: BorderSide(
-                                      color:
-                                          Theme.of(context).colorScheme.error,
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(4),
-                                    borderSide: BorderSide(
-                                      color:
-                                          Theme.of(context).colorScheme.error,
-                                    ),
-                                  ),
+                                  isExpanded: true,
                                 ),
-                                items: const [],
-                                onChanged: null,
-                                hint: Text(
-                                  'Failed to load owners',
-                                  style: TextStyle(
-                                    color: Theme.of(context).colorScheme.error,
-                                  ),
-                                ),
-                                isExpanded: true,
-                              ),
-                            _ => const SizedBox(),
-                          };
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: TextButton.icon(
-                    onPressed: _showAddOwnerSheet,
-                    icon: const Icon(
-                      Icons.add,
+                              _ => const SizedBox(),
+                            };
+                          },
+                        ),
+                      ],
                     ),
-                    label: const Text('Add Owner'),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Date Fields
-            _buildDateField(
-              context: context,
-              label: 'Start Date',
-              controller: startDateController,
-            ),
-            const SizedBox(height: 16),
-            _buildDateField(
-              context: context,
-              label: 'Construction Date',
-              controller: constructionDateController,
-            ),
-            const SizedBox(height: 16),
-
-            // Duration Field
-            Text(
-              'Duration (months)',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
+                  const SizedBox(width: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20),
+                    child: TextButton.icon(
+                      onPressed: _showAddOwnerSheet,
+                      icon: const Icon(
+                        Icons.add,
+                      ),
+                      label: const Text('Add Owner'),
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: durationController,
-              keyboardType: TextInputType.number,
-              decoration: _getInputDecoration(context),
-            ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // Regular Text Fields
-            _buildTextField(
-              label: 'Consultant',
-              controller: consultantController,
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              label: 'Contractor',
-              controller: contractorController,
-            ),
-          ],
+              // Regular Text Fields
+              _buildTextField(
+                label: 'Consultant',
+                controller: consultantController,
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                label: 'Contractor',
+                controller: contractorController,
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -16,4 +16,12 @@ abstract class ManageProjectsRepository {
       String? city,
       String? country,
       XFile? logo);
+  Future<Either<String, bool>> createProject(
+      String token,
+      String title,
+      int ownerId,
+      XFile? picture,
+      String? acronym,
+      String? consultant,
+      String? contractor);
 }

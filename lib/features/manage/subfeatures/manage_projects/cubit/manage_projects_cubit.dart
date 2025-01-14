@@ -86,4 +86,17 @@ class ManageProjectsCubit extends Cubit<ManageProjectsState> {
       (success) => emit(CreateOwnerSuccess()),
     );
   }
+
+  Future<void> createProject(String title, int ownerId, XFile? picture,
+      String? acronym, String? consultant, String? contractor) async {
+    emit(CreateProjectLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final result = await _repository.createProject(
+        token, title, ownerId, picture, acronym, consultant, contractor);
+
+    result.fold(
+      (error) => emit(CreateProjectFailure(error)),
+      (success) => emit(CreateProjectSuccess()),
+    );
+  }
 }

@@ -112,4 +112,50 @@ class ManageProjectsRepositoryImpl implements ManageProjectsRepository {
       return left(e.toString());
     }
   }
+
+  @override
+  Future<Either<String, bool>> createProject(
+      String token,
+      String title,
+      int ownerId,
+      XFile? picture,
+      String? acronym,
+      String? consultant,
+      String? contractor) async {
+    try {
+      // Add optional fields only if they are not null
+      final Map<String, dynamic> requestData = {
+        'title': title,
+        'owner': ownerId,
+      };
+      if (acronym != null && acronym.isNotEmpty) {
+        requestData['acronym'] = acronym;
+      }
+      if (consultant != null && consultant.isNotEmpty) {
+        requestData['consultant'] = consultant;
+      }
+      if (contractor != null && contractor.isNotEmpty) {
+        requestData['contractor'] = contractor;
+      }
+      if (picture != null) {
+          requestData['picture'] = await MultipartFile.fromFile(
+          picture.path,
+          filename: picture.name,
+        );
+      }
+      final response = await myApiService.post(
+        EndPoints.getProject,
+        token: token,
+        data: requestData,
+      );
+      if (response.statusCode == StatusCode.ok ||
+          response.statusCode == StatusCode.created) {
+        return right(true);
+      } else {
+        return left(response.statusCode.toString());
+      }
+    } catch (e) {
+      return left(e.toString());
+    }
+  }
 }

@@ -56,3 +56,17 @@ final class CreateOwnerFailure extends ManageProjectsState {
   const CreateOwnerFailure(this.message);
 }
 
+final class CreateProjectLoading extends ManageProjectsState {}
+
+final class CreateProjectSuccess extends ManageProjectsState {
+
+
+  const CreateProjectSuccess();
+}
+
+final class CreateProjectFailure extends ManageProjectsState {
+  final String message;
+
+  const CreateProjectFailure(this.message);
+}
+
