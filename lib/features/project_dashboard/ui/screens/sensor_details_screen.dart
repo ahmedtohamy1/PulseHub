@@ -551,66 +551,73 @@ class _SensorDetailsScreenState extends State<SensorDetailsScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Custom Header
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              IconButton.filled(
-                icon: const Icon(Icons.arrow_back_ios_new_outlined),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                widget.sensor.name.isNotEmpty
-                    ? widget.sensor.name
-                    : 'Sensor Details',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ],
+    return Scaffold(
+      body: Column(
+        children: [
+          // Custom Header
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                IconButton.filled(
+                  icon: const Icon(Icons.arrow_back_ios_new_outlined),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  widget.sensor.name.isNotEmpty
+                      ? widget.sensor.name
+                      : 'Sensor Details',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ],
+            ),
           ),
-        ),
-        // Tab Bar
-        Container(
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: Theme.of(context).dividerColor,
-                width: 1,
+          // Tab Bar
+          Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Theme.of(context).dividerColor,
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Material(
+              color: Theme.of(context).colorScheme.surface,
+              child: TabBar(
+                controller: _tabController,
+                isScrollable: true,
+                padding: EdgeInsets.zero,
+                labelPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+                indicatorPadding: EdgeInsets.zero,
+                tabs: const [
+                  Tab(text: 'Overview'),
+                  Tab(text: 'Calibration'),
+                  Tab(text: 'Thresholds'),
+                  Tab(text: 'Data Source'),
+                  Tab(text: 'Events Log'),
+                ],
               ),
             ),
           ),
-          child: TabBar(
-            controller: _tabController,
-            isScrollable: true,
-            padding: EdgeInsets.zero,
-            labelPadding: const EdgeInsets.symmetric(horizontal: 16.0),
-            indicatorPadding: EdgeInsets.zero,
-            tabs: const [
-              Tab(text: 'Overview'),
-              Tab(text: 'Calibration'),
-              Tab(text: 'Thresholds'),
-              Tab(text: 'Data Source'),
-              Tab(text: 'Events Log'),
-            ],
+          // Tab Content
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildOverviewTab(),
+                const Center(
+                    child: Text('Calibration tab content coming soon')),
+                const Center(child: Text('Thresholds tab content coming soon')),
+                const Center(
+                    child: Text('Data Source tab content coming soon')),
+                _buildEventsLogTab(),
+              ],
+            ),
           ),
-        ),
-        // Tab Content
-        Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              _buildOverviewTab(),
-              const Center(child: Text('Calibration tab content coming soon')),
-              const Center(child: Text('Thresholds tab content coming soon')),
-              const Center(child: Text('Data Source tab content coming soon')),
-              _buildEventsLogTab(),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

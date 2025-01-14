@@ -815,14 +815,14 @@ class DashRepoImpl extends DashRepository {
   }
 
   @override
-  Future<Either<String, bool>> createCloudhubSensor(
-      String token, int cloudhubId, String sensorName) async {
+  Future<Either<String, bool>> assignCloudhubSensor(
+      String token, int? cloudhubId, int sensorId) async {
     try {
       final response = await myApiService.post(
         EndPoints.getSensorData,
         token: token,
+        queryParameters: {'id': sensorId},
         data: {
-          "name": sensorName,
           "cloud_hub": cloudhubId,
         },
       );

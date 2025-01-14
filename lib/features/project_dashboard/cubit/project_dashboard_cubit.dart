@@ -564,11 +564,11 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
     );
   }
 
-  Future<void> createCloudhubSensor(int cloudhubId, String sensorName) async {
+  Future<void> createCloudhubSensor(int? cloudhubId, int sensorId) async {
     emit(ProjectDashboardCreateCloudhubSensorLoading());
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
     final res =
-        await _repository.createCloudhubSensor(token, cloudhubId, sensorName);
+        await _repository.assignCloudhubSensor(token, cloudhubId, sensorId);
     res.fold(
       (failure) => emit(ProjectDashboardCreateCloudhubSensorFailure(failure)),
       (response) => emit(ProjectDashboardCreateCloudhubSensorSuccess(response)),

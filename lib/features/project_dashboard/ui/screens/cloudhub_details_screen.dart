@@ -7,7 +7,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_cloudhub_details.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/sensor_data_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/update_cloudhub_request_model.dart';
+import 'package:pulsehub/features/project_dashboard/ui/screens/sensor_details_screen.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -238,106 +240,434 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
                   IconButton.filled(
                     icon: const Icon(Icons.sensors),
                     onPressed: () {
-                      // Show dialog to enter sensor name
-                      final TextEditingController sensorNameController =
-                          TextEditingController();
-                      final parentContext = context;
+                      // Get all available sensors first
+                      context
+                          .read<ProjectDashboardCubit>()
+                          .getMonitoring(_cloudHub.cloudhub.monitoring ?? 0);
 
                       showDialog(
                         context: context,
-                        builder: (dialogContext) => AlertDialog(
-                          title: const Text('Add New Sensor'),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              TextField(
-                                controller: sensorNameController,
-                                decoration: const InputDecoration(
-                                  labelText: 'Sensor Name',
-                                  hintText: 'Enter sensor name',
-                                  border: OutlineInputBorder(),
+                        builder: (dialogContext) => BlocProvider.value(
+                          value: context.read<ProjectDashboardCubit>(),
+                          child: AlertDialog(
+                            backgroundColor:
+                                Theme.of(context).colorScheme.surface,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
+                            title: Row(
+                              children: [
+                                Icon(
+                                  Icons.sensors_outlined,
+                                  color: Theme.of(context).colorScheme.primary,
+                                  size: 24,
                                 ),
-                                onSubmitted: (value) {
-                                  if (value.trim().isNotEmpty) {
-                                    parentContext
-                                        .read<ProjectDashboardCubit>()
-                                        .createCloudhubSensor(
-                                          _cloudHub.cloudhub.cloudhubId ?? 0,
-                                          value.trim(),
-                                        );
-                                  }
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                              BlocConsumer<ProjectDashboardCubit,
-                                  ProjectDashboardState>(
-                                bloc:
-                                    parentContext.read<ProjectDashboardCubit>(),
-                                listener: (context, state) {
-                                  if (state
-                                      is ProjectDashboardCreateCloudhubSensorSuccess) {
-                                    Navigator.pop(dialogContext);
-                                    // Refresh CloudHub data to get updated sensors list
-                                    parentContext
-                                        .read<ProjectDashboardCubit>()
-                                        .getCloudhubData(
-                                          _cloudHub.cloudhub.cloudhubId ?? 0,
-                                        );
-                                    ScaffoldMessenger.of(parentContext)
-                                        .showSnackBar(
-                                      const SnackBar(
-                                        content:
-                                            Text('Sensor created successfully'),
-                                        backgroundColor: Colors.green,
-                                      ),
-                                    );
-                                  } else if (state
-                                      is ProjectDashboardCreateCloudhubSensorFailure) {
-                                    ScaffoldMessenger.of(parentContext)
-                                        .showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                            'Failed to create sensor: ${state.message}'),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                  }
-                                },
-                                builder: (context, state) {
-                                  return Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(dialogContext),
-                                        child: const Text('Cancel'),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      if (state
-                                          is ProjectDashboardCreateCloudhubSensorLoading)
-                                        const CircularProgressIndicator()
-                                      else
-                                        FilledButton(
-                                          onPressed: () {
-                                            final sensorName =
-                                                sensorNameController.text
-                                                    .trim();
-                                            if (sensorName.isNotEmpty) {
-                                              parentContext
-                                                  .read<ProjectDashboardCubit>()
-                                                  .createCloudhubSensor(
-                                                    _cloudHub.cloudhub
-                                                            .cloudhubId ??
-                                                        0,
-                                                    sensorName,
-                                                  );
-                                            }
-                                          },
-                                          child: const Text('Add'),
-                                        ),
-                                    ],
+                                const SizedBox(width: 12),
+                                const Text('Add New Sensor'),
+                              ],
+                            ),
+                            content: BlocBuilder<ProjectDashboardCubit,
+                                ProjectDashboardState>(
+                              builder: (context, state) {
+                                if (state
+                                    is ProjectDashboardMonitoringLoading) {
+                                  return const SizedBox(
+                                    height: 100,
+                                    child: Center(
+                                        child: CircularProgressIndicator()),
                                   );
-                                },
+                                }
+
+                                if (state
+                                    is ProjectDashboardMonitoringFailure) {
+                                  return SizedBox(
+                                    height: 100,
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.error_outline,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .error,
+                                            size: 32,
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'Failed to load sensors: ${state.message}',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .error),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }
+
+                                if (state
+                                    is ProjectDashboardMonitoringSuccess) {
+                                  final monitorings =
+                                      state.monitoringResponse.monitorings ??
+                                          [];
+
+                                  if (monitorings.isEmpty) {
+                                    return SizedBox(
+                                      height: 100,
+                                      child: Center(
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.sensors_off,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary,
+                                              size: 32,
+                                            ),
+                                            const SizedBox(height: 8),
+                                            const Text(
+                                              'No monitorings available',
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  }
+
+                                  return SizedBox(
+                                    width: double.maxFinite,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primaryContainer
+                                                .withOpacity(0.3),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                Icons.info_outline,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
+                                                size: 20,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: Text(
+                                                  'Select a monitoring and sensor to add to this CloudHub:',
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .primary,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Flexible(
+                                          child: ListView.separated(
+                                            shrinkWrap: true,
+                                            itemCount: monitorings.length,
+                                            separatorBuilder:
+                                                (context, index) =>
+                                                    const SizedBox(height: 8),
+                                            itemBuilder: (context, index) {
+                                              final monitoring =
+                                                  monitorings[index];
+                                              return Container(
+                                                decoration: BoxDecoration(
+                                                  border: Border.all(
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .primary
+                                                        .withOpacity(0.2),
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
+                                                child: ExpansionTile(
+                                                  collapsedBackgroundColor:
+                                                      Theme.of(context)
+                                                          .colorScheme
+                                                          .surface,
+                                                  backgroundColor:
+                                                      Theme.of(context)
+                                                          .colorScheme
+                                                          .primaryContainer
+                                                          .withOpacity(0.1),
+                                                  shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              12)),
+                                                  title: Text(
+                                                    monitoring.name,
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                  subtitle: Text(
+                                                    'ID: ${monitoring.monitoringId}',
+                                                    style: TextStyle(
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .secondary,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                  leading: Icon(
+                                                    Icons
+                                                        .monitor_heart_outlined,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .primary,
+                                                  ),
+                                                  children: [
+                                                    if (monitoring
+                                                                .usedSensors ==
+                                                            null ||
+                                                        monitoring.usedSensors!
+                                                            .isEmpty)
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(16),
+                                                        child: Row(
+                                                          children: [
+                                                            Icon(
+                                                              Icons.sensors_off,
+                                                              color: Theme.of(
+                                                                      context)
+                                                                  .colorScheme
+                                                                  .secondary,
+                                                              size: 16,
+                                                            ),
+                                                            const SizedBox(
+                                                                width: 8),
+                                                            const Text(
+                                                                'No sensors available in this monitoring'),
+                                                          ],
+                                                        ),
+                                                      )
+                                                    else
+                                                      ...monitoring.usedSensors!
+                                                          .map(
+                                                              (usedSensor) =>
+                                                                  ExpansionTile(
+                                                                    tilePadding: const EdgeInsets
+                                                                        .symmetric(
+                                                                        horizontal:
+                                                                            24,
+                                                                        vertical:
+                                                                            4),
+                                                                    title: Text(
+                                                                      usedSensor
+                                                                          .name,
+                                                                      style: const TextStyle(
+                                                                          fontWeight:
+                                                                              FontWeight.w500),
+                                                                    ),
+                                                                    subtitle:
+                                                                        Text(
+                                                                      'Function: ${usedSensor.function} • Count: ${usedSensor.count}',
+                                                                      style:
+                                                                          TextStyle(
+                                                                        color: Theme.of(context)
+                                                                            .colorScheme
+                                                                            .secondary,
+                                                                        fontSize:
+                                                                            12,
+                                                                      ),
+                                                                    ),
+                                                                    leading:
+                                                                        Icon(
+                                                                      Icons
+                                                                          .sensors,
+                                                                      color: Theme.of(
+                                                                              context)
+                                                                          .colorScheme
+                                                                          .secondary,
+                                                                      size: 20,
+                                                                    ),
+                                                                    children: [
+                                                                      if (usedSensor.sensors ==
+                                                                              null ||
+                                                                          usedSensor
+                                                                              .sensors!
+                                                                              .isEmpty)
+                                                                        const Padding(
+                                                                          padding: EdgeInsets.symmetric(
+                                                                              horizontal: 24,
+                                                                              vertical: 8),
+                                                                          child:
+                                                                              Text('No individual sensors available'),
+                                                                        )
+                                                                      else
+                                                                        ...usedSensor
+                                                                            .sensors!
+                                                                            .map((sensor) =>
+                                                                                ListTile(
+                                                                                  contentPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 4),
+                                                                                  title: Text(sensor.name),
+                                                                                  subtitle: Column(
+                                                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                                                    children: [
+                                                                                      Text('UUID: ${sensor.uuid}'),
+                                                                                      Row(
+                                                                                        children: [
+                                                                                          Icon(
+                                                                                            sensor.active ? Icons.check_circle : Icons.cancel,
+                                                                                            size: 12,
+                                                                                            color: sensor.active ? Colors.green : Colors.red,
+                                                                                          ),
+                                                                                          const SizedBox(width: 4),
+                                                                                          Text(
+                                                                                            sensor.active ? 'Active' : 'Inactive',
+                                                                                            style: TextStyle(
+                                                                                              color: sensor.active ? Colors.green : Colors.red,
+                                                                                            ),
+                                                                                          ),
+                                                                                          const SizedBox(width: 8),
+                                                                                          Container(
+                                                                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                                                                            decoration: BoxDecoration(
+                                                                                              color: Theme.of(context).colorScheme.secondaryContainer,
+                                                                                              borderRadius: BorderRadius.circular(12),
+                                                                                            ),
+                                                                                            child: Text(
+                                                                                              sensor.status,
+                                                                                              style: TextStyle(
+                                                                                                fontSize: 10,
+                                                                                                color: Theme.of(context).colorScheme.onSecondaryContainer,
+                                                                                              ),
+                                                                                            ),
+                                                                                          ),
+                                                                                        ],
+                                                                                      ),
+                                                                                      if (sensor.cloudHub != null) ...[
+                                                                                        const SizedBox(height: 4),
+                                                                                        Row(
+                                                                                          children: [
+                                                                                            Icon(
+                                                                                              Icons.cloud,
+                                                                                              size: 12,
+                                                                                              color: Theme.of(context).colorScheme.secondary,
+                                                                                            ),
+                                                                                            const SizedBox(width: 4),
+                                                                                            Text(
+                                                                                              'CloudHub: ${sensor.cloudHub}',
+                                                                                              style: TextStyle(
+                                                                                                color: Theme.of(context).colorScheme.secondary,
+                                                                                                fontSize: 12,
+                                                                                              ),
+                                                                                            ),
+                                                                                          ],
+                                                                                        ),
+                                                                                      ],
+                                                                                    ],
+                                                                                  ),
+                                                                                  trailing: Row(
+                                                                                    mainAxisSize: MainAxisSize.min,
+                                                                                    children: [
+                                                                                      IconButton(
+                                                                                        icon: const Icon(Icons.info_outline),
+                                                                                        tooltip: 'View Details',
+                                                                                        onPressed: () {
+                                                                                          Navigator.pop(dialogContext);
+                                                                                          Navigator.push(
+                                                                                            context,
+                                                                                            MaterialPageRoute(
+                                                                                              builder: (context) => SensorDetailsScreen(
+                                                                                                sensor: Sensor(
+                                                                                                  sensorId: sensor.sensorId,
+                                                                                                  name: sensor.name,
+                                                                                                  uuid: sensor.uuid,
+                                                                                                  usedSensor: sensor.usedSensor,
+                                                                                                  cloudHub: sensor.cloudHub,
+                                                                                                  installDate: sensor.installDate,
+                                                                                                  typeId: sensor.typeId,
+                                                                                                  dataSource: sensor.dataSource,
+                                                                                                  readingsPerDay: sensor.readingsPerDay,
+                                                                                                  active: sensor.active,
+                                                                                                  coordinateX: sensor.coordinateX,
+                                                                                                  coordinateY: sensor.coordinateY,
+                                                                                                  coordinateZ: sensor.coordinateZ,
+                                                                                                  longitude: sensor.longitude,
+                                                                                                  latitude: sensor.latitude,
+                                                                                                  calibrated: sensor.calibrated,
+                                                                                                  calibrationDate: sensor.calibrationDate,
+                                                                                                  calibrationComments: sensor.calibrationComments,
+                                                                                                  event: sensor.event ?? 'N/A',
+                                                                                                  eventLastStatus: sensor.eventLastStatus ?? 'N/A',
+                                                                                                  status: sensor.status,
+                                                                                                  cloudHubTime: sensor.cloudHubTime,
+                                                                                                  sendTime: sensor.sendTime,
+                                                                                                ),
+                                                                                              ),
+                                                                                            ),
+                                                                                          );
+                                                                                        },
+                                                                                      ),
+                                                                                      IconButton(
+                                                                                        icon: Icon(
+                                                                                          Icons.add_circle_outline,
+                                                                                          color: sensor.cloudHub != null ? Theme.of(context).colorScheme.secondary : Theme.of(context).colorScheme.primary,
+                                                                                        ),
+                                                                                        tooltip: sensor.cloudHub != null ? 'Reassign to this CloudHub' : 'Add to this CloudHub',
+                                                                                        onPressed: () {
+                                                                                          context.read<ProjectDashboardCubit>().createCloudhubSensor(
+                                                                                                _cloudHub.cloudhub.cloudhubId!,
+                                                                                                sensor.sensorId,
+                                                                                              );
+                                                                                          Navigator.pop(dialogContext);
+                                                                                        },
+                                                                                      ),
+                                                                                    ],
+                                                                                  ),
+                                                                                  onTap: null,
+                                                                                )),
+                                                                    ],
+                                                                  )),
+                                                  ],
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+
+                                return const Center(
+                                    child: Text('No data available'));
+                              },
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(dialogContext),
+                                child: Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondary),
+                                ),
                               ),
                             ],
                           ),
@@ -511,6 +841,17 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
                                         ],
                                       ),
                                     ),
+                                    IconButton.outlined(
+                                        tooltip: 'Unassign from this CloudHub',
+                                        onPressed: () {
+                                          context
+                                              .read<ProjectDashboardCubit>()
+                                              .createCloudhubSensor(
+                                                  null, sensorMap['sensor_id']);
+                                        },
+                                        icon: const Icon(Icons.delete,
+                                            color: Colors.red)),
+                                    const SizedBox(width: 8),
                                     Container(
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 12, vertical: 6),
