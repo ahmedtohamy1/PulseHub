@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/core/theming/app_styles.dart';
+import 'package:pulsehub/core/utils/user_manager.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/project_dashboards.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
@@ -172,51 +173,60 @@ class DashboardCard extends StatelessWidget {
                                 ),
                       ),
                     ),
-                    IconButton(
-                      onPressed: () => _showEditModal(context),
-                      icon: Icon(
-                        Icons.edit_outlined,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (dialogContext) => BlocProvider.value(
-                            value: cubit,
-                            child: AlertDialog(
-                              title: const Text('Delete Dashboard'),
-                              content: Text(
-                                  'Are you sure you want to delete "${dashboard.name}"?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(dialogContext),
-                                  child: const Text('Cancel'),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    context
-                                        .read<ProjectDashboardCubit>()
-                                        .deleteDash(dashboard.dashboardId);
-                                    Navigator.pop(dialogContext);
-                                  },
-                                  style: TextButton.styleFrom(
-                                    foregroundColor:
-                                        Theme.of(context).colorScheme.error,
-                                  ),
-                                  child: const Text('Delete'),
-                                ),
-                              ],
+                    UserManager().user?.isStaff == true ||
+                            UserManager().user?.isSuperuser == true
+                        ? IconButton(
+                            onPressed: () => _showEditModal(context),
+                            icon: Icon(
+                              Icons.edit_outlined,
+                              color: Theme.of(context).colorScheme.primary,
                             ),
-                          ),
-                        );
-                      },
-                      icon: Icon(
-                        Icons.delete_outline,
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
+                          )
+                        : const SizedBox.shrink(),
+                    UserManager().user?.isStaff == true ||
+                            UserManager().user?.isSuperuser == true
+                        ? IconButton(
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (dialogContext) => BlocProvider.value(
+                                  value: cubit,
+                                  child: AlertDialog(
+                                    title: const Text('Delete Dashboard'),
+                                    content: Text(
+                                        'Are you sure you want to delete "${dashboard.name}"?'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(dialogContext),
+                                        child: const Text('Cancel'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          context
+                                              .read<ProjectDashboardCubit>()
+                                              .deleteDash(
+                                                  dashboard.dashboardId);
+                                          Navigator.pop(dialogContext);
+                                        },
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Theme.of(context)
+                                              .colorScheme
+                                              .error,
+                                        ),
+                                        child: const Text('Delete'),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                            icon: Icon(
+                              Icons.delete_outline,
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          )
+                        : const SizedBox.shrink(),
                   ],
                 ),
                 const SizedBox(height: 8.0),

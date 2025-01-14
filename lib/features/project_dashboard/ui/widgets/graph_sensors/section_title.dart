@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:pulsehub/core/utils/user_manager.dart';
 
 class SectionTitle extends StatelessWidget {
   final String title;
@@ -26,8 +27,11 @@ class SectionTitle extends StatelessWidget {
                 ?.copyWith(fontWeight: FontWeight.bold),
           ),
           const Spacer(),
-          IconButton.filled(
-              onPressed: onAdd, icon: const Icon(LucideIcons.plus))
+          UserManager().user?.isStaff == true ||
+                  UserManager().user?.isSuperuser == true
+              ? IconButton.filled(
+                  onPressed: onAdd, icon: const Icon(LucideIcons.plus))
+              : const SizedBox.shrink()
         ],
       ),
     );
