@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pulsehub/core/di/service_locator.dart';
+import 'package:pulsehub/core/utils/user_manager.dart';
+import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
+import 'package:pulsehub/features/project_dashboard/ui/widgets/media_library_tab.dart';
 import 'package:pulsehub/features/projects/data/models/project_response.dart';
-
-import 'project_overview.dart';
-import 'project_settings.dart';
-import 'section_title.dart';
+import 'package:pulsehub/features/projects/ui/widgets/project_details/project_overview.dart';
+import 'package:pulsehub/features/projects/ui/widgets/project_details/project_settings.dart';
+import 'package:pulsehub/features/projects/ui/widgets/project_details/section_title.dart';
 
 class ProjectDetailsContent extends StatelessWidget {
   final Project project;
@@ -107,6 +111,33 @@ class ProjectDetailsContent extends StatelessWidget {
           const SectionTitle(title: 'Project Settings'),
           const SizedBox(height: 8),
           ProjectSettings(project: project),
+          if (!(UserManager().user?.isStaff == true ||
+              UserManager().user?.isSuperuser == true)) ...[
+            const SizedBox(height: 24),
+            Card(
+              child: ListTile(
+                leading: Icon(Icons.photo_library,
+                    color: Theme.of(context).colorScheme.primary),
+                title: Text('Media Library',
+                    style: Theme.of(context).textTheme.titleMedium),
+                subtitle: const Text('View and manage project media files'),
+                trailing: Icon(Icons.arrow_forward_ios,
+                    color: Theme.of(context).colorScheme.primary),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => Scaffold(
+                      appBar: AppBar(title: const Text('Media Library')),
+                      body: BlocProvider(
+                        create: (context) => sl<ProjectDashboardCubit>(),
+                        child:
+                            MediaLibraryTab(projectId: project.projectId ?? 0),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
