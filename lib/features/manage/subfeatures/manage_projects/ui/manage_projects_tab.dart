@@ -60,20 +60,155 @@ class ManageProjectsView extends StatelessWidget {
   }
 }
 
-class ProjectsList extends StatelessWidget {
+class ProjectsList extends StatefulWidget {
   final List<Project> projects;
 
   const ProjectsList({super.key, required this.projects});
 
   @override
+  State<ProjectsList> createState() => _ProjectsListState();
+}
+
+class _ProjectsListState extends State<ProjectsList> {
+  final TextEditingController _searchController = TextEditingController();
+  bool _showSearch = false;
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<Project> get _filteredProjects {
+    if (_searchQuery.isEmpty) return widget.projects;
+    final query = _searchQuery.toLowerCase();
+    return widget.projects
+        .where((project) =>
+            project.title.toLowerCase().contains(query) ||
+            project.acronym.toLowerCase().contains(query))
+        .toList();
+  }
+
+  void _toggleSearch() {
+    setState(() {
+      _showSearch = !_showSearch;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: projects.length,
-      itemBuilder: (context, index) {
-        final project = projects[index];
-        return ProjectCard(project: project);
-      },
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Stack(
+      children: [
+        // Main List
+        GestureDetector(
+          onTap: _showSearch ? _toggleSearch : null,
+          behavior: HitTestBehavior.translucent,
+          child: ListView.builder(
+            padding: const EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 16,
+              bottom: 80, // Extra padding for FAB
+            ),
+            itemCount: _filteredProjects.length,
+            itemBuilder: (context, index) {
+              final project = _filteredProjects[index];
+              return ProjectCard(project: project);
+            },
+          ),
+        ),
+
+        // Search TextField
+        if (_showSearch)
+          Positioned(
+            right: 16,
+            bottom: 80,
+            child: Container(
+              width: 250,
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: colorScheme.shadow.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (value) {
+                  setState(() {
+                    _searchQuery = value;
+                  });
+                },
+                decoration: InputDecoration(
+                  hintText: 'Search projects...',
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: colorScheme.primary,
+                  ),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {
+                              _searchQuery = '';
+                            });
+                          },
+                        )
+                      : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: colorScheme.outline,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: colorScheme.outline.withOpacity(0.5),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+        // FAB
+        Positioned(
+          right: 16,
+          bottom: 16,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FloatingActionButton(
+                heroTag: 'searchFab',
+                onPressed: _toggleSearch,
+                child: Icon(
+                  _showSearch ? Icons.close : Icons.search,
+                  color: colorScheme.onPrimaryContainer,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
