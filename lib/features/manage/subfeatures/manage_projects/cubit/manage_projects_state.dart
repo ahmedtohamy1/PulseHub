@@ -28,3 +28,31 @@ final class GetAllProjectsFailure extends ManageProjectsState {
   @override
   List<Object> get props => [message];
 }
+
+final class GetAllOwnersLoading extends ManageProjectsState {}
+
+final class GetAllOwnersSuccess extends ManageProjectsState {
+  final List<owner.OwnerModel> owners;
+
+  const GetAllOwnersSuccess(this.owners);
+
+  @override
+  List<Object> get props => [owners];
+}
+
+final class GetAllOwnersFailure extends ManageProjectsState {
+  final String message;
+
+  const GetAllOwnersFailure(this.message);
+}
+
+final class CreateOwnerLoading extends ManageProjectsState {}
+
+final class CreateOwnerSuccess extends ManageProjectsState {}
+
+final class CreateOwnerFailure extends ManageProjectsState {
+  final String message;
+
+  const CreateOwnerFailure(this.message);
+}
+
