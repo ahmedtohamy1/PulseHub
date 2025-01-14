@@ -82,8 +82,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i883.ManageUsersRepositoryImpl());
     gh.lazySingleton<_i87.ManageRepository>(() => const _i176.ManageRepoImpl());
     gh.lazySingleton<_i713.MyApi>(() => _i713.MyApi(gh<_i361.Dio>()));
-    gh.factory<_i423.ManageProjectsRepository>(
-        () => _i320.ManageProjectsRepositoryImpl());
     gh.factory<_i133.ManageOwnersRepository>(
         () => _i1045.ManageOwnersRepositoryImpl());
     gh.factory<_i1047.ManageSensorsRepository>(
@@ -96,12 +94,12 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i1046.DicRepoImpl(gh<_i713.MyApi>()));
     gh.lazySingleton<_i234.ProjectsRepository>(
         () => _i296.ProjectsRepoImpl(gh<_i713.MyApi>()));
-    gh.factory<_i446.ManageProjectsCubit>(
-        () => _i446.ManageProjectsCubit(gh<_i423.ManageProjectsRepository>()));
     gh.factory<_i495.ProjectDashboardCubit>(
         () => _i495.ProjectDashboardCubit(gh<_i346.DashRepository>()));
     gh.factory<_i696.TicketMessagesCubit>(
         () => _i696.TicketMessagesCubit(gh<_i346.DashRepository>()));
+    gh.factory<_i423.ManageProjectsRepository>(
+        () => _i320.ManageProjectsRepositoryImpl(gh<_i713.MyApi>()));
     gh.lazySingleton<_i573.AuthRepository>(
         () => _i153.AuthRepositoryImpl(gh<_i713.MyApi>()));
     gh.factory<_i694.ManageOwnersCubit>(
@@ -120,6 +118,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i782.AiReportCubit(gh<_i767.AiReportRepository>()));
     gh.factory<_i960.SettingsCubit>(
         () => _i960.SettingsCubit(gh<_i878.SettingsRepository>()));
+    gh.factory<_i446.ManageProjectsCubit>(
+        () => _i446.ManageProjectsCubit(gh<_i423.ManageProjectsRepository>()));
     gh.factory<_i698.AuthCubit>(
         () => _i698.AuthCubit(gh<_i573.AuthRepository>()));
     gh.factory<_i819.DicCubit>(() => _i819.DicCubit(
