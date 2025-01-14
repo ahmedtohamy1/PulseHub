@@ -10,7 +10,7 @@ import 'package:pulsehub/features/projects/data/models/project_response.dart'
     as pr;
 
 @LazySingleton(as: ProjectsRepository)
-class ProjectsRepoImpl extends ProjectsRepository {
+class ProjectsRepoImpl implements ProjectsRepository {
   final MyApi myApiService;
 
   ProjectsRepoImpl(this.myApiService);

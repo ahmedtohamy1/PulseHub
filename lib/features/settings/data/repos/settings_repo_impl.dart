@@ -10,7 +10,7 @@ import 'package:pulsehub/features/settings/data/models/user_details.dart';
 import 'package:pulsehub/features/settings/data/repos/settings_repo.dart';
 
 @LazySingleton(as: SettingsRepository)
-class SettingsRepoImpl extends SettingsRepository {
+class SettingsRepoImpl implements SettingsRepository {
   final MyApi myApiService;
   SettingsRepoImpl(this.myApiService);
 

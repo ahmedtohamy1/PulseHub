@@ -24,7 +24,7 @@ import 'package:pulsehub/features/project_dashboard/data/models/update_cloudhub_
 import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo.dart';
 
 @LazySingleton(as: DashRepository)
-class DashRepoImpl extends DashRepository {
+class DashRepoImpl implements DashRepository {
   final MyApi myApiService;
 
   DashRepoImpl(this.myApiService);

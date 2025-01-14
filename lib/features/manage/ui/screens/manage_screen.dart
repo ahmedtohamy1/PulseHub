@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../subfeatures/manage_owners/ui/manage_owners_tab.dart';
+import '../../subfeatures/manage_projects/ui/manage_projects_tab.dart';
+import '../../subfeatures/manage_sensors/ui/manage_sensors_tab.dart';
+import '../../subfeatures/manage_users/ui/manage_users_tab.dart';
+
 class ManageScreen extends StatelessWidget {
   const ManageScreen({super.key});
 
@@ -108,63 +113,19 @@ class ManageScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const Expanded(
+            Expanded(
               child: TabBarView(
                 children: [
-                  _ProjectsTab(),
-                  _OwnersTab(),
-                  _ManagedUsersTab(),
-                  _SensorTypesTab(),
+                  ManageProjectsTab(),
+                  ManageOwnersTab(),
+                  ManageUsersTab(),
+                  ManageSensorsTab(),
                 ],
               ),
             ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class _ProjectsTab extends StatelessWidget {
-  const _ProjectsTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Projects Tab Content'),
-    );
-  }
-}
-
-class _OwnersTab extends StatelessWidget {
-  const _OwnersTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Owners Tab Content'),
-    );
-  }
-}
-
-class _ManagedUsersTab extends StatelessWidget {
-  const _ManagedUsersTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Managed Users Tab Content'),
-    );
-  }
-}
-
-class _SensorTypesTab extends StatelessWidget {
-  const _SensorTypesTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Sensor Types Tab Content'),
     );
   }
 }
