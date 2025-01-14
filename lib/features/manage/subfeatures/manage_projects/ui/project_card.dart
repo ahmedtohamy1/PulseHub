@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:pulsehub/core/di/service_locator.dart';
+import 'package:pulsehub/core/routing/routes.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_projects/data/models/get_all_projects_response_model.dart';
+import 'package:pulsehub/features/projects/cubit/projects_cubit.dart';
 
 class ProjectCard extends StatelessWidget {
   final Project project;
@@ -21,7 +25,11 @@ class ProjectCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-          // TODO: Navigate to project details
+          sl<ProjectsCubit>().getProject(project.projectId);
+          context.push(
+            Routes.projectDetailsPage,
+            extra: project.projectId.toString(),
+          );
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
