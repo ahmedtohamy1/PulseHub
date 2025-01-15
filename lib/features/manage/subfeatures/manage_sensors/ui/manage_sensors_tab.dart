@@ -289,6 +289,112 @@ class SensorCard extends StatelessWidget {
     required this.sensorType,
   });
 
+  Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final TextEditingController confirmController = TextEditingController();
+    bool isLoading = false;
+    final cubit = context.read<ManageSensorsCubit>();
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(
+            'Delete Sensor Type',
+            style: theme.textTheme.titleLarge?.copyWith(
+              color: colorScheme.error,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'This action cannot be undone. Please type "${sensorType.name}" to confirm.',
+                style: theme.textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: confirmController,
+                decoration: InputDecoration(
+                  hintText: 'Type sensor name to confirm',
+                  errorText: confirmController.text.isNotEmpty &&
+                          confirmController.text != sensorType.name
+                      ? 'Name does not match'
+                      : null,
+                ),
+                onChanged: (value) => setState(() {}),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: isLoading
+                  ? null
+                  : () {
+                      Navigator.of(context).pop();
+                    },
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  color: isLoading
+                      ? colorScheme.onSurface.withOpacity(0.38)
+                      : colorScheme.primary,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: isLoading || confirmController.text != sensorType.name
+                  ? null
+                  : () async {
+                      setState(() => isLoading = true);
+                      await cubit.deleteSensorType(sensorType.sensorTypeId);
+
+                      if (!context.mounted) return;
+                      Navigator.of(context).pop();
+
+                      // Show result in snackbar
+                      final state = cubit.state;
+                      if (state is DeleteSensorTypeSuccess) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Sensor type deleted successfully'),
+                          ),
+                        );
+                      } else if (state is DeleteSensorTypeError) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(state.error),
+                            backgroundColor: colorScheme.error,
+                          ),
+                        );
+                      }
+                    },
+              child: isLoading
+                  ? SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: colorScheme.error,
+                      ),
+                    )
+                  : Text(
+                      'Delete',
+                      style: TextStyle(
+                        color: confirmController.text == sensorType.name
+                            ? colorScheme.error
+                            : colorScheme.onSurface.withOpacity(0.38),
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -349,9 +455,7 @@ class SensorCard extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  onPressed: () {
-                    // TODO: Implement delete functionality
-                  },
+                  onPressed: () => _showDeleteConfirmationDialog(context),
                   icon: Icon(
                     Icons.delete,
                     color: colorScheme.error,

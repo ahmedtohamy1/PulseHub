@@ -23,4 +23,17 @@ class ManageSensorsCubit extends Cubit<ManageSensorsState> {
       (r) => emit(ManageSensorsLoaded(r)),
     );
   }
+
+  Future<void> deleteSensorType(int sensorTypeId) async {
+    emit(DeleteSensorTypeLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final result = await _repository.deleteSensorType(token, sensorTypeId);
+    result.fold(
+      (l) => emit(DeleteSensorTypeError(l)),
+      (_) {
+        emit(DeleteSensorTypeSuccess());
+        getAllSensorTypes();
+      },
+    );
+  }
 }

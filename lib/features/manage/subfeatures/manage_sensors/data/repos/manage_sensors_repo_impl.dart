@@ -31,4 +31,24 @@ class ManageSensorsRepositoryImpl implements ManageSensorsRepository {
       return left(e.toString());
     }
   }
+
+  @override
+  Future<Either<String, void>> deleteSensorType(
+      String token, int sensorTypeId) async {
+    try {
+      final response = await myApiService.delete(
+        EndPoints.getAllSensorTypes,
+        queryParameters: {'id': sensorTypeId},
+        token: token,
+      );
+      if (StatusCode.ok == response.statusCode ||
+          StatusCode.created == response.statusCode) {
+        return right(null);
+      } else {
+        return left(response.statusCode.toString());
+      }
+    } catch (e) {
+      return left(e.toString());
+    }
+  }
 }

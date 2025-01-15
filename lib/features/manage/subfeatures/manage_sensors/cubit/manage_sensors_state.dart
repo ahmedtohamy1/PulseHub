@@ -22,3 +22,13 @@ final class ManageSensorsError extends ManageSensorsState {
 
   const ManageSensorsError(this.error);
 }
+
+final class DeleteSensorTypeLoading extends ManageSensorsState {}
+
+final class DeleteSensorTypeSuccess extends ManageSensorsState {}
+
+final class DeleteSensorTypeError extends ManageSensorsState {
+  final String error;
+
+  const DeleteSensorTypeError(this.error);
+}
