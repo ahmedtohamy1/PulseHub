@@ -914,16 +914,6 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
                                             color: Colors.white,
                                             size: 16,
                                           ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            sensorMap['event'] as String? ??
-                                                'Unknown',
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
                                         ],
                                       ),
                                     ),
