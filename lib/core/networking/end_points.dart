@@ -20,6 +20,7 @@ class EndPoints {
   static const String getProject = "/project/";
   static const String flagProject = "/project/flag-project/";
   static const String updateProject = "/project/update/";
+  static const String getUserProjects = "/user/projects/";
 
   // Dashboards
   static const String getDashs = "/project/dashboards/";

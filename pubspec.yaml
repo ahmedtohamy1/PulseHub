@@ -23,6 +23,7 @@ dependencies:
   flutter_material_design_icons: ^1.1.7447
   flutter_screenutil: ^5.9.3
   flutter_secure_storage: ^9.2.2
+  flutter_speed_dial: ^7.0.0
   flutter_svg: ^2.0.16
   fluttertoast: ^8.2.8
   fpdart: ^1.1.1

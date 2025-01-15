@@ -50,3 +50,17 @@ final class ManageUsersUpdateFailure extends ManageUsersState {
 
   const ManageUsersUpdateFailure(this.error);
 }
+
+final class ManageUsersGetUserProjectsLoading extends ManageUsersState {}
+
+final class ManageUsersGetUserProjectsSuccess extends ManageUsersState {
+  final GetUsersProjects response;
+
+  const ManageUsersGetUserProjectsSuccess(this.response);
+}
+
+final class ManageUsersGetUserProjectsFailure extends ManageUsersState {
+  final String error;
+
+  const ManageUsersGetUserProjectsFailure(this.error);
+}

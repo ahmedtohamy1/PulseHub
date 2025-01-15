@@ -1,5 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pulsehub/features/manage/subfeatures/manage_users/models/get_user_projects.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_all_users_response_model.dart';
 
 abstract class ManageUsersRepository {
@@ -19,4 +20,6 @@ abstract class ManageUsersRepository {
     bool? isSuperuser,
     XFile? picture,
   );
+  Future<Either<String, GetUsersProjects>> getUserProjects(
+      String token, int userId);
 }

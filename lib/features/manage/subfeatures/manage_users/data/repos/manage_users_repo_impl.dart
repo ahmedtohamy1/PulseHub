@@ -5,6 +5,7 @@ import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/networking/end_points.dart';
 import 'package:pulsehub/core/networking/my_api.dart';
 import 'package:pulsehub/core/networking/status_code.dart';
+import 'package:pulsehub/features/manage/subfeatures/manage_users/models/get_user_projects.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_all_users_response_model.dart';
 
 import 'manage_users_repo.dart';
@@ -123,6 +124,24 @@ class ManageUsersRepositoryImpl implements ManageUsersRepository {
         return Right(true);
       } else {
         return Left('Failed to update user: ${response.statusCode}');
+      }
+    } catch (e) {
+      return Left('Exception occurred: $e');
+    }
+  }
+
+  @override
+  Future<Either<String, GetUsersProjects>> getUserProjects(
+      String token, int userId) async {
+    try {
+      final response = await myApiService
+          .post(EndPoints.getUserProjects, token: token, queryParameters: {
+        'id': userId,
+      }, data: <String, dynamic>{});
+      if (response.statusCode == StatusCode.ok && response.data['success']) {
+        return Right(GetUsersProjects.fromJson(response.data));
+      } else {
+        return Left('Failed to get user projects: ${response.statusCode}');
       }
     } catch (e) {
       return Left('Exception occurred: $e');
