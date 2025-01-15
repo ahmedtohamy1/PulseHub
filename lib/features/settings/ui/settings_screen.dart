@@ -118,27 +118,29 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 3),
-          GestureDetector(
-            onTap: () {
-              context.push(Routes.managePage);
-            },
-            child: const Card(
-              elevation: 0,
-              child: Padding(
-                padding: EdgeInsets.all(20.0),
-                child: Row(
-                  children: [
-                    Icon(Icons.manage_history, size: 30, color: Colors.grey),
-                    SizedBox(width: 16),
-                    Text(
-                      'Manage Panel',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ],
+          // Manage panel card
+          if (user?.isSuperuser == true || user?.isStaff == true)
+            GestureDetector(
+              onTap: () {
+                context.push(Routes.managePage);
+              },
+              child: const Card(
+                elevation: 0,
+                child: Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: Row(
+                    children: [
+                      Icon(Icons.manage_history, size: 30, color: Colors.grey),
+                      SizedBox(width: 16),
+                      Text(
+                        'Manage Panel',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
 
           const SizedBox(height: 100),
           // logout button
