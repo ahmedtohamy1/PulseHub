@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_owners/cubit/manage_owners_cubit.dart';
+import 'package:pulsehub/features/manage/subfeatures/manage_owners/ui/edit_owner_screen.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_projects/data/models/owner_model.dart';
 
 class OwnerCard extends StatelessWidget {
@@ -28,9 +30,8 @@ class OwnerCard extends StatelessWidget {
                   (previous).ownerId == owner.ownerId),
           listener: (context, state) {
             if (state is DeleteOwnerSuccess) {
-              Navigator.of(context).pop();
-              // Refresh owners list
-              cubit.getAllOwners();
+              Navigator.of(context).pop(); // Close the dialog
+              cubit.getAllOwners(); // Refresh the owners list
             }
           },
           buildWhen: (previous, current) =>
@@ -130,13 +131,17 @@ class OwnerCard extends StatelessWidget {
 
     return BlocConsumer<ManageOwnersCubit, ManageOwnersState>(
       listenWhen: (previous, current) =>
-          current is DeleteOwnerSuccess &&
-          previous is DeleteOwnerLoading &&
-          (previous).ownerId == owner.ownerId,
-      listener: (context, state) {
-        if (state is DeleteOwnerSuccess) {
-          // Refresh owners list
-          context.read<ManageOwnersCubit>().getAllOwners();
+          (current is DeleteOwnerSuccess &&
+              previous is DeleteOwnerLoading &&
+              (previous).ownerId == owner.ownerId) ||
+          (current is UpdateOwnerSuccess),
+      listener: (context, state) async {
+        if (state is DeleteOwnerSuccess || state is UpdateOwnerSuccess) {
+          // Refresh owners list after a short delay
+          await Future.delayed(const Duration(milliseconds: 100));
+          if (context.mounted) {
+            context.read<ManageOwnersCubit>().getAllOwners();
+          }
         }
       },
       buildWhen: (previous, current) =>
@@ -203,51 +208,97 @@ class OwnerCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Delete Icon Button
+                  // Action Buttons
                   Positioned(
                     top: 16,
                     right: 16,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade600,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            spreadRadius: 1,
-                            blurRadius: 5,
-                            offset: const Offset(0, 2),
+                    child: Row(
+                      children: [
+                        // Edit Button
+                        Container(
+                          margin: const EdgeInsets.only(right: 8),
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                spreadRadius: 1,
+                                blurRadius: 5,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: state is DeleteOwnerLoading
-                              ? null
-                              : () => _showDeleteConfirmationDialog(context),
-                          borderRadius: BorderRadius.circular(12),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: state is DeleteOwnerLoading
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white,
-                                      ),
-                                    ),
-                                  )
-                                : const Icon(
-                                    Icons.delete_outline,
-                                    color: Colors.white,
-                                    size: 20,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => BlocProvider(
+                                    create: (context) =>
+                                        sl<ManageOwnersCubit>(),
+                                    child: EditOwnerScreen(owner: owner),
                                   ),
+                                ),
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Icon(
+                                  Icons.edit_outlined,
+                                  color: colorScheme.onPrimary,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        // Delete Button
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade600,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                spreadRadius: 1,
+                                blurRadius: 5,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: state is DeleteOwnerLoading
+                                  ? null
+                                  : () =>
+                                      _showDeleteConfirmationDialog(context),
+                              borderRadius: BorderRadius.circular(12),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: state is DeleteOwnerLoading
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                            Colors.white,
+                                          ),
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.delete_outline,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   // Owner Name

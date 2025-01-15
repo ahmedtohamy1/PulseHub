@@ -107,4 +107,59 @@ class ManageOwnersRepositoryImpl implements ManageOwnersRepository {
       return left(e.toString());
     }
   }
+
+  @override
+  Future<Either<String, bool>> updateOwner(
+      String token,
+      int ownerId,
+      String name,
+      String? phone,
+      String? address,
+      String? country,
+      XFile? logo,
+      String? website) async {
+    try {
+      final Map<String, dynamic> requestData = {
+        'name': name,
+      };
+      FormData? formData;
+ 
+      // Add optional fields only if they are not null
+      if (phone != null && phone.isNotEmpty) {
+          requestData['phone'] = phone;
+      }
+      if (address != null && address.isNotEmpty) {
+        requestData['addresse'] = address;
+      }
+      if (country != null && country.isNotEmpty) {
+        requestData['country'] = country;
+      }
+      if (website != null && website.isNotEmpty) {
+        requestData['website'] = website;
+      }
+
+      // If logo is provided, add it as multipart file
+      if (logo != null) {
+        formData = FormData.fromMap({
+          ...requestData,
+          'logo': await MultipartFile.fromFile(logo.path),
+        });
+      }
+
+      final response = await myApiService.post(
+        EndPoints.updateDeleteOwner,
+        token: token,
+        queryParameters: {'id': ownerId},
+        data: formData ?? requestData,
+      );
+      if (response.statusCode == StatusCode.ok ||
+          response.statusCode == StatusCode.created) {
+        return right(true);
+      } else {
+        return left(response.statusCode.toString());
+      }
+    } catch (e) {
+      return left(e.toString());
+    }
+  }
 }

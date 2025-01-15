@@ -61,3 +61,21 @@ class CreateOwnerFailure extends ManageOwnersState {
   @override
   List<Object?> get props => [error];
 }
+
+class UpdateOwnerLoading extends ManageOwnersState {
+  final int ownerId;
+
+  const UpdateOwnerLoading(this.ownerId);
+
+  @override
+  List<Object?> get props => [ownerId];
+}
+
+class UpdateOwnerSuccess extends ManageOwnersState {}
+
+class UpdateOwnerFailure extends ManageOwnersState {
+  final String error;
+
+  const UpdateOwnerFailure(this.error);
+}
+  

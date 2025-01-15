@@ -81,9 +81,25 @@ class ManageOwnersCubit extends Cubit<ManageOwnersState> {
 
     result.fold(
       (error) => emit(DeleteOwnerFailure(error)),
-      (success)  {
+      (success) {
         _cachedOwners = null;
         emit(DeleteOwnerSuccess());
+      },
+    );
+  }
+
+  Future<void> updateOwner(int ownerId, String name, String? phone,
+      String? address, String? country, XFile? logo, String? website) async {
+    emit(UpdateOwnerLoading(ownerId));
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final result = await _repository.updateOwner(
+        token, ownerId, name, phone, address, country, logo, website);
+
+    result.fold(
+      (error) => emit(UpdateOwnerFailure(error)),
+      (success) {
+        _cachedOwners = null;
+        emit(UpdateOwnerSuccess());
       },
     );
   }
