@@ -64,3 +64,31 @@ final class ManageUsersGetUserProjectsFailure extends ManageUsersState {
 
   const ManageUsersGetUserProjectsFailure(this.error);
 }
+
+final class ManageUsersGetDicsLoading extends ManageUsersState {}
+
+final class ManageUsersGetDicsSuccess extends ManageUsersState {
+  final DicServicesResponse response;
+
+  const ManageUsersGetDicsSuccess(this.response);
+}
+
+final class ManageUsersGetDicsFailure extends ManageUsersState {
+  final String error;
+
+  const ManageUsersGetDicsFailure(this.error);
+} 
+
+final class ManageUsersUpdateDicsLoading extends ManageUsersState {}
+
+final class ManageUsersUpdateDicsSuccess extends ManageUsersState {
+  final bool success;
+
+  const ManageUsersUpdateDicsSuccess(this.success);
+}
+
+final class ManageUsersUpdateDicsFailure extends ManageUsersState {
+  final String error;
+
+  const ManageUsersUpdateDicsFailure(this.error);
+}

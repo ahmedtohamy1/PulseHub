@@ -401,7 +401,11 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
               label: 'Services',
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => UserServicesScreen(user: widget.user),
+                  builder: (context) => BlocProvider(
+                    create: (context) => sl<ManageUsersCubit>()
+                      ..getDics(widget.user.userId!.toString()),
+                    child: UserServicesScreen(user: widget.user),
+                  ),
                 ),
               ),
             ),

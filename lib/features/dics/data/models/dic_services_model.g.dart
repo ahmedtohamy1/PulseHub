@@ -26,10 +26,15 @@ DicService _$DicServiceFromJson(Map<String, dynamic> json) => DicService(
       user: (json['user'] as num).toInt(),
       cloudmate: json['cloudmate'] as bool,
       collaboration: json['collaboration'] as bool,
-      projectPreparation: json['projectPreparation'] as bool,
-      activeProjects: json['activeProjects'] as bool,
+      projectPreparation: json['project_preparation'] as bool,
+      activeProjects: json['active_projects'] as bool,
       financial: json['financial'] as bool,
       administration: json['administration'] as bool,
+      duratrans: json['duratrans'] as bool,
+      codeHub: json['code_hub'] as bool,
+      businessHub: json['business_hub'] as bool,
+      businessIntelligence: json['business_intelligence'] as bool,
+      salesHub: json['sales_hub'] as bool,
     );
 
 Map<String, dynamic> _$DicServiceToJson(DicService instance) =>
@@ -38,8 +43,13 @@ Map<String, dynamic> _$DicServiceToJson(DicService instance) =>
       'user': instance.user,
       'cloudmate': instance.cloudmate,
       'collaboration': instance.collaboration,
-      'projectPreparation': instance.projectPreparation,
-      'activeProjects': instance.activeProjects,
+      'project_preparation': instance.projectPreparation,
+      'active_projects': instance.activeProjects,
       'financial': instance.financial,
       'administration': instance.administration,
+      'duratrans': instance.duratrans,
+      'code_hub': instance.codeHub,
+      'business_hub': instance.businessHub,
+      'business_intelligence': instance.businessIntelligence,
+      'sales_hub': instance.salesHub,
     };
