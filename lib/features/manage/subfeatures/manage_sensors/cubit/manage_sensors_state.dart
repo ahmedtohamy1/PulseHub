@@ -32,3 +32,13 @@ final class DeleteSensorTypeError extends ManageSensorsState {
 
   const DeleteSensorTypeError(this.error);
 }
+
+final class CreateEditSensorTypeLoading extends ManageSensorsState {}
+
+final class CreateEditSensorTypeSuccess extends ManageSensorsState {}
+
+final class CreateEditSensorTypeError extends ManageSensorsState {
+  final String error;
+
+  const CreateEditSensorTypeError(this.error);
+}

@@ -51,4 +51,25 @@ class ManageSensorsRepositoryImpl implements ManageSensorsRepository {
       return left(e.toString());
     }
   }
+
+  @override
+  Future<Either<String, void>> createEditSensorType(
+      String token, String name, String function, int? id) async {
+    try {
+      final response = await myApiService.post(
+        EndPoints.getAllSensorTypes,
+        data: {'name': name, 'function': function},
+        token: token,
+        queryParameters: id != null ? {'id': id} : null,
+      );
+      if (StatusCode.ok == response.statusCode ||
+          StatusCode.created == response.statusCode) {
+        return right(null);
+      } else {
+        return left(response.statusCode.toString());
+      }
+    } catch (e) {
+      return left(e.toString());
+    }
+  }
 }

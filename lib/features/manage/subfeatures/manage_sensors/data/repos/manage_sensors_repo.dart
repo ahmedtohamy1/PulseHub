@@ -6,4 +6,7 @@ abstract class ManageSensorsRepository {
       String token);
 
   Future<Either<String, void>> deleteSensorType(String token, int sensorTypeId);
+
+  Future<Either<String, void>> createEditSensorType(String token,
+      String name, String function, int? id);
 }

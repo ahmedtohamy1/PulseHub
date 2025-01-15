@@ -32,7 +32,22 @@ class ManageSensorsCubit extends Cubit<ManageSensorsState> {
       (l) => emit(DeleteSensorTypeError(l)),
       (_) {
         emit(DeleteSensorTypeSuccess());
-        getAllSensorTypes();
+        getAllSensorTypes(); // Fetch updated list after deletion
+      },
+    );
+  }
+
+  Future<void> createEditSensorType(
+      String name, String function, int? id) async {
+    emit(CreateEditSensorTypeLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final result =
+        await _repository.createEditSensorType(token, name, function, id);
+    result.fold(
+      (l) => emit(CreateEditSensorTypeError(l)),
+      (_) {
+        emit(CreateEditSensorTypeSuccess());
+        getAllSensorTypes(); // Fetch updated list after creation/update
       },
     );
   }
