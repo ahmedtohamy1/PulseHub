@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_users/cubit/manage_users_cubit.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_users/ui/user_details_screen.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_all_users_response_model.dart';
@@ -21,16 +20,9 @@ class UserCard extends StatefulWidget {
 class _UserCardState extends State<UserCard> {
   final TextEditingController confirmController = TextEditingController();
 
-  @override
-  void dispose() {
-    confirmController.dispose();
-    super.dispose();
-  }
-
   Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
-    
     bool isLoading = false;
-    final cubit = sl<ManageUsersCubit>();
+    final cubit = context.read<ManageUsersCubit>();
 
     await showDialog(
       context: context,
@@ -41,7 +33,8 @@ class _UserCardState extends State<UserCard> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('To confirm deletion, please type "${widget.user.firstName}"'),
+              Text(
+                  'To confirm deletion, please type "${widget.user.firstName}"'),
               const SizedBox(height: 16),
               TextField(
                 controller: confirmController,
@@ -69,9 +62,8 @@ class _UserCardState extends State<UserCard> {
                         setState(() => isLoading = true);
 
                         await cubit.deleteUser(widget.user.userId.toString());
-
+                        cubit.getAllUsers();
                         if (context.mounted) {
-                      
                           Navigator.of(context).pop();
                         }
                       }
@@ -290,7 +282,9 @@ class _UserCardState extends State<UserCard> {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                widget.user.isActive == true ? 'Active' : 'Inactive',
+                                widget.user.isActive == true
+                                    ? 'Active'
+                                    : 'Inactive',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 12,
@@ -320,7 +314,9 @@ class _UserCardState extends State<UserCard> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          widget.user.email?.isNotEmpty == true ? widget.user.email! : 'N/A',
+                          widget.user.email?.isNotEmpty == true
+                              ? widget.user.email!
+                              : 'N/A',
                           style: theme.textTheme.titleMedium?.copyWith(
                             color: Colors.white.withOpacity(0.9),
                             fontWeight: FontWeight.w500,

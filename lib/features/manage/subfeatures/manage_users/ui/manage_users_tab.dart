@@ -244,8 +244,8 @@ class _ManageUsersTabState extends State<ManageUsersTab>
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => BlocProvider.value(
-                              value: _cubit,
+                            builder: (context) => BlocProvider(
+                              create: (context) => sl<ManageUsersCubit>(),
                               child: const CreateUserScreen(),
                             ),
                           ),

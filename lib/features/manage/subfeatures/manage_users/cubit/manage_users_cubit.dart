@@ -72,7 +72,6 @@ class ManageUsersCubit extends Cubit<ManageUsersState> {
       (l) => emit(ManageUsersUpdateFailure(l)),
       (r) {
         emit(ManageUsersUpdateSuccess(r));
-        getAllUsers();
       },
     );
   }
@@ -140,7 +139,7 @@ class ManageUsersCubit extends Cubit<ManageUsersState> {
       (l) => emit(ManageUsersCreateUserFailure(l)),
       (r) {
         emit(ManageUsersCreateUserSuccess(r));
-        getAllUsers();
+    
       },
     );
   }

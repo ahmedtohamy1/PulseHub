@@ -5,6 +5,7 @@ import 'package:pulsehub/core/routing/routes.dart';
 import 'package:pulsehub/core/utils/user_manager.dart';
 import 'package:pulsehub/features/dics/cubit/dic_cubit.dart';
 import 'package:pulsehub/features/dics/data/models/dic_services_model.dart';
+import 'package:pulsehub/features/manage/subfeatures/manage_users/ui/manage_users_screen.dart';
 
 class DicScreen extends StatefulWidget {
   const DicScreen({super.key});
@@ -31,6 +32,18 @@ class DicScreenState extends State<DicScreen> {
         ),
         actions: [
           IconButton(
+            tooltip: 'Manage Users',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ManageUsersScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.manage_accounts_outlined),
+          ),
+          IconButton(
+            tooltip: 'Logout',
             onPressed: () {
               context.read<DicCubit>().logout();
               context.go(Routes.loginScreen);

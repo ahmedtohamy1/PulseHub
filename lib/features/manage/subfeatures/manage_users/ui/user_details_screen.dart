@@ -2,15 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_users/cubit/manage_users_cubit.dart';
-import 'package:pulsehub/features/manage/subfeatures/manage_users/ui/screens/user_active_sessions_screen.dart';
-import 'package:pulsehub/features/manage/subfeatures/manage_users/ui/screens/user_logs_screen.dart';
-import 'package:pulsehub/features/manage/subfeatures/manage_users/ui/screens/user_projects_screen.dart';
-import 'package:pulsehub/features/manage/subfeatures/manage_users/ui/screens/user_services_screen.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_all_users_response_model.dart';
 
 class UserDetailsScreen extends StatefulWidget {
@@ -36,20 +30,23 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
   bool isStaff = false;
   bool isSuperuser = false;
   XFile? selectedImage;
-
+  late User _localUser;
   @override
   void initState() {
     super.initState();
+    // Initialize local copy with the passed user data
+    _localUser = widget.user;
+
     // Initialize controllers with current user data
-    firstNameController = TextEditingController(text: widget.user.firstName);
-    lastNameController = TextEditingController(text: widget.user.lastName);
-    emailController = TextEditingController(text: widget.user.email);
-    titleController = TextEditingController(text: widget.user.title);
+    firstNameController = TextEditingController(text: _localUser.firstName);
+    lastNameController = TextEditingController(text: _localUser.lastName);
+    emailController = TextEditingController(text: _localUser.email);
+    titleController = TextEditingController(text: _localUser.title);
     maxActiveSessionsController = TextEditingController(
-        text: widget.user.maxActiveSessions?.toString() ?? '');
-    isActive = widget.user.isActive == true;
-    isStaff = widget.user.isStaff == true;
-    isSuperuser = widget.user.isSuperuser == true;
+        text: _localUser.maxActiveSessions?.toString() ?? '');
+    isActive = _localUser.isActive == true;
+    isStaff = _localUser.isStaff == true;
+    isSuperuser = _localUser.isSuperuser == true;
   }
 
   @override
@@ -65,7 +62,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
 
   Future<void> _showEditDialog(BuildContext context) async {
     bool isLoading = false;
-    final cubit = sl<ManageUsersCubit>();
+    final cubit = context.read<ManageUsersCubit>();
     final ImagePicker picker = ImagePicker();
 
     await showDialog(
@@ -96,16 +93,16 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                                   image: FileImage(File(selectedImage!.path)),
                                   fit: BoxFit.cover,
                                 )
-                              : widget.user.pictureUrl?.isNotEmpty == true
+                              : _localUser.pictureUrl?.isNotEmpty == true
                                   ? DecorationImage(
                                       image:
-                                          NetworkImage(widget.user.pictureUrl!),
+                                          NetworkImage(_localUser.pictureUrl!),
                                       fit: BoxFit.cover,
                                     )
                                   : null,
                         ),
                         child: selectedImage == null &&
-                                widget.user.pictureUrl?.isNotEmpty != true
+                                _localUser.pictureUrl?.isNotEmpty != true
                             ? Icon(
                                 Icons.person,
                                 size: 48,
@@ -136,7 +133,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Text Fields
+                // First Name
                 TextField(
                   controller: firstNameController,
                   decoration: const InputDecoration(
@@ -145,6 +142,8 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                // Last Name
                 TextField(
                   controller: lastNameController,
                   decoration: const InputDecoration(
@@ -153,6 +152,8 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                // Email
                 TextField(
                   controller: emailController,
                   decoration: const InputDecoration(
@@ -161,6 +162,8 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                // Title
                 TextField(
                   controller: titleController,
                   decoration: const InputDecoration(
@@ -169,6 +172,8 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                // Max Active Sessions
                 TextField(
                   controller: maxActiveSessionsController,
                   decoration: const InputDecoration(
@@ -179,23 +184,28 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Switches
+                // Active Switch
                 SwitchListTile(
                   title: const Text('Active'),
                   value: isActive,
                   onChanged: (value) => setState(() => isActive = value),
                 ),
+
+                // Staff Switch
                 SwitchListTile(
                   title: const Text('Staff'),
                   value: isStaff,
                   onChanged: (value) => setState(() => isStaff = value),
                 ),
+
+                // Superuser Switch
                 SwitchListTile(
                   title: const Text('Superuser'),
                   value: isSuperuser,
                   onChanged: (value) => setState(() => isSuperuser = value),
                 ),
 
+                // Loading Indicator
                 if (isLoading) ...[
                   const SizedBox(height: 16),
                   const Center(child: CircularProgressIndicator()),
@@ -204,18 +214,22 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
             ),
           ),
           actions: [
+            // Cancel Button
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cancel'),
             ),
+
+            // Save Button
             FilledButton(
               onPressed: isLoading
                   ? null
                   : () async {
                       setState(() => isLoading = true);
 
+                      // Call the cubit to update the user
                       await cubit.updateUser(
-                        widget.user.userId.toString(),
+                        _localUser.userId.toString(),
                         firstNameController.text,
                         lastNameController.text,
                         emailController.text,
@@ -227,72 +241,27 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                         isSuperuser,
                         selectedImage,
                       );
-
+                      cubit.getAllUsers();
                       if (context.mounted) {
+                        // Update local copy of user details
+                        setState(() {
+                          _localUser = _localUser.copyWith(
+                            firstName: firstNameController.text,
+                            lastName: lastNameController.text,
+                            email: emailController.text,
+                            title: titleController.text,
+                            maxActiveSessions:
+                                int.tryParse(maxActiveSessionsController.text),
+                            isActive: isActive,
+                            isStaff: isStaff,
+                            isSuperuser: isSuperuser,
+                          );
+                        });
+
                         Navigator.of(context).pop();
                       }
                     },
               child: const Text('Save'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  bool navigateToManageUsers = false;
-
-  Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
-    bool isLoading = false;
-    final cubit = sl<ManageUsersCubit>();
-
-    await showDialog(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Delete User'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                  'To confirm deletion, please type "${widget.user.firstName}"'),
-              const SizedBox(height: 16),
-              TextField(
-                controller: confirmController,
-                decoration: const InputDecoration(
-                  hintText: 'Type user first name',
-                ),
-                autofocus: true,
-              ),
-              if (isLoading) ...[
-                const SizedBox(height: 16),
-                const Center(child: CircularProgressIndicator()),
-              ],
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: isLoading
-                  ? null
-                  : () async {
-                      if (confirmController.text == widget.user.firstName) {
-                        setState(() => isLoading = true);
-
-                        await cubit.deleteUser(widget.user.userId.toString());
-                        await cubit.getAllUsers();
-
-                        if (context.mounted) {
-                          navigateToManageUsers = true;
-                          context.pop();
-                        }
-                      }
-                    },
-              child: const Text('Delete'),
             ),
           ],
         ),
@@ -305,20 +274,12 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    if (navigateToManageUsers) {
-      context.pop();
-    }
-
     return BlocListener<ManageUsersCubit, ManageUsersState>(
       listener: (context, state) {
-        if (state is ManageUsersDeleteSuccess) {
-          context.pop();
-          context.pop();
-        } else if (state is ManageUsersUpdateSuccess) {
+        if (state is ManageUsersUpdateSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('User updated successfully')),
           );
-          context.pop();
         } else if (state is ManageUsersUpdateFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -331,7 +292,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-              '${widget.user.firstName?.isNotEmpty == true ? widget.user.firstName : 'N/A'} ${widget.user.lastName?.isNotEmpty == true ? widget.user.lastName : 'N/A'}'),
+              '${_localUser.firstName?.isNotEmpty == true ? _localUser.firstName : 'N/A'} ${_localUser.lastName?.isNotEmpty == true ? _localUser.lastName : 'N/A'}'),
           actions: [
             IconButton(
               onPressed: () => _showEditDialog(context),
@@ -344,193 +305,110 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
             ),
           ],
         ),
-        floatingActionButton: SpeedDial(
-          icon: Icons.menu,
-          activeIcon: Icons.close,
-          backgroundColor: colorScheme.primary,
-          foregroundColor: colorScheme.onPrimary,
-          activeBackgroundColor: colorScheme.error,
-          activeForegroundColor: colorScheme.onError,
-          elevation: 8.0,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(16)),
-          ),
-          children: [
-            SpeedDialChild(
-              child: const Icon(Icons.folder),
-              backgroundColor: colorScheme.primaryContainer,
-              foregroundColor: colorScheme.onPrimaryContainer,
-              label: 'Projects',
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => BlocProvider(
-                    create: (context) => sl<ManageUsersCubit>()
-                      ..getUserProjects(widget.user.userId!),
-                    child: UserProjectsScreen(user: widget.user),
-                  ),
-                ),
-              ),
-            ),
-            SpeedDialChild(
-              child: const Icon(Icons.history),
-              backgroundColor: colorScheme.secondaryContainer,
-              foregroundColor: colorScheme.onSecondaryContainer,
-              label: 'Logs',
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => UserLogsScreen(user: widget.user),
-                ),
-              ),
-            ),
-            SpeedDialChild(
-              child: const Icon(Icons.devices),
-              backgroundColor: colorScheme.tertiaryContainer,
-              foregroundColor: colorScheme.onTertiaryContainer,
-              label: 'Active Sessions',
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) =>
-                      UserActiveSessionsScreen(user: widget.user),
-                ),
-              ),
-            ),
-            SpeedDialChild(
-              child: const Icon(Icons.miscellaneous_services),
-              backgroundColor: colorScheme.surfaceContainerHighest,
-              foregroundColor: colorScheme.onSurfaceVariant,
-              label: 'Services',
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => BlocProvider(
-                    create: (context) => sl<ManageUsersCubit>()
-                      ..getDics(widget.user.userId!.toString()),
-                    child: UserServicesScreen(user: widget.user),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        body: BlocListener<ManageUsersCubit, ManageUsersState>(
-          listener: (context, state) {
-            if (state is ManageUsersDeleteSuccess) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('User deleted successfully')),
-              );
-            } else if (state is ManageUsersDeleteFailure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.error),
-                  backgroundColor: colorScheme.error,
-                ),
-              );
-            }
-          },
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Profile Picture
-                Center(
-                  child: Container(
-                    width: 200,
-                    height: 200,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: colorScheme.primary.withOpacity(0.1),
-                      image: widget.user.pictureUrl?.isNotEmpty == true
-                          ? DecorationImage(
-                              image: NetworkImage(widget.user.pictureUrl!),
-                              fit: BoxFit.cover,
-                              onError: (error, stackTrace) {},
-                            )
-                          : null,
-                    ),
-                    child: widget.user.pictureUrl?.isNotEmpty != true
-                        ? Icon(
-                            Icons.person,
-                            size: 80,
-                            color: colorScheme.primary.withOpacity(0.5),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Profile Picture
+              Center(
+                child: Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: colorScheme.primary.withOpacity(0.1),
+                    image: _localUser.pictureUrl?.isNotEmpty == true
+                        ? DecorationImage(
+                            image: NetworkImage(_localUser.pictureUrl!),
+                            fit: BoxFit.cover,
+                            onError: (error, stackTrace) {},
                           )
                         : null,
                   ),
+                  child: _localUser.pictureUrl?.isNotEmpty != true
+                      ? Icon(
+                          Icons.person,
+                          size: 80,
+                          color: colorScheme.primary.withOpacity(0.5),
+                        )
+                      : null,
                 ),
-                const SizedBox(height: 32),
+              ),
+              const SizedBox(height: 32),
 
-                // User Info
-                _buildInfoCard(
-                  context,
-                  title: 'Email',
-                  value: widget.user.email?.isNotEmpty == true
-                      ? widget.user.email!
-                      : 'N/A',
-                  icon: Icons.email,
-                ),
-                const SizedBox(height: 16),
-                _buildInfoCard(
-                  context,
-                  title: 'First Name',
-                  value: widget.user.firstName?.isNotEmpty == true
-                      ? widget.user.firstName!
-                      : 'N/A',
-                  icon: Icons.person_outline,
-                ),
-                const SizedBox(height: 16),
-                _buildInfoCard(
-                  context,
-                  title: 'Last Name',
-                  value: widget.user.lastName?.isNotEmpty == true
-                      ? widget.user.lastName!
-                      : 'N/A',
-                  icon: Icons.person,
-                ),
-                const SizedBox(height: 16),
-                _buildInfoCard(
-                  context,
-                  title: 'Title',
-                  value: widget.user.title?.isNotEmpty == true
-                      ? widget.user.title!
-                      : 'N/A',
-                  icon: Icons.work,
-                ),
-                const SizedBox(height: 16),
-                _buildStatusCard(
-                  context,
-                  title: 'Active',
-                  value: widget.user.isActive == true,
-                  icon: Icons.check_circle,
-                  activeColor: Colors.green,
-                  inactiveColor: Colors.red.shade600,
-                ),
-                const SizedBox(height: 16),
-                _buildStatusCard(
-                  context,
-                  title: 'Staff',
-                  value: widget.user.isStaff == true,
-                  icon: Icons.badge,
-                  activeColor: colorScheme.secondary,
-                  inactiveColor: colorScheme.outline,
-                ),
-                const SizedBox(height: 16),
-                _buildStatusCard(
-                  context,
-                  title: 'Superuser',
-                  value: widget.user.isSuperuser == true,
-                  icon: Icons.admin_panel_settings,
-                  activeColor: colorScheme.primary,
-                  inactiveColor: colorScheme.outline,
-                ),
-                const SizedBox(height: 16),
-                _buildInfoCard(
-                  context,
-                  title: 'Max Active Sessions',
-                  value: widget.user.maxActiveSessions?.toString() ?? 'N/A',
-                  icon: Icons.devices,
-                  isNumber: true,
-                ),
-              ],
-            ),
+              // User Info
+              _buildInfoCard(
+                context,
+                title: 'Email',
+                value: _localUser.email?.isNotEmpty == true
+                    ? _localUser.email!
+                    : 'N/A',
+                icon: Icons.email,
+              ),
+              const SizedBox(height: 16),
+              _buildInfoCard(
+                context,
+                title: 'First Name',
+                value: _localUser.firstName?.isNotEmpty == true
+                    ? _localUser.firstName!
+                    : 'N/A',
+                icon: Icons.person_outline,
+              ),
+              const SizedBox(height: 16),
+              _buildInfoCard(
+                context,
+                title: 'Last Name',
+                value: _localUser.lastName?.isNotEmpty == true
+                    ? _localUser.lastName!
+                    : 'N/A',
+                icon: Icons.person,
+              ),
+              const SizedBox(height: 16),
+              _buildInfoCard(
+                context,
+                title: 'Title',
+                value: _localUser.title?.isNotEmpty == true
+                    ? _localUser.title!
+                    : 'N/A',
+                icon: Icons.work,
+              ),
+              const SizedBox(height: 16),
+              _buildStatusCard(
+                context,
+                title: 'Active',
+                value: _localUser.isActive == true,
+                icon: Icons.check_circle,
+                activeColor: Colors.green,
+                inactiveColor: Colors.red.shade600,
+              ),
+              const SizedBox(height: 16),
+              _buildStatusCard(
+                context,
+                title: 'Staff',
+                value: _localUser.isStaff == true,
+                icon: Icons.badge,
+                activeColor: colorScheme.secondary,
+                inactiveColor: colorScheme.outline,
+              ),
+              const SizedBox(height: 16),
+              _buildStatusCard(
+                context,
+                title: 'Superuser',
+                value: _localUser.isSuperuser == true,
+                icon: Icons.admin_panel_settings,
+                activeColor: colorScheme.primary,
+                inactiveColor: colorScheme.outline,
+              ),
+              const SizedBox(height: 16),
+              _buildInfoCard(
+                context,
+                title: 'Max Active Sessions',
+                value: _localUser.maxActiveSessions?.toString() ?? 'N/A',
+                icon: Icons.devices,
+                isNumber: true,
+              ),
+            ],
           ),
         ),
       ),
@@ -594,6 +472,66 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                   ),
                 ],
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  bool navigateToManageUsers = false;
+
+  Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
+    bool isLoading = false;
+    final cubit = context.read<ManageUsersCubit>();
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Delete User'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                  'To confirm deletion, please type "${widget.user.firstName}"'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: confirmController,
+                decoration: const InputDecoration(
+                  hintText: 'Type user first name',
+                ),
+                autofocus: true,
+              ),
+              if (isLoading) ...[
+                const SizedBox(height: 16),
+                const Center(child: CircularProgressIndicator()),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      if (confirmController.text == widget.user.firstName) {
+                        setState(() => isLoading = true);
+
+                        await cubit.deleteUser(widget.user.userId.toString());
+                        await cubit.getAllUsers();
+
+                        if (context.mounted) {
+                          navigateToManageUsers = true;
+                          context.pop();
+                        }
+                      }
+                    },
+              child: const Text('Delete'),
             ),
           ],
         ),
