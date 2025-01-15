@@ -8,3 +8,17 @@ sealed class ManageUsersState extends Equatable {
 }
 
 final class ManageUsersInitial extends ManageUsersState {}
+
+final class ManageUsersLoading extends ManageUsersState {}
+
+final class ManageUsersSuccess extends ManageUsersState {
+  final GetAllResponseModel response;
+
+  const ManageUsersSuccess(this.response);
+}
+
+final class ManageUsersFailure extends ManageUsersState {
+  final String error;
+
+  const ManageUsersFailure(this.error);
+} 
