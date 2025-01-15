@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pulsehub/core/di/service_locator.dart';
+import 'package:pulsehub/features/manage/subfeatures/manage_owners/cubit/manage_owners_cubit.dart';
 
 import '../../subfeatures/manage_owners/ui/manage_owners_tab.dart';
 import '../../subfeatures/manage_projects/ui/manage_projects_tab.dart';
@@ -117,7 +120,11 @@ class ManageScreen extends StatelessWidget {
               child: TabBarView(
                 children: [
                   ManageProjectsTab(),
-                  ManageOwnersTab(),
+                  BlocProvider(
+                    create: (context) =>
+                        sl<ManageOwnersCubit>()..getAllOwners(),
+                    child: ManageOwnersTab(),
+                  ),
                   ManageUsersTab(),
                   ManageSensorsTab(),
                 ],

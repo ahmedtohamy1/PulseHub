@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/utils/shared_pref_helper.dart';
 import 'package:pulsehub/core/utils/shared_pref_keys.dart';
@@ -55,8 +56,24 @@ class ManageOwnersCubit extends Cubit<ManageOwnersState> {
       }
     }
   }
+  Future<void> createOwner(String name, String? phone, String? address,
+      String? city, String? country, XFile? logo) async {
+    emit(CreateOwnerLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final result = await _repository.createOwner(
+        token, name, phone, address, city, country, logo);
 
- /*  Future<void> deleteOwner(int ownerId) async {
+    result.fold(
+      (error) => emit(CreateOwnerFailure(error)),
+      (success) {
+        // Clear owners cache to force refresh
+        _cachedOwners = null;
+        emit(CreateOwnerSuccess());
+      },
+    );
+  }
+
+  /*  Future<void> deleteOwner(int ownerId) async {
     emit(DeleteOwnerLoading(ownerId));
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
     final result = await _repository.deleteOwner(token, ownerId);
