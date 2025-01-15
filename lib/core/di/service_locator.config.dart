@@ -62,6 +62,7 @@ import '../../features/projects/data/repos/projects_repo_impl.dart' as _i296;
 import '../../features/settings/cubit/settings_cubit.dart' as _i960;
 import '../../features/settings/data/repos/settings_repo.dart' as _i878;
 import '../../features/settings/data/repos/settings_repo_impl.dart' as _i181;
+import '../env/env_config.dart' as _i0;
 import '../networking/dio_module.dart' as _i444;
 import '../networking/my_api.dart' as _i713;
 
@@ -77,6 +78,7 @@ extension GetItInjectableX on _i174.GetIt {
       environmentFilter,
     );
     final dioModule = _$DioModule();
+    gh.singleton<_i0.EnvConfig>(() => _i0.EnvConfig());
     gh.lazySingleton<_i361.Dio>(() => dioModule.provideDio());
     gh.lazySingleton<_i87.ManageRepository>(() => const _i176.ManageRepoImpl());
     gh.lazySingleton<_i713.MyApi>(() => _i713.MyApi(gh<_i361.Dio>()));

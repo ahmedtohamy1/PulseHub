@@ -1,7 +1,10 @@
+import 'package:pulsehub/core/di/service_locator.dart';
+import 'package:pulsehub/core/env/env_config.dart';
+
 class EndPoints {
   // base url
-  static const String apiUrl = "$baseUrl/api";
-  static const String baseUrl = "https://pulsehub.synology.me:9099";
+  static String get baseUrl => sl<EnvConfig>().baseUrl;
+  static String get apiUrl => "$baseUrl/api";
 
   // Auth
   static const String login = "/user/login/";
