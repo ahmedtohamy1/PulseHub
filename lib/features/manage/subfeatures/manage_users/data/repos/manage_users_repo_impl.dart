@@ -225,4 +225,73 @@ class ManageUsersRepositoryImpl implements ManageUsersRepository {
       return Left('Exception occurred: $e');
     }
   }
+
+  @override
+  Future<Either<String, bool>> createUser(
+      String token,
+      String password,
+      String confirmPassword,
+      String? firstName,
+      String? lastName,
+      String email,
+      String? phoneNumber,
+      String? title,
+      int? maxActiveSessions,
+      bool? isActive,
+      bool? isStaff,
+      bool? isSuperuser,
+      XFile? picture) async {
+    try {
+      final Map<String, dynamic> requestData = {
+        'password': password,
+        'confirm_password': confirmPassword,
+        'email': email,
+      };
+
+      if (firstName != null && firstName.isNotEmpty) {
+        requestData['first_name'] = firstName;
+      }
+      if (lastName != null && lastName.isNotEmpty) {
+        requestData['last_name'] = lastName;
+      }
+      if (phoneNumber != null && phoneNumber.isNotEmpty) {
+        requestData['phone_number'] = phoneNumber;
+      }
+      if (title != null && title.isNotEmpty) {
+        requestData['title'] = title;
+      }
+      if (maxActiveSessions != null) {
+        requestData['max_active_sessions'] = maxActiveSessions;
+      }
+      if (isActive != null) {
+        requestData['is_active'] = isActive;
+      }
+      if (isStaff != null) {
+        requestData['is_staff'] = isStaff;
+      }
+      if (isSuperuser != null) {
+        requestData['is_superuser'] = isSuperuser;
+      }
+      if (picture != null) {
+        requestData['picture'] = await MultipartFile.fromFile(
+          picture.path,
+          filename: picture.name,
+        );
+      }
+
+      final response = await myApiService.post(
+        EndPoints.getAllUsers,
+        token: token,
+        data: requestData,
+      );
+
+      if (response.statusCode == StatusCode.ok && response.data['success']) {
+        return Right(true);
+      } else {
+        return Left('Failed to create user: ${response.statusCode}');
+      }
+    } catch (e) {
+      return Left('Exception occurred: $e');
+    }
+  }
 }

@@ -92,3 +92,17 @@ final class ManageUsersUpdateDicsFailure extends ManageUsersState {
 
   const ManageUsersUpdateDicsFailure(this.error);
 }
+
+final class ManageUsersCreateUserLoading extends ManageUsersState {}
+
+final class ManageUsersCreateUserSuccess extends ManageUsersState {
+  final bool success;
+
+  const ManageUsersCreateUserSuccess(this.success);
+}
+
+final class ManageUsersCreateUserFailure extends ManageUsersState {
+  final String error;
+
+  const ManageUsersCreateUserFailure(this.error);
+}

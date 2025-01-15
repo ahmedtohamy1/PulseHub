@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_users/cubit/manage_users_cubit.dart';
+import 'package:pulsehub/features/manage/subfeatures/manage_users/ui/screens/create_user_screen.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_users/ui/user_card.dart';
 
 class ManageUsersTab extends StatefulWidget {
@@ -241,7 +242,14 @@ class _ManageUsersTabState extends State<ManageUsersTab>
                     FloatingActionButton(
                       heroTag: 'manage_users_add_fab',
                       onPressed: () {
-                        // TODO: Implement add user
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => BlocProvider.value(
+                              value: _cubit,
+                              child: const CreateUserScreen(),
+                            ),
+                          ),
+                        );
                       },
                       child: Icon(
                         Icons.add,

@@ -106,4 +106,42 @@ class ManageUsersCubit extends Cubit<ManageUsersState> {
       (r) => emit(ManageUsersUpdateDicsSuccess(r)),
     );
   }
+
+  Future<void> createUser(
+      String password,
+      String confirmPassword,
+      String? firstName,
+      String? lastName,
+      String email,
+      String? phoneNumber,
+      String? title,
+      int? maxActiveSessions,
+      bool? isActive,
+      bool? isStaff,
+      bool? isSuperuser,
+      XFile? picture) async {
+    emit(ManageUsersCreateUserLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final response = await _repository.createUser(
+        token,
+        password,
+        confirmPassword,
+        firstName,
+        lastName,
+        email,
+        phoneNumber,
+        title,
+        maxActiveSessions,
+        isActive,
+        isStaff,
+        isSuperuser,
+        picture);
+    response.fold(
+      (l) => emit(ManageUsersCreateUserFailure(l)),
+      (r) {
+        emit(ManageUsersCreateUserSuccess(r));
+        getAllUsers();
+      },
+    );
+  }
 }
