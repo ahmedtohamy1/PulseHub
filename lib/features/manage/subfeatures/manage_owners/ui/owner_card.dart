@@ -29,6 +29,8 @@ class OwnerCard extends StatelessWidget {
           listener: (context, state) {
             if (state is DeleteOwnerSuccess) {
               Navigator.of(context).pop();
+              // Refresh owners list
+              cubit.getAllOwners();
             }
           },
           buildWhen: (previous, current) =>
@@ -97,9 +99,9 @@ class OwnerCard extends StatelessWidget {
                       ? null
                       : () {
                           if (formKey.currentState?.validate() ?? false) {
-                            /*    context
+                            context
                                 .read<ManageOwnersCubit>()
-                                .deleteOwner(owner.ownerId); */
+                                .deleteOwner(owner.ownerId);
                           }
                         },
                   style: TextButton.styleFrom(
@@ -133,7 +135,8 @@ class OwnerCard extends StatelessWidget {
           (previous).ownerId == owner.ownerId,
       listener: (context, state) {
         if (state is DeleteOwnerSuccess) {
-          // The card will be removed by the parent widget when the owners list is refreshed
+          // Refresh owners list
+          context.read<ManageOwnersCubit>().getAllOwners();
         }
       },
       buildWhen: (previous, current) =>

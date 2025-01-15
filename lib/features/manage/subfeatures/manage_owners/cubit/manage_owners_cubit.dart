@@ -56,6 +56,7 @@ class ManageOwnersCubit extends Cubit<ManageOwnersState> {
       }
     }
   }
+
   Future<void> createOwner(String name, String? phone, String? address,
       String? city, String? country, XFile? logo) async {
     emit(CreateOwnerLoading());
@@ -73,21 +74,20 @@ class ManageOwnersCubit extends Cubit<ManageOwnersState> {
     );
   }
 
-  /*  Future<void> deleteOwner(int ownerId) async {
+  Future<void> deleteOwner(int ownerId) async {
     emit(DeleteOwnerLoading(ownerId));
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
     final result = await _repository.deleteOwner(token, ownerId);
 
     result.fold(
       (error) => emit(DeleteOwnerFailure(error)),
-      (success) async {
+      (success)  {
+        _cachedOwners = null;
         emit(DeleteOwnerSuccess());
-        // Refresh owners list after successful deletion
-        await getAllOwners();
       },
     );
   }
- */
+
   @override
   Future<void> close() {
     _cachedOwners = null;

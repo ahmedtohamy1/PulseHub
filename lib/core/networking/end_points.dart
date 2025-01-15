@@ -47,6 +47,7 @@ class EndPoints {
   static const String markMessageAsSeen = "/project/message-seen/";
   static const String getNotifications = "/project/notifications/";
   static const String getAllOwners = "/owner/";
+  static const String updateDeleteOwner = "/owner/update/";
 
   // imgs
   static String imageUrl(String path) => '$baseUrl$path';

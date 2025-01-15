@@ -13,4 +13,6 @@ abstract class ManageOwnersRepository {
       String? city,
       String? country,
       XFile? logo);
+
+  Future<Either<String, bool>> deleteOwner(String token, int ownerId);
 }

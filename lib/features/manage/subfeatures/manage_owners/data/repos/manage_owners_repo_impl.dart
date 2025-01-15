@@ -89,4 +89,22 @@ class ManageOwnersRepositoryImpl implements ManageOwnersRepository {
       return left(e.toString());
     }
   }
+
+  @override
+  Future<Either<String, bool>> deleteOwner(String token, int ownerId) async {
+    try {
+      final response = await myApiService.delete(
+        EndPoints.updateDeleteOwner,
+        token: token,
+        queryParameters: {'id': ownerId},
+      );
+      if (response.statusCode == StatusCode.ok) {
+        return right(true);
+      } else {
+        return left(response.statusCode.toString());
+      }
+    } catch (e) {
+      return left(e.toString());
+    }
+  }
 }
