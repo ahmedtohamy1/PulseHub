@@ -8,3 +8,17 @@ sealed class ManageSensorsState extends Equatable {
 }
 
 final class ManageSensorsInitial extends ManageSensorsState {}
+
+final class ManageSensorsLoading extends ManageSensorsState {}
+
+final class ManageSensorsLoaded extends ManageSensorsState {
+  final GetAllSensorTypesResponseModel sensorTypes;
+
+  const ManageSensorsLoaded(this.sensorTypes);
+}
+
+final class ManageSensorsError extends ManageSensorsState {
+  final String error;
+
+  const ManageSensorsError(this.error);
+}

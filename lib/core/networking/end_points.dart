@@ -49,6 +49,7 @@ class EndPoints {
   static const String getNotifications = "/project/notifications/";
   static const String getAllOwners = "/owner/";
   static const String updateDeleteOwner = "/owner/update/";
+  static const String getAllSensorTypes = "/utilities/sensor-type/";
 
   // imgs
   static String imageUrl(String path) => '$baseUrl$path';
