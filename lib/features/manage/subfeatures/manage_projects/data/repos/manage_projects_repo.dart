@@ -24,4 +24,6 @@ abstract class ManageProjectsRepository {
       String? acronym,
       String? consultant,
       String? contractor);
+
+  Future<Either<String, bool>> deleteProject(String token, int projectId);
 }

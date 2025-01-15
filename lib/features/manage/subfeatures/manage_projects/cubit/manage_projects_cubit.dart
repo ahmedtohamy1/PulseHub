@@ -133,4 +133,19 @@ class ManageProjectsCubit extends Cubit<ManageProjectsState> {
     _cachedOwners = null;
     return super.close();
   }
+
+  Future<void> deleteProject(int projectId) async {
+    emit(DeleteProjectLoading(projectId));
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final result = await _repository.deleteProject(token, projectId);
+
+    result.fold(
+      (error) => emit(DeleteProjectFailure(error)),
+      (success) async {
+        emit(DeleteProjectSuccess());
+        // Refresh projects list after successful deletion
+        await getAllProjects();
+      },
+    );
+  }
 }

@@ -203,7 +203,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                       scaffoldMessenger.showSnackBar(
                         SnackBar(
                           content:
-                              Text('Failed to create owner: ${state.message}'),
+                              Text('Failed to create owner: ${state.error}'),
                           backgroundColor: Theme.of(context).colorScheme.error,
                         ),
                       );
@@ -454,7 +454,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
         } else if (state is CreateProjectFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Failed to create project: ${state.message}'),
+              content: Text('Failed to create project: ${state.error}'),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
@@ -702,7 +702,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                                   hint: const Text('Loading owners...'),
                                   isExpanded: true,
                                 ),
-                              GetAllOwnersFailure(message: final message) =>
+                              GetAllOwnersFailure(error: final message) =>
                                 DropdownButtonFormField<String>(
                                   value: null,
                                   decoration: _getInputDecoration(

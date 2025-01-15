@@ -138,7 +138,7 @@ class ManageProjectsRepositoryImpl implements ManageProjectsRepository {
         requestData['contractor'] = contractor;
       }
       if (picture != null) {
-          requestData['picture'] = await MultipartFile.fromFile(
+        requestData['picture'] = await MultipartFile.fromFile(
           picture.path,
           filename: picture.name,
         );
@@ -158,4 +158,26 @@ class ManageProjectsRepositoryImpl implements ManageProjectsRepository {
       return left(e.toString());
     }
   }
+
+  @override
+  Future<Either<String, bool>> deleteProject(
+      String token, int projectId) async {
+    try {
+      final response = await myApiService.delete(
+        EndPoints.updateProject,
+        token: token,
+        queryParameters: {'id': projectId},
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return const Right(true);
+      } else {
+        return Left('Failed to delete project: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
 }

@@ -1,72 +1,96 @@
 part of 'manage_projects_cubit.dart';
 
-sealed class ManageProjectsState extends Equatable {
+abstract class ManageProjectsState extends Equatable {
   const ManageProjectsState();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
-final class ManageProjectsInitial extends ManageProjectsState {}
+class ManageProjectsInitial extends ManageProjectsState {}
 
-final class GetAllProjectsLoading extends ManageProjectsState {}
+class GetAllProjectsLoading extends ManageProjectsState {}
 
-final class GetAllProjectsSuccess extends ManageProjectsState {
+class GetAllProjectsSuccess extends ManageProjectsState {
   final GetAllProjectsResponseModel projects;
 
   const GetAllProjectsSuccess(this.projects);
 
   @override
-  List<Object> get props => [projects];
+  List<Object?> get props => [projects];
 }
 
-final class GetAllProjectsFailure extends ManageProjectsState {
-  final String message;
+class GetAllProjectsFailure extends ManageProjectsState {
+  final String error;
 
-  const GetAllProjectsFailure(this.message);
+  const GetAllProjectsFailure(this.error);
 
   @override
-  List<Object> get props => [message];
+  List<Object?> get props => [error];
 }
 
-final class GetAllOwnersLoading extends ManageProjectsState {}
+class GetAllOwnersLoading extends ManageProjectsState {}
 
-final class GetAllOwnersSuccess extends ManageProjectsState {
+class GetAllOwnersSuccess extends ManageProjectsState {
   final List<owner.OwnerModel> owners;
 
   const GetAllOwnersSuccess(this.owners);
 
   @override
-  List<Object> get props => [owners];
+  List<Object?> get props => [owners];
 }
 
-final class GetAllOwnersFailure extends ManageProjectsState {
-  final String message;
+class GetAllOwnersFailure extends ManageProjectsState {
+  final String error;
 
-  const GetAllOwnersFailure(this.message);
+  const GetAllOwnersFailure(this.error);
+
+  @override
+  List<Object?> get props => [error];
 }
 
-final class CreateOwnerLoading extends ManageProjectsState {}
+class CreateOwnerLoading extends ManageProjectsState {}
 
-final class CreateOwnerSuccess extends ManageProjectsState {}
+class CreateOwnerSuccess extends ManageProjectsState {}
 
-final class CreateOwnerFailure extends ManageProjectsState {
-  final String message;
+class CreateOwnerFailure extends ManageProjectsState {
+  final String error;
 
-  const CreateOwnerFailure(this.message);
+  const CreateOwnerFailure(this.error);
+
+  @override
+  List<Object?> get props => [error];
 }
 
-final class CreateProjectLoading extends ManageProjectsState {}
+class CreateProjectLoading extends ManageProjectsState {}
 
-final class CreateProjectSuccess extends ManageProjectsState {
+class CreateProjectSuccess extends ManageProjectsState {}
 
+class CreateProjectFailure extends ManageProjectsState {
+  final String error;
 
-  const CreateProjectSuccess();
+  const CreateProjectFailure(this.error);
+
+  @override
+  List<Object?> get props => [error];
 }
 
-final class CreateProjectFailure extends ManageProjectsState {
-  final String message;
+class DeleteProjectLoading extends ManageProjectsState {
+  final int projectId;
 
-  const CreateProjectFailure(this.message);
+  const DeleteProjectLoading(this.projectId);
+
+  @override
+  List<Object?> get props => [projectId];
 }
 
+class DeleteProjectSuccess extends ManageProjectsState {}
+
+class DeleteProjectFailure extends ManageProjectsState {
+  final String error;
+
+  const DeleteProjectFailure(this.error);
+
+  @override
+  List<Object?> get props => [error];
+}

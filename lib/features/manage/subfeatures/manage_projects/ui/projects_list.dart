@@ -596,7 +596,7 @@ class _ProjectsListState extends State<ProjectsList> {
                                     hint: const Text('Loading owners...'),
                                     isExpanded: true,
                                   ),
-                                GetAllOwnersFailure(message: final message) =>
+                                GetAllOwnersFailure(error: final error) =>
                                   DropdownButtonFormField<String>(
                                     value: null,
                                     decoration: InputDecoration(
@@ -630,7 +630,7 @@ class _ProjectsListState extends State<ProjectsList> {
                                         ),
                                       ),
                                       isDense: true,
-                                      helperText: 'Error: $message',
+                                      helperText: 'Error: $error',
                                       helperStyle: TextStyle(
                                         color:
                                             Theme.of(context).colorScheme.error,

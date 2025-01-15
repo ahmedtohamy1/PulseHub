@@ -61,7 +61,7 @@ class ManageProjectsView extends StatelessWidget {
                 color: Theme.of(context).colorScheme.primary,
               ),
             ),
-          GetAllProjectsFailure(message: final message) => Center(
+          GetAllProjectsFailure(error: final error) => Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -72,7 +72,7 @@ class ManageProjectsView extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Error: $message',
+                    'Error: $error',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: Theme.of(context).colorScheme.error,
                         ),
