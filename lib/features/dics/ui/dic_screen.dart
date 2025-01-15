@@ -31,17 +31,19 @@ class DicScreenState extends State<DicScreen> {
           style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
         ),
         actions: [
-          IconButton(
-            tooltip: 'Manage Users',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const ManageUsersScreen(),
-                ),
-              );
-            },
-            icon: const Icon(Icons.manage_accounts_outlined),
-          ),
+          if (UserManager().user?.isStaff == true ||
+              UserManager().user?.isSuperuser == true)
+            IconButton(
+              tooltip: 'Manage Users',
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const ManageUsersScreen(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.manage_accounts_outlined),
+            ),
           IconButton(
             tooltip: 'Logout',
             onPressed: () {
