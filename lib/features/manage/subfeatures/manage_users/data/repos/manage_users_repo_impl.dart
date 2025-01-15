@@ -29,4 +29,21 @@ class ManageUsersRepositoryImpl implements ManageUsersRepository {
       return Left('Exception occurred: $e');
     }
   }
+
+  @override
+  Future<Either<String, bool>> deleteUser(String token, String userId) async {
+    try {
+      final response = await myApiService.delete(
+        '${EndPoints.getAllUsers}/$userId/',
+        token: token,
+      );
+      if (response.statusCode == StatusCode.ok && response.data['success']) {
+        return Right(true);
+      } else {
+        return Left('Failed to delete user: ${response.statusCode}');
+      }
+    } catch (e) {
+      return Left('Exception occurred: $e');
+    }
+  }
 }

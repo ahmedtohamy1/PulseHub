@@ -4,4 +4,5 @@ import 'package:pulsehub/features/project_dashboard/data/models/get_all_users_re
 abstract class ManageUsersRepository {
 
    Future<Either<String, GetAllResponseModel>> getAllUsers(String token);
+   Future<Either<String, bool>> deleteUser(String token, String userId);
 }

@@ -4,7 +4,6 @@ import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/utils/shared_pref_helper.dart';
 import 'package:pulsehub/core/utils/shared_pref_keys.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_all_users_response_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/repos/manage_users_repo.dart';
 
@@ -17,11 +16,24 @@ class ManageUsersCubit extends Cubit<ManageUsersState> {
 
   Future<void> getAllUsers() async {
     emit(ManageUsersLoading());
-   final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
     final response = await _repository.getAllUsers(token);
     response.fold(
       (l) => emit(ManageUsersFailure(l)),
       (r) => emit(ManageUsersSuccess(r)),
+    );
+  }
+
+  Future<void> deleteUser(String userId) async {
+    emit(ManageUsersDeleteLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final response = await _repository.deleteUser(token, userId);
+    response.fold(
+      (l) => emit(ManageUsersDeleteFailure(l)),
+      (r) {
+        emit(ManageUsersDeleteSuccess(r));
+        getAllUsers();
+      },
     );
   }
 }

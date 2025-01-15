@@ -22,3 +22,17 @@ final class ManageUsersFailure extends ManageUsersState {
 
   const ManageUsersFailure(this.error);
 } 
+
+final class ManageUsersDeleteLoading extends ManageUsersState {}
+
+final class ManageUsersDeleteSuccess extends ManageUsersState {
+  final bool success;
+
+  const ManageUsersDeleteSuccess(this.success);
+}
+  
+final class ManageUsersDeleteFailure extends ManageUsersState {
+  final String error;
+
+  const ManageUsersDeleteFailure(this.error);
+}
