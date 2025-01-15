@@ -7,12 +7,10 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pulsehub/core/di/service_locator.dart';
-import 'package:pulsehub/core/utils/user_manager.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/ticket_messages_cubit.dart';
-import 'package:pulsehub/features/project_dashboard/data/models/sensor_activity_log_model.dart'
-    as activity_log;
 import 'package:pulsehub/features/project_dashboard/data/models/sensor_data_model.dart';
+import 'package:pulsehub/features/settings/ui/screens/ticket_messages_screen.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -258,8 +256,32 @@ class _SensorDetailsScreenState extends State<SensorDetailsScreen>
                               IconButton.filled(
                                 icon: const Icon(Icons.message, size: 20),
                                 onPressed: () {
-                                  _showTicketMessagesDialog(
-                                      context, ticket, formattedDate);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => MultiBlocProvider(
+                                        providers: [
+                                          BlocProvider(
+                                            create: (context) =>
+                                                sl<TicketMessagesCubit>(),
+                                          ),
+                                          BlocProvider(
+                                            create: (context) =>
+                                                sl<ProjectDashboardCubit>()
+                                                  ..getSensorActivityLog(
+                                                      widget.sensor.sensorId),
+                                          ),
+                                        ],
+                                        child: TicketMessagesScreen(
+                                          ticketName: ticket.name ?? 'Unknown',
+                                          ticketDescription: ticket.description,
+                                          ticketId: ticket.ticketId ?? -1,
+                                          createdAt: DateTime.tryParse(
+                                              ticket.createdAt ?? ''),
+                                        ),
+                                      ),
+                                    ),
+                                  );
                                 },
                               ),
                               const SizedBox(width: 8),
@@ -282,270 +304,6 @@ class _SensorDetailsScreenState extends State<SensorDetailsScreen>
         }
         return const Center(child: Text('No data available'));
       },
-    );
-  }
-
-  void _showTicketMessagesDialog(
-      BuildContext context, activity_log.Ticket ticket, String formattedDate) {
-    final messagesCubit = sl<TicketMessagesCubit>();
-    messagesCubit.getTicketMessages(ticket.ticketId ?? 0);
-
-    // Controller for the message input
-    final messageController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => MultiBlocProvider(
-        providers: [
-          BlocProvider.value(value: context.read<ProjectDashboardCubit>()),
-          BlocProvider(create: (context) => messagesCubit),
-        ],
-        child: BlocListener<ProjectDashboardCubit, ProjectDashboardState>(
-          listener: (context, state) {
-            if (state is ProjectDashboardMarkMessageAsSeenSuccess) {
-              // Message marked as seen successfully
-            } else if (state is ProjectDashboardMarkMessageAsSeenFailure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content:
-                      Text('Failed to mark message as seen: ${state.message}'),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
-          },
-          child: BlocListener<TicketMessagesCubit, TicketMessagesState>(
-            listener: (context, state) {
-              if (state is CreateTicketMessageSuccess) {
-                messageController.clear();
-                messagesCubit.getTicketMessages(ticket.ticketId ?? 0);
-              } else if (state is CreateTicketMessageFailure) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Failed to send message: ${state.message}'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              } else if (state is TicketMessagesSuccess) {
-                // Mark all unread messages as seen
-                final currentUserId = UserManager().user?.userId;
-                for (final message
-                    in state.ticketMessagesModel.ticketMessages ?? []) {
-                  if (!(message.seen?.contains(currentUserId) ?? false)) {
-                    context
-                        .read<ProjectDashboardCubit>()
-                        .markMessageAsSeen(message.ticketMessageId ?? 0);
-                  }
-                }
-              }
-            },
-            child: Dialog(
-              child: Container(
-                width: 600,
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Ticket Details',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 16),
-                    Text('Event: ${ticket.name}'),
-                    const SizedBox(height: 8),
-                    Text('Description: ${ticket.description}'),
-                    const SizedBox(height: 8),
-                    Text('Date: $formattedDate'),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Text('Status: '),
-                        Icon(
-                          ticket.open == true
-                              ? Icons.warning
-                              : Icons.check_circle,
-                          color: Colors.green,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          ticket.open == true ? 'Open' : 'Closed',
-                          style: const TextStyle(color: Colors.green),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Ticket Messages',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 16),
-                    BlocBuilder<TicketMessagesCubit, TicketMessagesState>(
-                      builder: (context, state) {
-                        if (state is TicketMessagesLoading) {
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        }
-                        if (state is TicketMessagesFailure) {
-                          return Center(child: Text('Error: ${state.message}'));
-                        }
-                        if (state is TicketMessagesSuccess) {
-                          final messages =
-                              state.ticketMessagesModel.ticketMessages;
-                          if (messages == null || messages.isEmpty) {
-                            return const Text('No messages available');
-                          }
-
-                          return Flexible(
-                            child: ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: messages.length,
-                              itemBuilder: (context, index) {
-                                final message = messages[index];
-                                final DateTime messageDate =
-                                    message.createdAt ?? DateTime.now();
-                                final String messageFormattedDate =
-                                    '${messageDate.month}/${messageDate.day}/${messageDate.year}, ${messageDate.hour}:${messageDate.minute.toString().padLeft(2, '0')}:${messageDate.second.toString().padLeft(2, '0')} ${messageDate.hour >= 12 ? 'PM' : 'AM'}';
-
-                                final currentUserId =
-                                    UserManager().user?.userId;
-                                final isSeenByCurrentUser =
-                                    message.seen?.contains(currentUserId) ??
-                                        false;
-                                final isCurrentUserMessage =
-                                    message.user == currentUserId;
-
-                                return ListTile(
-                                  leading: const CircleAvatar(
-                                    child: Icon(Icons.person),
-                                  ),
-                                  title: Text(isCurrentUserMessage
-                                      ? 'You'
-                                      : 'User ${message.user}'),
-                                  subtitle: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(messageFormattedDate),
-                                      Text(message.message ?? ''),
-                                      Row(
-                                        children: [
-                                          if (isCurrentUserMessage) ...[
-                                            Icon(
-                                              Icons.done_all,
-                                              size: 16,
-                                              color: isSeenByCurrentUser
-                                                  ? Colors.grey
-                                                  : Colors.grey
-                                                      .withOpacity(0.5),
-                                            ),
-                                            const SizedBox(width: 4),
-                                          ],
-                                          InkWell(
-                                            onTap: () {
-                                              if (message.seen?.isNotEmpty ==
-                                                  true) {
-                                                showDialog(
-                                                  context: context,
-                                                  builder: (context) =>
-                                                      AlertDialog(
-                                                    title: const Text(
-                                                        'Delivered to'),
-                                                    content: Column(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: [
-                                                        Text(
-                                                            '${message.seen?.length} user${message.seen!.length > 1 ? 's' : ''} have seen this message'),
-                                                        const SizedBox(
-                                                            height: 8),
-                                                        Text(
-                                                            'User IDs: ${message.seen?.join(", ")}'),
-                                                      ],
-                                                    ),
-                                                    actions: [
-                                                      TextButton(
-                                                        onPressed: () =>
-                                                            Navigator.pop(
-                                                                context),
-                                                        child:
-                                                            const Text('Close'),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                );
-                                              }
-                                            },
-                                            child: Text(
-                                              isCurrentUserMessage
-                                                  ? 'Opened by you'
-                                                  : message.seen?.isNotEmpty ==
-                                                          true
-                                                      ? 'Delivered to ${message.seen?.length} user${message.seen!.length > 1 ? 's' : ''}'
-                                                      : 'Not delivered yet',
-                                              style: TextStyle(
-                                                color: isSeenByCurrentUser
-                                                    ? Colors.grey
-                                                    : Colors.grey
-                                                        .withOpacity(0.5),
-                                                fontSize: 12,
-                                                decoration: message
-                                                            .seen?.isNotEmpty ==
-                                                        true
-                                                    ? TextDecoration.underline
-                                                    : null,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                          );
-                        }
-                        return const Text('No messages available');
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    // Message input field
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: messageController,
-                            decoration: const InputDecoration(
-                              hintText: 'Type a message...',
-                              border: OutlineInputBorder(),
-                            ),
-                            maxLines: null,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton.filled(
-                          icon: const Icon(Icons.send),
-                          onPressed: () {
-                            final message = messageController.text.trim();
-                            if (message.isNotEmpty) {
-                              context
-                                  .read<TicketMessagesCubit>()
-                                  .createTicketMessage(
-                                      ticket.ticketId ?? 0, message);
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 
