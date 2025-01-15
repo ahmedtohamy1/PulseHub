@@ -56,6 +56,7 @@ class UserCard extends StatelessWidget {
                         await cubit.deleteUser(user.userId.toString());
 
                         if (context.mounted) {
+                          confirmController.dispose();
                           Navigator.of(context).pop();
                         }
                       }
