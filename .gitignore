@@ -1,4 +1,5 @@
 # Miscellaneous
+.cursorrules
 *.class
 *.log
 *.pyc
