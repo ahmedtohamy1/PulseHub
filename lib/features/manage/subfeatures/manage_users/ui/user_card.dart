@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_users/cubit/manage_users_cubit.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_users/ui/user_details_screen.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_all_users_response_model.dart';
 
-class UserCard extends StatelessWidget {
+class UserCard extends StatefulWidget {
   final User user;
 
   const UserCard({
@@ -13,10 +14,23 @@ class UserCard extends StatelessWidget {
     required this.user,
   });
 
+  @override
+  State<UserCard> createState() => _UserCardState();
+}
+
+class _UserCardState extends State<UserCard> {
+  final TextEditingController confirmController = TextEditingController();
+
+  @override
+  void dispose() {
+    confirmController.dispose();
+    super.dispose();
+  }
+
   Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
-    final TextEditingController confirmController = TextEditingController();
+    
     bool isLoading = false;
-    final cubit = context.read<ManageUsersCubit>();
+    final cubit = sl<ManageUsersCubit>();
 
     await showDialog(
       context: context,
@@ -27,7 +41,7 @@ class UserCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('To confirm deletion, please type "${user.firstName}"'),
+              Text('To confirm deletion, please type "${widget.user.firstName}"'),
               const SizedBox(height: 16),
               TextField(
                 controller: confirmController,
@@ -51,13 +65,13 @@ class UserCard extends StatelessWidget {
               onPressed: isLoading
                   ? null
                   : () async {
-                      if (confirmController.text == user.firstName) {
+                      if (confirmController.text == widget.user.firstName) {
                         setState(() => isLoading = true);
 
-                        await cubit.deleteUser(user.userId.toString());
+                        await cubit.deleteUser(widget.user.userId.toString());
 
                         if (context.mounted) {
-                          confirmController.dispose();
+                      
                           Navigator.of(context).pop();
                         }
                       }
@@ -98,7 +112,7 @@ class UserCard extends StatelessWidget {
             MaterialPageRoute(
               builder: (context) => BlocProvider(
                 create: (_) => cubit,
-                child: UserDetailsScreen(user: user),
+                child: UserDetailsScreen(user: widget.user),
               ),
             ),
           );
@@ -119,9 +133,9 @@ class UserCard extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     height: 400,
-                    child: user.pictureUrl?.isNotEmpty == true
+                    child: widget.user.pictureUrl?.isNotEmpty == true
                         ? Image.network(
-                            user.pictureUrl!,
+                            widget.user.pictureUrl!,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) =>
                                 Container(
@@ -167,7 +181,7 @@ class UserCard extends StatelessWidget {
                     right: 16,
                     child: Row(
                       children: [
-                        if (user.isSuperuser == true)
+                        if (widget.user.isSuperuser == true)
                           Container(
                             margin: const EdgeInsets.only(right: 8),
                             padding: const EdgeInsets.symmetric(
@@ -206,7 +220,7 @@ class UserCard extends StatelessWidget {
                               ],
                             ),
                           ),
-                        if (user.isStaff == true)
+                        if (widget.user.isStaff == true)
                           Container(
                             margin: const EdgeInsets.only(right: 8),
                             padding: const EdgeInsets.symmetric(
@@ -251,7 +265,7 @@ class UserCard extends StatelessWidget {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: user.isActive == true
+                            color: widget.user.isActive == true
                                 ? Colors.green
                                 : Colors.red.shade600,
                             borderRadius: BorderRadius.circular(12),
@@ -268,7 +282,7 @@ class UserCard extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                user.isActive == true
+                                widget.user.isActive == true
                                     ? Icons.check_circle
                                     : Icons.cancel,
                                 color: Colors.white,
@@ -276,7 +290,7 @@ class UserCard extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                user.isActive == true ? 'Active' : 'Inactive',
+                                widget.user.isActive == true ? 'Active' : 'Inactive',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 12,
@@ -298,7 +312,7 @@ class UserCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${user.firstName?.isNotEmpty == true ? user.firstName : 'N/A'} ${user.lastName?.isNotEmpty == true ? user.lastName : 'N/A'}',
+                          '${widget.user.firstName?.isNotEmpty == true ? widget.user.firstName : 'N/A'} ${widget.user.lastName?.isNotEmpty == true ? widget.user.lastName : 'N/A'}',
                           style: theme.textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -306,7 +320,7 @@ class UserCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          user.email?.isNotEmpty == true ? user.email! : 'N/A',
+                          widget.user.email?.isNotEmpty == true ? widget.user.email! : 'N/A',
                           style: theme.textTheme.titleMedium?.copyWith(
                             color: Colors.white.withOpacity(0.9),
                             fontWeight: FontWeight.w500,
@@ -323,7 +337,7 @@ class UserCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   border: Border(
                     left: BorderSide(
-                      color: user.isActive == true
+                      color: widget.user.isActive == true
                           ? Colors.green
                           : Colors.red.shade600,
                       width: 4,
@@ -340,21 +354,21 @@ class UserCard extends StatelessWidget {
                           // Title
                           _buildInfoRow(
                             'Title',
-                            user.title?.isNotEmpty == true
-                                ? user.title!
+                            widget.user.title?.isNotEmpty == true
+                                ? widget.user.title!
                                 : 'N/A',
                             Icons.work_outline,
                             context: context,
                           ),
-                          if (user.title?.isNotEmpty == true)
+                          if (widget.user.title?.isNotEmpty == true)
                             const SizedBox(height: 16),
 
                           // Date Joined
                           _buildInfoRow(
                             'Date Joined',
-                            user.dateJoined != null
+                            widget.user.dateJoined != null
                                 ? DateFormat('MMM dd, yyyy')
-                                    .format(user.dateJoined!)
+                                    .format(widget.user.dateJoined!)
                                 : 'N/A',
                             Icons.calendar_today,
                             context: context,
@@ -364,9 +378,9 @@ class UserCard extends StatelessWidget {
                           // Last Updated
                           _buildInfoRow(
                             'Last Updated',
-                            user.dateUpdated != null
+                            widget.user.dateUpdated != null
                                 ? DateFormat('MMM dd, yyyy')
-                                    .format(user.dateUpdated!)
+                                    .format(widget.user.dateUpdated!)
                                 : 'N/A',
                             Icons.update,
                             context: context,
