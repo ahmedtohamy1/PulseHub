@@ -797,7 +797,52 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
                         elevation: 2,
                         child: InkWell(
                           onTap: () {
-                            // TODO: Navigate to sensor details
+                            sensorMap['sensor_id'] != null &&
+                                    sensorMap['used_sensor'] != null
+                                ? Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => SensorDetailsScreen(
+                                        sensor: Sensor(
+                                          sensorId: sensorMap['sensor_id'],
+                                          name: sensorMap['name'] ??
+                                              'Unnamed Sensor',
+                                          uuid: sensorMap['uuid'],
+                                          usedSensor: sensorMap['used_sensor'],
+                                          cloudHub: sensorMap['cloud_hub'],
+                                          installDate:
+                                              sensorMap['install_date'],
+                                          typeId: sensorMap['type_id'],
+                                          dataSource: sensorMap['data_source'],
+                                          readingsPerDay:
+                                              sensorMap['readings_per_day'],
+                                          active: sensorMap['active'],
+                                          coordinateX:
+                                              sensorMap['coordinate_x'],
+                                          coordinateY:
+                                              sensorMap['coordinate_y'],
+                                          coordinateZ:
+                                              sensorMap['coordinate_z'],
+                                          longitude: sensorMap['longitude'],
+                                          latitude: sensorMap['latitude'],
+                                          calibrated: sensorMap['calibrated'],
+                                          calibrationDate:
+                                              sensorMap['calibration_date'],
+                                          calibrationComments:
+                                              sensorMap['calibration_comments'],
+                                          event: sensorMap['event'] ?? 'N/A',
+                                          eventLastStatus:
+                                              sensorMap['event_last_status'] ??
+                                                  'N/A',
+                                          status: sensorMap['status'],
+                                          cloudHubTime:
+                                              sensorMap['cloud_hub_time'],
+                                          sendTime: sensorMap['send_time'],
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : null;
                           },
                           child: Container(
                             padding: const EdgeInsets.all(16.0),
