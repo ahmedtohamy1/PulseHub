@@ -10,7 +10,7 @@ class ManageUsersScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Manage Users'),
       ),
-      body: const ManageUsersTab(),
+      body: ManageUsersTab(isDic: true),
     );
   }
 }

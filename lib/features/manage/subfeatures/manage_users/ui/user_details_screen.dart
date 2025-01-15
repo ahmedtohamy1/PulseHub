@@ -2,17 +2,25 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_users/cubit/manage_users_cubit.dart';
+import 'package:pulsehub/features/manage/subfeatures/manage_users/ui/screens/user_active_sessions_screen.dart';
+import 'package:pulsehub/features/manage/subfeatures/manage_users/ui/screens/user_logs_screen.dart';
+import 'package:pulsehub/features/manage/subfeatures/manage_users/ui/screens/user_projects_screen.dart';
+import 'package:pulsehub/features/manage/subfeatures/manage_users/ui/screens/user_services_screen.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_all_users_response_model.dart';
 
 class UserDetailsScreen extends StatefulWidget {
+  final bool? isDic;
   final User user;
 
   const UserDetailsScreen({
     super.key,
     required this.user,
+    this.isDic,
   });
 
   @override
@@ -302,6 +310,76 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
               onPressed: () => _showDeleteConfirmationDialog(context),
               icon: const Icon(Icons.delete_outline),
               color: colorScheme.error,
+            ),
+          ],
+        ),
+        floatingActionButton: SpeedDial(
+          icon: Icons.menu_rounded,
+          activeIcon: Icons.close,
+          backgroundColor: colorScheme.primary,
+          foregroundColor: colorScheme.onPrimary,
+          activeBackgroundColor: colorScheme.error,
+          activeForegroundColor: colorScheme.onError,
+          elevation: 8.0,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(16)),
+          ),
+          children: [
+            if (widget.isDic != true)
+              SpeedDialChild(
+                child: const Icon(Icons.folder),
+                backgroundColor: colorScheme.primaryContainer,
+                foregroundColor: colorScheme.onPrimaryContainer,
+                label: 'Projects',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => BlocProvider(
+                      create: (context) => sl<ManageUsersCubit>()
+                        ..getUserProjects(_localUser.userId!),
+                      child: UserProjectsScreen(user: _localUser),
+                    ),
+                  ),
+                ),
+              ),
+            if (widget.isDic != true)
+              SpeedDialChild(
+                child: const Icon(Icons.history),
+                backgroundColor: colorScheme.secondaryContainer,
+                foregroundColor: colorScheme.onSecondaryContainer,
+                label: 'Logs',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => UserLogsScreen(user: _localUser),
+                  ),
+                ),
+              ),
+            if (widget.isDic != true)
+              SpeedDialChild(
+                child: const Icon(Icons.devices),
+                backgroundColor: colorScheme.tertiaryContainer,
+                foregroundColor: colorScheme.onTertiaryContainer,
+                label: 'Active Sessions',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        UserActiveSessionsScreen(user: _localUser),
+                  ),
+                ),
+              ),
+            SpeedDialChild(
+              child: const Icon(Icons.miscellaneous_services),
+              backgroundColor: colorScheme.surfaceContainerHighest,
+              foregroundColor: colorScheme.onSurfaceVariant,
+              label: 'Services',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => BlocProvider(
+                    create: (context) => sl<ManageUsersCubit>()
+                      ..getDics(_localUser.userId!.toString()),
+                    child: UserServicesScreen(user: _localUser),
+                  ),
+                ),
+              ),
             ),
           ],
         ),

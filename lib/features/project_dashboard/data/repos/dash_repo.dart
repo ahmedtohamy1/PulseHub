@@ -18,7 +18,7 @@ import 'package:pulsehub/features/project_dashboard/data/models/timedb_response.
 import 'package:pulsehub/features/project_dashboard/data/models/update_cloudhub_request_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo_impl.dart';
 
-abstract class DashRepository {
+ abstract class DashRepository {
   Future<Either<String, ProjectDashboards>> getDashs(
       String token, int projectId);
   Future<Either<String, CloudHubResponse>> getDashDetails(

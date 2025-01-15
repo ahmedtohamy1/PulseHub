@@ -7,10 +7,12 @@ import 'package:pulsehub/features/project_dashboard/data/models/get_all_users_re
 
 class UserCard extends StatefulWidget {
   final User user;
+  final bool? isDic;
 
   const UserCard({
     super.key,
     required this.user,
+    this.isDic,
   });
 
   @override
@@ -104,7 +106,10 @@ class _UserCardState extends State<UserCard> {
             MaterialPageRoute(
               builder: (context) => BlocProvider(
                 create: (_) => cubit,
-                child: UserDetailsScreen(user: widget.user),
+                child: UserDetailsScreen(
+                  user: widget.user,
+                  isDic: widget.isDic,
+                ),
               ),
             ),
           );

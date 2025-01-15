@@ -6,7 +6,8 @@ import 'package:pulsehub/features/manage/subfeatures/manage_users/ui/screens/cre
 import 'package:pulsehub/features/manage/subfeatures/manage_users/ui/user_card.dart';
 
 class ManageUsersTab extends StatefulWidget {
-  const ManageUsersTab({super.key});
+  final bool? isDic;
+  const ManageUsersTab({super.key, this.isDic});
 
   @override
   State<ManageUsersTab> createState() => _ManageUsersTabState();
@@ -143,7 +144,10 @@ class _ManageUsersTabState extends State<ManageUsersTab>
                       itemCount: filteredUsers.length,
                       itemBuilder: (context, index) {
                         final user = filteredUsers[index];
-                        return UserCard(user: user);
+                        return UserCard(
+                          user: user,
+                          isDic: widget.isDic,
+                        );
                       },
                     );
                   }
