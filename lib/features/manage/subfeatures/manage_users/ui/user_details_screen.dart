@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_users/cubit/manage_users_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_all_users_response_model.dart';
@@ -19,11 +22,217 @@ class UserDetailsScreen extends StatefulWidget {
 
 class _UserDetailsScreenState extends State<UserDetailsScreen> {
   final TextEditingController confirmController = TextEditingController();
+  late final TextEditingController firstNameController;
+  late final TextEditingController lastNameController;
+  late final TextEditingController emailController;
+  late final TextEditingController titleController;
+  late final TextEditingController maxActiveSessionsController;
+  bool isActive = false;
+  bool isStaff = false;
+  bool isSuperuser = false;
+  XFile? selectedImage;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize controllers with current user data
+    firstNameController = TextEditingController(text: widget.user.firstName);
+    lastNameController = TextEditingController(text: widget.user.lastName);
+    emailController = TextEditingController(text: widget.user.email);
+    titleController = TextEditingController(text: widget.user.title);
+    maxActiveSessionsController = TextEditingController(
+        text: widget.user.maxActiveSessions?.toString() ?? '');
+    isActive = widget.user.isActive == true;
+    isStaff = widget.user.isStaff == true;
+    isSuperuser = widget.user.isSuperuser == true;
+  }
 
   @override
   void dispose() {
-    super.dispose();
     confirmController.dispose();
+    firstNameController.dispose();
+    lastNameController.dispose();
+    emailController.dispose();
+    titleController.dispose();
+    maxActiveSessionsController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _showEditDialog(BuildContext context) async {
+    bool isLoading = false;
+    final cubit = sl<ManageUsersCubit>();
+    final ImagePicker picker = ImagePicker();
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Edit User'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Profile Picture
+                Center(
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.1),
+                          image: selectedImage != null
+                              ? DecorationImage(
+                                  image: FileImage(File(selectedImage!.path)),
+                                  fit: BoxFit.cover,
+                                )
+                              : widget.user.pictureUrl?.isNotEmpty == true
+                                  ? DecorationImage(
+                                      image:
+                                          NetworkImage(widget.user.pictureUrl!),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
+                        ),
+                        child: selectedImage == null &&
+                                widget.user.pictureUrl?.isNotEmpty != true
+                            ? Icon(
+                                Icons.person,
+                                size: 48,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withOpacity(0.5),
+                              )
+                            : null,
+                      ),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: IconButton.filled(
+                          onPressed: () async {
+                            final XFile? image = await picker.pickImage(
+                              source: ImageSource.gallery,
+                            );
+                            if (image != null) {
+                              setState(() => selectedImage = image);
+                            }
+                          },
+                          icon: const Icon(Icons.camera_alt),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Text Fields
+                TextField(
+                  controller: firstNameController,
+                  decoration: const InputDecoration(
+                    labelText: 'First Name',
+                    prefixIcon: Icon(Icons.person_outline),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: lastNameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Last Name',
+                    prefixIcon: Icon(Icons.person),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: Icon(Icons.email),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(
+                    labelText: 'Title',
+                    prefixIcon: Icon(Icons.work),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: maxActiveSessionsController,
+                  decoration: const InputDecoration(
+                    labelText: 'Max Active Sessions',
+                    prefixIcon: Icon(Icons.devices),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 24),
+
+                // Switches
+                SwitchListTile(
+                  title: const Text('Active'),
+                  value: isActive,
+                  onChanged: (value) => setState(() => isActive = value),
+                ),
+                SwitchListTile(
+                  title: const Text('Staff'),
+                  value: isStaff,
+                  onChanged: (value) => setState(() => isStaff = value),
+                ),
+                SwitchListTile(
+                  title: const Text('Superuser'),
+                  value: isSuperuser,
+                  onChanged: (value) => setState(() => isSuperuser = value),
+                ),
+
+                if (isLoading) ...[
+                  const SizedBox(height: 16),
+                  const Center(child: CircularProgressIndicator()),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      setState(() => isLoading = true);
+
+                      await cubit.updateUser(
+                        widget.user.userId.toString(),
+                        firstNameController.text,
+                        lastNameController.text,
+                        emailController.text,
+                        null, // phone number not implemented
+                        titleController.text,
+                        int.tryParse(maxActiveSessionsController.text),
+                        isActive,
+                        isStaff,
+                        isSuperuser,
+                        selectedImage,
+                      );
+
+                      if (context.mounted) {
+                        Navigator.of(context).pop();
+                      }
+                    },
+              child: const Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   bool navigateToManageUsers = false;
@@ -100,6 +309,18 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
         if (state is ManageUsersDeleteSuccess) {
           context.pop();
           context.pop();
+        } else if (state is ManageUsersUpdateSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('User updated successfully')),
+          );
+          context.pop();
+        } else if (state is ManageUsersUpdateFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.error),
+              backgroundColor: colorScheme.error,
+            ),
+          );
         }
       },
       child: Scaffold(
@@ -108,9 +329,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
               '${widget.user.firstName?.isNotEmpty == true ? widget.user.firstName : 'N/A'} ${widget.user.lastName?.isNotEmpty == true ? widget.user.lastName : 'N/A'}'),
           actions: [
             IconButton(
-              onPressed: () {
-                // TODO: Implement edit user
-              },
+              onPressed: () => _showEditDialog(context),
               icon: const Icon(Icons.edit),
             ),
             IconButton(

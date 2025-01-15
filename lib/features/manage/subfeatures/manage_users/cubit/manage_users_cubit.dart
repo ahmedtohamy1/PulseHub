@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/utils/shared_pref_helper.dart';
 import 'package:pulsehub/core/utils/shared_pref_keys.dart';
@@ -32,6 +33,42 @@ class ManageUsersCubit extends Cubit<ManageUsersState> {
       (l) => emit(ManageUsersDeleteFailure(l)),
       (r) {
         emit(ManageUsersDeleteSuccess(r));
+        getAllUsers();
+      },
+    );
+  }
+
+  Future<void> updateUser(
+      String userId,
+      String? firstName,
+      String? lastName,
+      String? email,
+      String? phoneNumber,
+      String? title,
+      int? maxActiveSessions,
+      bool? isActive,
+      bool? isStaff,
+      bool? isSuperuser,
+      XFile? picture) async {
+    emit(ManageUsersUpdateLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final response = await _repository.updateUser(
+        token,
+        userId,
+        firstName,
+        lastName,
+        email,
+        phoneNumber,
+        title,
+        maxActiveSessions,
+        isActive,
+        isStaff,
+        isSuperuser,
+        picture);
+    response.fold(
+      (l) => emit(ManageUsersUpdateFailure(l)),
+      (r) {
+        emit(ManageUsersUpdateSuccess(r));
         getAllUsers();
       },
     );
