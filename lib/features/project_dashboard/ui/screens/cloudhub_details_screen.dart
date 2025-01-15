@@ -186,7 +186,7 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
         } else if (state is ProjectDashboardCreateCloudhubSensorSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Sensor created successfully'),
+              content: Text('Operation completed successfully'),
               backgroundColor: Colors.green,
             ),
           );
