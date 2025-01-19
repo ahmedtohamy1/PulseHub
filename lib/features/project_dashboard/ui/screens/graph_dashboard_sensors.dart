@@ -1,7 +1,7 @@
+import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/project_dashboards.dart';
 import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo_impl.dart';
@@ -324,48 +324,46 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                                     ],
                                     onChanged: (value) async {
                                       if (value == 'Custom') {
-                                        final dateTimeList =
-                                            await showOmniDateTimeRangePicker(
+                                        final result =
+                                            await showBoardDateTimeMultiPicker(
                                           context: context,
-                                          startInitialDate: DateTime.now(),
-                                          startFirstDate: DateTime(2020),
-                                          startLastDate: DateTime.now(),
-                                          endInitialDate: DateTime.now(),
-                                          endFirstDate: DateTime(2020),
-                                          endLastDate: DateTime.now(),
-                                          is24HourMode: false,
-                                          isShowSeconds: false,
-                                          minutesInterval: 1,
-                                          secondsInterval: 1,
-                                          borderRadius: const BorderRadius.all(
-                                              Radius.circular(16)),
-                                          constraints: const BoxConstraints(
-                                            maxWidth: 350,
-                                            maxHeight: 650,
+                                          pickerType:
+                                              DateTimePickerType.datetime,
+                                          minimumDate: DateTime(2020),
+                                          maximumDate: DateTime.now(),
+                                          startDate: DateTime.now().subtract(
+                                              const Duration(hours: 1)),
+                                          endDate: DateTime.now(),
+                                          options: BoardDateTimeOptions(
+                                            backgroundColor: Theme.of(context)
+                                                .colorScheme
+                                                .surface,
+                                            textColor: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface,
+                                            activeColor: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
+                                            startDayOfWeek: DateTime.monday,
+                                            showDateButton: true,
+                                            languages:
+                                                const BoardPickerLanguages.en(),
+                                            boardTitle: 'Select Time Range',
+                                            boardTitleTextStyle: TextStyle(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 18,
+                                            ),
                                           ),
-                                          transitionBuilder:
-                                              (context, anim1, anim2, child) {
-                                            return FadeTransition(
-                                              opacity: anim1.drive(
-                                                Tween(
-                                                  begin: 0,
-                                                  end: 1,
-                                                ),
-                                              ),
-                                              child: child,
-                                            );
-                                          },
-                                          transitionDuration:
-                                              const Duration(milliseconds: 200),
-                                          barrierDismissible: true,
                                         );
 
-                                        if (dateTimeList != null &&
-                                            context.mounted) {
+                                        if (result != null && context.mounted) {
                                           setState(() {
                                             isCustomRange = true;
                                             customRangeController.text =
-                                                'time_range_start=${dateTimeList[0].toUtc().toIso8601String()}&time_range_stop=${dateTimeList[1].toUtc().toIso8601String()}';
+                                                'time_range_start=${result.start.toUtc().toIso8601String()}&time_range_stop=${result.end.toUtc().toIso8601String()}';
                                             timeRange = 'Custom';
                                           });
                                         }
@@ -423,61 +421,107 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                                               ],
                                             ),
                                             const SizedBox(height: 8),
-                                            Text.rich(
-                                              TextSpan(
-                                                children: [
-                                                  const TextSpan(
-                                                    text: 'From: ',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  ),
-                                                  TextSpan(
-                                                    text: _formatDateTime(
-                                                        DateTime.parse(
-                                                            customRangeController
-                                                                .text
-                                                                .split('&')[0]
-                                                                .split(
-                                                                    '=')[1])),
-                                                  ),
-                                                ],
-                                              ),
-                                              style: TextStyle(
+                                            Container(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: BoxDecoration(
                                                 color: Theme.of(context)
                                                     .colorScheme
                                                     .primary
-                                                    .withOpacity(0.8),
-                                                fontSize: 12,
+                                                    .withOpacity(0.1),
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                                border: Border.all(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .primary
+                                                      .withOpacity(0.3),
+                                                ),
+                                              ),
+                                              child: Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'From: ',
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Theme.of(context)
+                                                            .colorScheme
+                                                            .primary,
+                                                      ),
+                                                    ),
+                                                    TextSpan(
+                                                      text: _formatDateTime(
+                                                          DateTime.parse(
+                                                              customRangeController
+                                                                  .text
+                                                                  .split('&')[0]
+                                                                  .split(
+                                                                      '=')[1])),
+                                                      style: TextStyle(
+                                                        color: Theme.of(context)
+                                                            .colorScheme
+                                                            .primary
+                                                            .withOpacity(0.8),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                ),
                                               ),
                                             ),
                                             const SizedBox(height: 4),
-                                            Text.rich(
-                                              TextSpan(
-                                                children: [
-                                                  const TextSpan(
-                                                    text: 'To: ',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  ),
-                                                  TextSpan(
-                                                    text: _formatDateTime(
-                                                        DateTime.parse(
-                                                            customRangeController
-                                                                .text
-                                                                .split('&')[1]
-                                                                .split(
-                                                                    '=')[1])),
-                                                  ),
-                                                ],
-                                              ),
-                                              style: TextStyle(
+                                            Container(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: BoxDecoration(
                                                 color: Theme.of(context)
                                                     .colorScheme
-                                                    .primary
-                                                    .withOpacity(0.8),
-                                                fontSize: 12,
+                                                    .tertiary
+                                                    .withOpacity(0.1),
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                                border: Border.all(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .tertiary
+                                                      .withOpacity(0.3),
+                                                ),
+                                              ),
+                                              child: Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text: 'To: ',
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Theme.of(context)
+                                                            .colorScheme
+                                                            .tertiary,
+                                                      ),
+                                                    ),
+                                                    TextSpan(
+                                                      text: _formatDateTime(
+                                                          DateTime.parse(
+                                                              customRangeController
+                                                                  .text
+                                                                  .split('&')[1]
+                                                                  .split(
+                                                                      '=')[1])),
+                                                      style: TextStyle(
+                                                        color: Theme.of(context)
+                                                            .colorScheme
+                                                            .tertiary
+                                                            .withOpacity(0.8),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                ),
                                               ),
                                             ),
                                           ],
