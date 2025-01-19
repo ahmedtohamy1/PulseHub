@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pulsehub/core/di/service_locator.dart';
@@ -39,6 +38,8 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
   bool isSuperuser = false;
   XFile? selectedImage;
   late User _localUser;
+  int _activeIconIndex = 1;
+
   @override
   void initState() {
     super.initState();
@@ -66,6 +67,344 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
     titleController.dispose();
     maxActiveSessionsController.dispose();
     super.dispose();
+  }
+
+  Widget _buildContent() {
+    switch (_activeIconIndex) {
+      case 0:
+        return const SizedBox.shrink(); // Back button, no content needed
+      case 1:
+        return _buildUserDetailsContent();
+      case 2:
+        if (widget.isDic == true) return const SizedBox.shrink();
+        return BlocProvider(
+          create: (context) =>
+              sl<ManageUsersCubit>()..getUserProjects(_localUser.userId!),
+          child: UserProjectsScreen(user: _localUser),
+        );
+      case 3:
+        if (widget.isDic == true) return const SizedBox.shrink();
+        return UserLogsScreen(user: _localUser);
+      case 4:
+        if (widget.isDic == true) return const SizedBox.shrink();
+        return UserActiveSessionsScreen(user: _localUser);
+      case 5:
+        return BlocProvider(
+          create: (context) =>
+              sl<ManageUsersCubit>()..getDics(_localUser.userId!.toString()),
+          child: UserServicesScreen(user: _localUser),
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return BlocListener<ManageUsersCubit, ManageUsersState>(
+      listener: (context, state) {
+        if (state is ManageUsersUpdateSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('User updated successfully')),
+          );
+        } else if (state is ManageUsersUpdateFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.error),
+              backgroundColor: colorScheme.error,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: Column(
+            children: [
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Tooltip(
+                        message: 'Back',
+                        child: IconButton.filled(
+                          style: IconButton.styleFrom(
+                            backgroundColor:
+                                colorScheme.surfaceContainerHighest,
+                            foregroundColor: colorScheme.onSurfaceVariant,
+                          ),
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: const Icon(Icons.arrow_back_ios_new_outlined),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 50),
+                    _buildHeaderIcon(
+                      1,
+                      Icons.person,
+                      'Overview',
+                      colorScheme,
+                    ),
+                    if (widget.isDic != true) ...[
+                      _buildHeaderIcon(
+                        2,
+                        Icons.folder,
+                        'Projects',
+                        colorScheme,
+                      ),
+                      _buildHeaderIcon(
+                        3,
+                        Icons.history,
+                        'Logs',
+                        colorScheme,
+                      ),
+                      _buildHeaderIcon(
+                        4,
+                        Icons.devices,
+                        'Active Sessions',
+                        colorScheme,
+                      ),
+                    ],
+                    _buildHeaderIcon(
+                      5,
+                      Icons.miscellaneous_services,
+                      'Services',
+                      colorScheme,
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: _buildContent(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderIcon(
+    int index,
+    IconData icon,
+    String tooltip,
+    ColorScheme colorScheme,
+  ) {
+    final isActive = _activeIconIndex == index;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 5.0),
+      child: Tooltip(
+        message: tooltip,
+        child: GestureDetector(
+          onTap: () => setState(() => _activeIconIndex = index),
+          child: Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isActive
+                  ? colorScheme.primary
+                  : colorScheme.surfaceContainerHighest,
+            ),
+            child: Icon(
+              icon,
+              color: isActive
+                  ? colorScheme.onPrimary
+                  : colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUserDetailsContent() {
+    final colorScheme = Theme.of(context).colorScheme;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Profile Picture with Edit/Delete Icons
+          Center(
+            child: Stack(
+              children: [
+                Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color:
+                        Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    image: _localUser.pictureUrl?.isNotEmpty == true
+                        ? DecorationImage(
+                            image: NetworkImage(_localUser.pictureUrl!),
+                            fit: BoxFit.cover,
+                            onError: (error, stackTrace) {},
+                          )
+                        : null,
+                  ),
+                  child: _localUser.pictureUrl?.isNotEmpty != true
+                      ? Icon(
+                          Icons.person,
+                          size: 80,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.5),
+                        )
+                      : null,
+                ),
+                // Edit and Delete Icons
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Transform.translate(
+                    offset: const Offset(30, 10),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: colorScheme.surfaceContainerHighest,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: IconButton(
+                            onPressed: () => _showEditDialog(context),
+                            icon: Icon(
+                              Icons.edit,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: colorScheme.surfaceContainerHighest,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: IconButton(
+                            onPressed: () =>
+                                _showDeleteConfirmationDialog(context),
+                            icon: Icon(
+                              Icons.delete_outline,
+                              color: colorScheme.error,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // User Name
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Text(
+                '${_localUser.firstName?.isNotEmpty == true ? _localUser.firstName : 'N/A'} ${_localUser.lastName?.isNotEmpty == true ? _localUser.lastName : 'N/A'}',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+
+          // User Info
+          _buildInfoCard(
+            context,
+            title: 'Email',
+            value: _localUser.email?.isNotEmpty == true
+                ? _localUser.email!
+                : 'N/A',
+            icon: Icons.email,
+          ),
+          const SizedBox(height: 16),
+          _buildInfoCard(
+            context,
+            title: 'First Name',
+            value: _localUser.firstName?.isNotEmpty == true
+                ? _localUser.firstName!
+                : 'N/A',
+            icon: Icons.person_outline,
+          ),
+          const SizedBox(height: 16),
+          _buildInfoCard(
+            context,
+            title: 'Last Name',
+            value: _localUser.lastName?.isNotEmpty == true
+                ? _localUser.lastName!
+                : 'N/A',
+            icon: Icons.person,
+          ),
+          const SizedBox(height: 16),
+          _buildInfoCard(
+            context,
+            title: 'Title',
+            value: _localUser.title?.isNotEmpty == true
+                ? _localUser.title!
+                : 'N/A',
+            icon: Icons.work,
+          ),
+          const SizedBox(height: 16),
+          _buildStatusCard(
+            context,
+            title: 'Active',
+            value: _localUser.isActive == true,
+            icon: Icons.check_circle,
+            activeColor: Colors.green,
+            inactiveColor: Colors.red.shade600,
+          ),
+          const SizedBox(height: 16),
+          _buildStatusCard(
+            context,
+            title: 'Staff',
+            value: _localUser.isStaff == true,
+            icon: Icons.badge,
+            activeColor: Theme.of(context).colorScheme.secondary,
+            inactiveColor: Theme.of(context).colorScheme.outline,
+          ),
+          const SizedBox(height: 16),
+          _buildStatusCard(
+            context,
+            title: 'Superuser',
+            value: _localUser.isSuperuser == true,
+            icon: Icons.admin_panel_settings,
+            activeColor: Theme.of(context).colorScheme.primary,
+            inactiveColor: Theme.of(context).colorScheme.outline,
+          ),
+          const SizedBox(height: 16),
+          _buildInfoCard(
+            context,
+            title: 'Max Active Sessions',
+            value: _localUser.maxActiveSessions?.toString() ?? 'N/A',
+            icon: Icons.devices,
+            isNumber: true,
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _showEditDialog(BuildContext context) async {
@@ -277,217 +616,61 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+  bool navigateToManageUsers = false;
 
-    return BlocListener<ManageUsersCubit, ManageUsersState>(
-      listener: (context, state) {
-        if (state is ManageUsersUpdateSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('User updated successfully')),
-          );
-        } else if (state is ManageUsersUpdateFailure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.error),
-              backgroundColor: colorScheme.error,
-            ),
-          );
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-              '${_localUser.firstName?.isNotEmpty == true ? _localUser.firstName : 'N/A'} ${_localUser.lastName?.isNotEmpty == true ? _localUser.lastName : 'N/A'}'),
-          actions: [
-            IconButton(
-              onPressed: () => _showEditDialog(context),
-              icon: const Icon(Icons.edit),
-            ),
-            IconButton(
-              onPressed: () => _showDeleteConfirmationDialog(context),
-              icon: const Icon(Icons.delete_outline),
-              color: colorScheme.error,
-            ),
-          ],
-        ),
-        floatingActionButton: SpeedDial(
-          icon: Icons.menu_rounded,
-          activeIcon: Icons.close,
-          backgroundColor: colorScheme.primary,
-          foregroundColor: colorScheme.onPrimary,
-          activeBackgroundColor: colorScheme.error,
-          activeForegroundColor: colorScheme.onError,
-          elevation: 8.0,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(16)),
-          ),
-          children: [
-            if (widget.isDic != true)
-              SpeedDialChild(
-                child: const Icon(Icons.folder),
-                backgroundColor: colorScheme.primaryContainer,
-                foregroundColor: colorScheme.onPrimaryContainer,
-                label: 'Projects',
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => BlocProvider(
-                      create: (context) => sl<ManageUsersCubit>()
-                        ..getUserProjects(_localUser.userId!),
-                      child: UserProjectsScreen(user: _localUser),
-                    ),
-                  ),
-                ),
-              ),
-            if (widget.isDic != true)
-              SpeedDialChild(
-                child: const Icon(Icons.history),
-                backgroundColor: colorScheme.secondaryContainer,
-                foregroundColor: colorScheme.onSecondaryContainer,
-                label: 'Logs',
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => UserLogsScreen(user: _localUser),
-                  ),
-                ),
-              ),
-            if (widget.isDic != true)
-              SpeedDialChild(
-                child: const Icon(Icons.devices),
-                backgroundColor: colorScheme.tertiaryContainer,
-                foregroundColor: colorScheme.onTertiaryContainer,
-                label: 'Active Sessions',
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        UserActiveSessionsScreen(user: _localUser),
-                  ),
-                ),
-              ),
-            SpeedDialChild(
-              child: const Icon(Icons.miscellaneous_services),
-              backgroundColor: colorScheme.surfaceContainerHighest,
-              foregroundColor: colorScheme.onSurfaceVariant,
-              label: 'Services',
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => BlocProvider(
-                    create: (context) => sl<ManageUsersCubit>()
-                      ..getDics(_localUser.userId!.toString()),
-                    child: UserServicesScreen(user: _localUser),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
+  Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
+    bool isLoading = false;
+    final cubit = context.read<ManageUsersCubit>();
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Delete User'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Profile Picture
-              Center(
-                child: Container(
-                  width: 200,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: colorScheme.primary.withOpacity(0.1),
-                    image: _localUser.pictureUrl?.isNotEmpty == true
-                        ? DecorationImage(
-                            image: NetworkImage(_localUser.pictureUrl!),
-                            fit: BoxFit.cover,
-                            onError: (error, stackTrace) {},
-                          )
-                        : null,
-                  ),
-                  child: _localUser.pictureUrl?.isNotEmpty != true
-                      ? Icon(
-                          Icons.person,
-                          size: 80,
-                          color: colorScheme.primary.withOpacity(0.5),
-                        )
-                      : null,
+              Text(
+                  'To confirm deletion, please type "${widget.user.firstName}"'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: confirmController,
+                decoration: const InputDecoration(
+                  hintText: 'Type user first name',
                 ),
+                autofocus: true,
               ),
-              const SizedBox(height: 32),
-
-              // User Info
-              _buildInfoCard(
-                context,
-                title: 'Email',
-                value: _localUser.email?.isNotEmpty == true
-                    ? _localUser.email!
-                    : 'N/A',
-                icon: Icons.email,
-              ),
-              const SizedBox(height: 16),
-              _buildInfoCard(
-                context,
-                title: 'First Name',
-                value: _localUser.firstName?.isNotEmpty == true
-                    ? _localUser.firstName!
-                    : 'N/A',
-                icon: Icons.person_outline,
-              ),
-              const SizedBox(height: 16),
-              _buildInfoCard(
-                context,
-                title: 'Last Name',
-                value: _localUser.lastName?.isNotEmpty == true
-                    ? _localUser.lastName!
-                    : 'N/A',
-                icon: Icons.person,
-              ),
-              const SizedBox(height: 16),
-              _buildInfoCard(
-                context,
-                title: 'Title',
-                value: _localUser.title?.isNotEmpty == true
-                    ? _localUser.title!
-                    : 'N/A',
-                icon: Icons.work,
-              ),
-              const SizedBox(height: 16),
-              _buildStatusCard(
-                context,
-                title: 'Active',
-                value: _localUser.isActive == true,
-                icon: Icons.check_circle,
-                activeColor: Colors.green,
-                inactiveColor: Colors.red.shade600,
-              ),
-              const SizedBox(height: 16),
-              _buildStatusCard(
-                context,
-                title: 'Staff',
-                value: _localUser.isStaff == true,
-                icon: Icons.badge,
-                activeColor: colorScheme.secondary,
-                inactiveColor: colorScheme.outline,
-              ),
-              const SizedBox(height: 16),
-              _buildStatusCard(
-                context,
-                title: 'Superuser',
-                value: _localUser.isSuperuser == true,
-                icon: Icons.admin_panel_settings,
-                activeColor: colorScheme.primary,
-                inactiveColor: colorScheme.outline,
-              ),
-              const SizedBox(height: 16),
-              _buildInfoCard(
-                context,
-                title: 'Max Active Sessions',
-                value: _localUser.maxActiveSessions?.toString() ?? 'N/A',
-                icon: Icons.devices,
-                isNumber: true,
-              ),
+              if (isLoading) ...[
+                const SizedBox(height: 16),
+                const Center(child: CircularProgressIndicator()),
+              ],
             ],
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      if (confirmController.text == widget.user.firstName) {
+                        setState(() => isLoading = true);
+
+                        await cubit.deleteUser(widget.user.userId.toString());
+                        await cubit.getAllUsers();
+
+                        if (context.mounted) {
+                          navigateToManageUsers = true;
+                          context.pop();
+                        }
+                      }
+                    },
+              child: const Text('Delete'),
+            ),
+          ],
         ),
       ),
     );
@@ -550,66 +733,6 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  bool navigateToManageUsers = false;
-
-  Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
-    bool isLoading = false;
-    final cubit = context.read<ManageUsersCubit>();
-
-    await showDialog(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Delete User'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                  'To confirm deletion, please type "${widget.user.firstName}"'),
-              const SizedBox(height: 16),
-              TextField(
-                controller: confirmController,
-                decoration: const InputDecoration(
-                  hintText: 'Type user first name',
-                ),
-                autofocus: true,
-              ),
-              if (isLoading) ...[
-                const SizedBox(height: 16),
-                const Center(child: CircularProgressIndicator()),
-              ],
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: isLoading
-                  ? null
-                  : () async {
-                      if (confirmController.text == widget.user.firstName) {
-                        setState(() => isLoading = true);
-
-                        await cubit.deleteUser(widget.user.userId.toString());
-                        await cubit.getAllUsers();
-
-                        if (context.mounted) {
-                          navigateToManageUsers = true;
-                          context.pop();
-                        }
-                      }
-                    },
-              child: const Text('Delete'),
             ),
           ],
         ),
