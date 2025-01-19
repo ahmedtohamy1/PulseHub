@@ -13,6 +13,8 @@ class ManageScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return DefaultTabController(
       length: 4,
       child: Padding(
@@ -46,75 +48,68 @@ class ManageScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            TabBar(
-              isScrollable: false,
-              labelPadding: const EdgeInsets.symmetric(vertical: 8),
-              tabs: const [
-                Tab(
-                  height: 65,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.folder_outlined, size: 20),
-                      SizedBox(height: 4),
-                      Text(
-                        'Projects',
-                        textAlign: TextAlign.center,
-                        softWrap: true,
-                        style: TextStyle(fontSize: 12),
-                      ),
-                    ],
-                  ),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: TabBar(
+                isScrollable: false,
+                labelPadding:
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicator: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: colorScheme.primary,
                 ),
-                Tab(
-                  height: 65,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.people_alt_outlined, size: 20),
-                      SizedBox(height: 4),
-                      Text(
-                        'Owners',
-                        textAlign: TextAlign.center,
-                        softWrap: true,
-                        style: TextStyle(fontSize: 12),
+                dividerColor: Colors.transparent,
+                overlayColor: WidgetStateProperty.all(Colors.transparent),
+                labelColor: colorScheme.onPrimary,
+                unselectedLabelColor: colorScheme.onSurfaceVariant,
+                tabs: [
+                  Tooltip(
+                    message: 'Projects',
+                    child: Tab(
+                      height: 32,
+                      icon: Icon(
+                        Icons.folder_outlined,
+                        size: 24,
                       ),
-                    ],
+                    ),
                   ),
-                ),
-                Tab(
-                  height: 65,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.manage_accounts_outlined, size: 20),
-                      SizedBox(height: 4),
-                      Text(
-                        'Managed\nUsers',
-                        textAlign: TextAlign.center,
-                        softWrap: true,
-                        style: TextStyle(fontSize: 12),
+                  Tooltip(
+                    message: 'Owners',
+                    child: Tab(
+                      height: 32,
+                      icon: Icon(
+                        Icons.people_alt_outlined,
+                        size: 24,
                       ),
-                    ],
+                    ),
                   ),
-                ),
-                Tab(
-                  height: 65,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.sensors_outlined, size: 20),
-                      SizedBox(height: 4),
-                      Text(
-                        'Sensor\nTypes',
-                        textAlign: TextAlign.center,
-                        softWrap: true,
-                        style: TextStyle(fontSize: 12),
+                  Tooltip(
+                    message: 'Managed Users',
+                    child: Tab(
+                      height: 32,
+                      icon: Icon(
+                        Icons.manage_accounts_outlined,
+                        size: 24,
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                  Tooltip(
+                    message: 'Sensor Types',
+                    child: Tab(
+                      height: 32,
+                      icon: Icon(
+                        Icons.sensors_outlined,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             Expanded(
               child: TabBarView(
