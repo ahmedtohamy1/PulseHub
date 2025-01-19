@@ -29,7 +29,7 @@ class User {
   final int userId;
   @JsonKey(name: 'first_name')
   final String firstName;
-  final String picture;
+  final String? picture;
   @JsonKey(name: 'is_staff')
   final bool isStaff;
   @JsonKey(name: 'is_superuser')
@@ -41,7 +41,7 @@ class User {
   User({
     required this.userId,
     required this.firstName,
-    required this.picture,
+    this.picture,
     required this.isStaff,
     required this.isSuperuser,
     required this.pictureUrl,

@@ -9,7 +9,7 @@ class OwnerModel {
   @JsonKey(name: "name")
   String name;
   @JsonKey(name: "logo")
-  String logo;
+  String? logo;
   @JsonKey(name: "addresse")
   String? addresse;
   @JsonKey(name: "country")
@@ -24,11 +24,11 @@ class OwnerModel {
   OwnerModel({
     required this.ownerId,
     required this.name,
-    required this.logo,
-    required this.addresse,
-    required this.country,
-    required this.phone,
-    required this.website,
+    this.logo,
+    this.addresse,
+    this.country,
+    this.phone,
+    this.website,
     required this.logoUrl,
   });
 

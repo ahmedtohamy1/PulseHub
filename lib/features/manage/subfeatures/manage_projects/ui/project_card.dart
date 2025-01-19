@@ -287,7 +287,7 @@ class ProjectCard extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      project.acronym,
+                                      project.acronym ?? '',
                                       style:
                                           theme.textTheme.titleMedium?.copyWith(
                                         color: Colors.white.withOpacity(0.9),

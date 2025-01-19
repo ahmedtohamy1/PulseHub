@@ -26,8 +26,8 @@ Project _$ProjectFromJson(Map<String, dynamic> json) => Project(
       projectId: (json['project_id'] as num).toInt(),
       warnings: (json['warnings'] as num).toInt(),
       title: json['title'] as String,
-      acronym: json['acronym'] as String,
-      picture: json['picture'] as String,
+      acronym: json['acronym'] as String?,
+      picture: json['picture'] as String?,
       startDate: json['start_date'] == null
           ? null
           : DateTime.parse(json['start_date'] as String),
@@ -89,7 +89,7 @@ Map<String, dynamic> _$ProjectToJson(Project instance) => <String, dynamic>{
 Owner _$OwnerFromJson(Map<String, dynamic> json) => Owner(
       ownerId: (json['owner_id'] as num).toInt(),
       name: json['name'] as String,
-      logo: json['logo'] as String,
+      logo: json['logo'] as String?,
       logoUrl: json['logo_url'] as String,
     );
 

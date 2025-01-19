@@ -33,7 +33,7 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
 
     // Sort owners based on the 'order' property
     owners = groupedProjects.keys.toList()
-      ..sort((a, b) => a.order.compareTo(b.order));
+      ..sort((a, b) => a.order!.compareTo(b.order!));
   }
 
   void _onReorder(int oldIndex, int newIndex) {

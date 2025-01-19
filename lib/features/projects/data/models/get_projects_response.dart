@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:json_annotation/json_annotation.dart';
 
 part 'get_projects_response.g.dart';
@@ -46,7 +47,7 @@ class Project {
   @JsonKey(name: 'project_id')
   final int projectId;
   final String title;
-  final String picture;
+  final String? picture;
   @JsonKey(name: 'start_date')
   final String? startDate;
   @JsonKey(name: 'picture_url')
@@ -59,7 +60,7 @@ class Project {
   Project({
     required this.projectId,
     required this.title,
-    required this.picture,
+    this.picture,
     this.startDate,
     required this.pictureUrl,
     required this.warnings,
@@ -72,7 +73,7 @@ class Project {
     return Project(
       projectId: json['project_id'] as int,
       title: json['title'] as String,
-      picture: json['picture'] as String,
+      picture: json['picture'] as String?,
       startDate: json['start_date'] as String?,
       pictureUrl: json['picture_url'] as String,
       warnings: json['warnings'] as int,
@@ -82,7 +83,8 @@ class Project {
   }
 
   /// Factory constructor for deserializing a `Project` without an `Owner`
-  factory Project.fromJson(Map<String, dynamic> json) => _$ProjectFromJson(json);
+  factory Project.fromJson(Map<String, dynamic> json) =>
+      _$ProjectFromJson(json);
 
   Map<String, dynamic> toJson() => _$ProjectToJson(this);
 }
@@ -92,17 +94,17 @@ class Owner {
   @JsonKey(name: 'owner_id')
   final int ownerId;
   final String name;
-  final String logo;
+  final String? logo;
   @JsonKey(name: 'logo_url')
   final String logoUrl;
-  final int order;
+  final int? order;
 
   Owner({
     required this.ownerId,
     required this.name,
-    required this.logo,
+    this.logo,
     required this.logoUrl,
-    required this.order,
+    this.order,
   });
 
   factory Owner.fromJson(Map<String, dynamic> json) => _$OwnerFromJson(json);

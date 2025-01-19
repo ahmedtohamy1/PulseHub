@@ -28,7 +28,7 @@ Map<String, dynamic> _$GetProjectsResponseToJson(
 Project _$ProjectFromJson(Map<String, dynamic> json) => Project(
       projectId: (json['project_id'] as num).toInt(),
       title: json['title'] as String,
-      picture: json['picture'] as String,
+      picture: json['picture'] as String?,
       startDate: json['start_date'] as String?,
       pictureUrl: json['picture_url'] as String,
       warnings: (json['warnings'] as num).toInt(),
@@ -50,9 +50,9 @@ Map<String, dynamic> _$ProjectToJson(Project instance) => <String, dynamic>{
 Owner _$OwnerFromJson(Map<String, dynamic> json) => Owner(
       ownerId: (json['owner_id'] as num).toInt(),
       name: json['name'] as String,
-      logo: json['logo'] as String,
+      logo: json['logo'] as String?,
       logoUrl: json['logo_url'] as String,
-      order: (json['order'] as num).toInt(),
+      order: (json['order'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$OwnerToJson(Owner instance) => <String, dynamic>{

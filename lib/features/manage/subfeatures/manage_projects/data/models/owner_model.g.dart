@@ -9,7 +9,7 @@ part of 'owner_model.dart';
 OwnerModel _$OwnerModelFromJson(Map<String, dynamic> json) => OwnerModel(
       ownerId: (json['owner_id'] as num).toInt(),
       name: json['name'] as String,
-      logo: json['logo'] as String,
+      logo: json['logo'] as String?,
       addresse: json['addresse'] as String?,
       country: json['country'] as String?,
       phone: json['phone'] as String?,

@@ -25,7 +25,7 @@ Map<String, dynamic> _$LoginResponseModelToJson(LoginResponseModel instance) =>
 User _$UserFromJson(Map<String, dynamic> json) => User(
       userId: (json['user_id'] as num).toInt(),
       firstName: json['first_name'] as String,
-      picture: json['picture'] as String,
+      picture: json['picture'] as String?,
       isStaff: json['is_staff'] as bool,
       isSuperuser: json['is_superuser'] as bool,
       pictureUrl: json['picture_url'] as String,

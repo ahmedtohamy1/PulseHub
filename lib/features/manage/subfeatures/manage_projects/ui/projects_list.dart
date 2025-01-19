@@ -46,7 +46,7 @@ class _ProjectsListState extends State<ProjectsList> {
     return widget.projects
         .where((project) =>
             project.title.toLowerCase().contains(query) ||
-            project.acronym.toLowerCase().contains(query))
+            project.acronym!.toLowerCase().contains(query))
         .toList();
   }
 
