@@ -418,21 +418,14 @@ class ProjectCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          final isWide = constraints.maxWidth > 600;
-                          final itemWidth = isWide
-                              ? constraints.maxWidth / 2 - 12
-                              : constraints.maxWidth;
-
-                          return Wrap(
-                            spacing: 24,
-                            runSpacing: 16,
-                            children: [
-                              // Start Date - Always half width
-                              SizedBox(
-                                width: itemWidth,
-                                child: _buildInfoRow(
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Left Column
+                          Expanded(
+                            child: Column(
+                              children: [
+                                _buildInfoRow(
                                   'Start Date',
                                   project.startDate != null
                                       ? DateFormat('MMM dd, yyyy')
@@ -441,25 +434,8 @@ class ProjectCard extends StatelessWidget {
                                   Icons.calendar_today,
                                   context: context,
                                 ),
-                              ),
-                              // Duration - Half width
-                              SizedBox(
-                                width: itemWidth,
-                                child: _buildInfoRow(
-                                  'Duration',
-                                  project.duration?.isNotEmpty == true
-                                      ? project.duration!
-                                      : 'N/A',
-                                  Icons.timer,
-                                  context: context,
-                                ),
-                              ),
-                              // Budget - Full width if long, else half
-                              SizedBox(
-                                width: _shouldBeFullWidth(project.budget)
-                                    ? constraints.maxWidth
-                                    : itemWidth,
-                                child: _buildInfoRow(
+                                const SizedBox(height: 16),
+                                _buildInfoRow(
                                   'Budget',
                                   project.budget?.isNotEmpty == true
                                       ? project.budget!
@@ -467,13 +443,8 @@ class ProjectCard extends StatelessWidget {
                                   Icons.attach_money,
                                   context: context,
                                 ),
-                              ),
-                              // Consultant - Full width if long, else half
-                              SizedBox(
-                                width: _shouldBeFullWidth(project.consultant)
-                                    ? constraints.maxWidth
-                                    : itemWidth,
-                                child: _buildInfoRow(
+                                const SizedBox(height: 16),
+                                _buildInfoRow(
                                   'Consultant',
                                   project.consultant?.isNotEmpty == true
                                       ? project.consultant!
@@ -481,13 +452,24 @@ class ProjectCard extends StatelessWidget {
                                   Icons.person,
                                   context: context,
                                 ),
-                              ),
-                              // Contractor - Full width if long, else half
-                              SizedBox(
-                                width: _shouldBeFullWidth(project.contractor)
-                                    ? constraints.maxWidth
-                                    : itemWidth,
-                                child: _buildInfoRow(
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 24),
+                          // Right Column
+                          Expanded(
+                            child: Column(
+                              children: [
+                                _buildInfoRow(
+                                  'Duration',
+                                  project.duration?.isNotEmpty == true
+                                      ? project.duration!
+                                      : 'N/A',
+                                  Icons.timer,
+                                  context: context,
+                                ),
+                                const SizedBox(height: 16),
+                                _buildInfoRow(
                                   'Contractor',
                                   project.contractor?.isNotEmpty == true
                                       ? project.contractor!
@@ -495,10 +477,10 @@ class ProjectCard extends StatelessWidget {
                                   Icons.business_center,
                                   context: context,
                                 ),
-                              ),
-                            ],
-                          );
-                        },
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                       if (project.description?.isNotEmpty == true ||
                           project.description == null) ...[
