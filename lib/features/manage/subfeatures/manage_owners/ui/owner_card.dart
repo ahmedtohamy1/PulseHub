@@ -322,32 +322,51 @@ class OwnerCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildInfoRow(
-                      'Address',
-                      owner.addresse ?? 'N/A',
-                      Icons.location_on_outlined,
-                      context: context,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildInfoRow(
-                      'Country',
-                      owner.country ?? 'N/A',
-                      Icons.public,
-                      context: context,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildInfoRow(
-                      'Phone',
-                      owner.phone ?? 'N/A',
-                      Icons.phone_outlined,
-                      context: context,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildInfoRow(
-                      'Website',
-                      owner.website ?? 'N/A',
-                      Icons.language_outlined,
-                      context: context,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Left Column
+                        Expanded(
+                          child: Column(
+                            children: [
+                              _buildInfoRow(
+                                'Address',
+                                owner.addresse ?? 'N/A',
+                                Icons.location_on_outlined,
+                                context: context,
+                              ),
+                              const SizedBox(height: 16),
+                              _buildInfoRow(
+                                'Phone',
+                                owner.phone ?? 'N/A',
+                                Icons.phone_outlined,
+                                context: context,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 24),
+                        // Right Column
+                        Expanded(
+                          child: Column(
+                            children: [
+                              _buildInfoRow(
+                                'Country',
+                                owner.country ?? 'N/A',
+                                Icons.public,
+                                context: context,
+                              ),
+                              const SizedBox(height: 16),
+                              _buildInfoRow(
+                                'Website',
+                                owner.website ?? 'N/A',
+                                Icons.language_outlined,
+                                context: context,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
