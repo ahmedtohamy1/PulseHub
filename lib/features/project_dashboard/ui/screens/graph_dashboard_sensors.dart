@@ -607,12 +607,36 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                     Row(
                       children: [
                         SubmitButton(onPressed: _submitForm),
-                        const SizedBox(width: 8),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    TimeDbResponseBuilder(
+                      selectedFields: selectedFields,
+                      onAnalyzeSensor: (params) {
+                        context.read<ProjectDashboardCubit>().getTimeDb(params);
+                      },
+                      windowSize: windowSize.toString(),
+                      deviationThreshold: deviationController.text,
+                      timeRange: timeRange,
+                      isCustomRange: isCustomRange,
+                      customRangeController: customRangeController,
+                      aggregateFunction: aggregateFunction,
+                      windowPeriod: windowPeriod,
+                      selectedMeasurement: selectedMeasurement,
+                      selectedTopic: selectedTopic,
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Analysis Buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
                         SubmitButton(
                           onPressed: _submitAnalyze,
                           isAnalyze: true,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 16),
                         SubmitButton(
                           onPressed: _submitExpert,
                           isExpert: true,
@@ -621,6 +645,7 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                     ),
                     const SizedBox(height: 16),
 
+                    // Analysis Results
                     BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
                       builder: (context, state) {
                         if (state is ProjectDashboardAnalyzeSensorDataLoading ||
@@ -638,247 +663,235 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                           );
                         }
 
-                        if (state is ProjectDashboardAnalyzeSensorDataSuccess) {
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .primaryContainer
-                                  .withOpacity(0.05),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .primaryContainer
-                                    .withOpacity(0.2),
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
+                        return Column(
+                          children: [
+                            if (state
+                                is ProjectDashboardAnalyzeSensorDataSuccess)
+                              Container(
+                                margin: const EdgeInsets.only(bottom: 16),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primaryContainer
+                                      .withOpacity(0.05),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primaryContainer
+                                        .withOpacity(0.2),
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Icon(
-                                      Icons.analytics_outlined,
-                                      size: 20,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.analytics_outlined,
+                                          size: 20,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Analysis Results',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'Analysis Results',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .primary,
+                                    const SizedBox(height: 12),
+                                    MarkdownBody(
+                                      data: state.aiAnalyzeDataModel.message,
+                                      styleSheet: MarkdownStyleSheet(
+                                        p: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          fontSize: 14,
+                                        ),
+                                        h1: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                          fontSize: 20,
+                                        ),
+                                        h2: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                          fontSize: 18,
+                                        ),
+                                        h3: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                          fontSize: 16,
+                                        ),
+                                        listBullet: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          fontSize: 14,
+                                        ),
+                                        strong: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        em: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
+                                          fontStyle: FontStyle.italic,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 12),
-                                MarkdownBody(
-                                  data: state.aiAnalyzeDataModel.message,
-                                  styleSheet: MarkdownStyleSheet(
-                                    p: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface,
-                                      fontSize: 14,
-                                    ),
-                                    h1: TextStyle(
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                      fontSize: 20,
-                                    ),
-                                    h2: TextStyle(
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                      fontSize: 18,
-                                    ),
-                                    h3: TextStyle(
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                      fontSize: 16,
-                                    ),
-                                    listBullet: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface,
-                                      fontSize: 14,
-                                    ),
-                                    strong: TextStyle(
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    em: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .secondary,
-                                      fontStyle: FontStyle.italic,
-                                    ),
+                              ),
+                            if (state
+                                is ProjectDashboardAnalyzeSensorDataQ2Success)
+                              Container(
+                                margin: const EdgeInsets.only(bottom: 16),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .secondaryContainer
+                                      .withOpacity(0.05),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .secondaryContainer
+                                        .withOpacity(0.2),
                                   ),
                                 ),
-                              ],
-                            ),
-                          );
-                        }
-
-                        if (state
-                            is ProjectDashboardAnalyzeSensorDataQ2Success) {
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .secondaryContainer
-                                  .withOpacity(0.05),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .secondaryContainer
-                                    .withOpacity(0.2),
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Icon(
-                                      Icons.psychology_outlined,
-                                      size: 20,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .secondary,
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.psychology_outlined,
+                                          size: 20,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Expert Analysis Results',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .secondary,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'Expert Analysis Results',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .secondary,
+                                    const SizedBox(height: 12),
+                                    MarkdownBody(
+                                      data: state
+                                          .aiQ2ResponseModel.response.message,
+                                      styleSheet: MarkdownStyleSheet(
+                                        p: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          fontSize: 14,
+                                        ),
+                                        h1: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
+                                          fontSize: 20,
+                                        ),
+                                        h2: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
+                                          fontSize: 18,
+                                        ),
+                                        h3: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
+                                          fontSize: 16,
+                                        ),
+                                        listBullet: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                          fontSize: 14,
+                                        ),
+                                        strong: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        em: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .tertiary,
+                                          fontStyle: FontStyle.italic,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 12),
-                                MarkdownBody(
-                                  data:
-                                      state.aiQ2ResponseModel.response.message,
-                                  styleSheet: MarkdownStyleSheet(
-                                    p: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface,
-                                      fontSize: 14,
-                                    ),
-                                    h1: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .secondary,
-                                      fontSize: 20,
-                                    ),
-                                    h2: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .secondary,
-                                      fontSize: 18,
-                                    ),
-                                    h3: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .secondary,
-                                      fontSize: 16,
-                                    ),
-                                    listBullet: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface,
-                                      fontSize: 14,
-                                    ),
-                                    strong: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .secondary,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    em: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .tertiary,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
+                              ),
+                            if (state
+                                    is ProjectDashboardAnalyzeSensorDataFailure ||
+                                state
+                                    is ProjectDashboardAnalyzeSensorDataQ2Failure)
+                              Container(
+                                margin: const EdgeInsets.only(bottom: 16),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.red[50],
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.red[300]!),
                                 ),
-                              ],
-                            ),
-                          );
-                        }
-
-                        if (state is ProjectDashboardAnalyzeSensorDataFailure ||
-                            state
-                                is ProjectDashboardAnalyzeSensorDataQ2Failure) {
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.red[50],
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.red[300]!),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Analysis Error',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: Colors.red,
-                                  ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Analysis Error',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      state is ProjectDashboardAnalyzeSensorDataFailure
+                                          ? state.message
+                                          : (state
+                                                  as ProjectDashboardAnalyzeSensorDataQ2Failure)
+                                              .message,
+                                      style: const TextStyle(color: Colors.red),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  state is ProjectDashboardAnalyzeSensorDataFailure
-                                      ? state.message
-                                      : (state
-                                              as ProjectDashboardAnalyzeSensorDataQ2Failure)
-                                          .message,
-                                  style: const TextStyle(color: Colors.red),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-
-                        return const SizedBox.shrink();
+                              ),
+                          ],
+                        );
                       },
-                    ),
-
-                    TimeDbResponseBuilder(
-                      selectedFields: selectedFields,
-                      onAnalyzeSensor: (params) {
-                        context.read<ProjectDashboardCubit>().getTimeDb(params);
-                      },
-                      windowSize: windowSize.toString(),
-                      deviationThreshold: deviationController.text,
-                      timeRange: timeRange,
-                      isCustomRange: isCustomRange,
-                      customRangeController: customRangeController,
-                      aggregateFunction: aggregateFunction,
-                      windowPeriod: windowPeriod,
-                      selectedMeasurement: selectedMeasurement,
-                      selectedTopic: selectedTopic,
                     ),
                   ],
                 );
