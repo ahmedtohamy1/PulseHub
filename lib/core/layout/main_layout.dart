@@ -32,9 +32,31 @@ class MainLayout extends StatelessWidget {
           indicatorColor: Theme.of(context).primaryColor,
           destinations: destinations
               .map((destination) => NavigationDestination(
-                    icon: Icon(destination.icon),
+                    icon: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Icon(destination.icon),
+                        if (destination.badgeBuilder != null)
+                          Positioned(
+                            top: -8,
+                            right: -8,
+                            child: destination.badgeBuilder!(context),
+                          ),
+                      ],
+                    ),
                     label: destination.label,
-                    selectedIcon: Icon(destination.icon, color: Colors.white),
+                    selectedIcon: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Icon(destination.icon, color: Colors.white),
+                        if (destination.badgeBuilder != null)
+                          Positioned(
+                            top: -8,
+                            right: -8,
+                            child: destination.badgeBuilder!(context),
+                          ),
+                      ],
+                    ),
                   ))
               .toList(),
         ),
