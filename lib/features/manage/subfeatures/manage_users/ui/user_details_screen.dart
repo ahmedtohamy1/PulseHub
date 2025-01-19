@@ -123,60 +123,57 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
         body: SafeArea(
           child: Column(
             children: [
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Tooltip(
-                        message: 'Back',
-                        child: IconButton.filled(
-                          style: IconButton.styleFrom(
-                            backgroundColor:
-                                colorScheme.surfaceContainerHighest,
-                            foregroundColor: colorScheme.onSurfaceVariant,
-                          ),
-                          onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(Icons.arrow_back_ios_new_outlined),
+              Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Tooltip(
+                      message: 'Back',
+                      child: IconButton.filled(
+                        style: IconButton.styleFrom(
+                          backgroundColor: colorScheme.surfaceContainerHighest,
+                          foregroundColor: colorScheme.onSurfaceVariant,
                         ),
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.arrow_back_ios_new_outlined),
                       ),
                     ),
-                    const SizedBox(width: 50),
+                  ),
+                  const Spacer(),
+                  _buildHeaderIcon(
+                    1,
+                    Icons.person,
+                    'Overview',
+                    colorScheme,
+                  ),
+                  if (widget.isDic != true) ...[
                     _buildHeaderIcon(
-                      1,
-                      Icons.person,
-                      'Overview',
+                      2,
+                      Icons.folder,
+                      'Projects',
                       colorScheme,
                     ),
-                    if (widget.isDic != true) ...[
-                      _buildHeaderIcon(
-                        2,
-                        Icons.folder,
-                        'Projects',
-                        colorScheme,
-                      ),
-                      _buildHeaderIcon(
-                        3,
-                        Icons.history,
-                        'Logs',
-                        colorScheme,
-                      ),
-                      _buildHeaderIcon(
-                        4,
-                        Icons.devices,
-                        'Active Sessions',
-                        colorScheme,
-                      ),
-                    ],
                     _buildHeaderIcon(
-                      5,
-                      Icons.miscellaneous_services,
-                      'Services',
+                      3,
+                      Icons.history,
+                      'Logs',
+                      colorScheme,
+                    ),
+                    _buildHeaderIcon(
+                      4,
+                      Icons.devices,
+                      'Active Sessions',
                       colorScheme,
                     ),
                   ],
-                ),
+                  const SizedBox(width: 8),
+                  /*      _buildHeaderIcon(
+                    5,
+                    Icons.miscellaneous_services,
+                    'Services',
+                    colorScheme,
+                  ), */
+                ],
               ),
               Expanded(
                 child: _buildContent(),

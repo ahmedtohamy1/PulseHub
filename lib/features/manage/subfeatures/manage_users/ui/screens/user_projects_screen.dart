@@ -19,61 +19,56 @@ class UserProjectsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('${user.firstName}\'s Projects'),
-      ),
-      body: BlocBuilder<ManageUsersCubit, ManageUsersState>(
-        builder: (context, state) {
-          if (state is ManageUsersGetUserProjectsLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return BlocBuilder<ManageUsersCubit, ManageUsersState>(
+      builder: (context, state) {
+        if (state is ManageUsersGetUserProjectsLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-          if (state is ManageUsersGetUserProjectsFailure) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    state.error,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                  ),
-                  const SizedBox(height: 16),
-                  FilledButton.icon(
-                    onPressed: () {
-                      sl<ManageUsersCubit>().getUserProjects(user.userId!);
-                    },
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Retry'),
-                  ),
-                ],
-              ),
+        if (state is ManageUsersGetUserProjectsFailure) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  state.error,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                ),
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: () {
+                    sl<ManageUsersCubit>().getUserProjects(user.userId!);
+                  },
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry'),
+                ),
+              ],
+            ),
+          );
+        }
+
+        if (state is ManageUsersGetUserProjectsSuccess) {
+          if (state.response.projectsList.isEmpty) {
+            return const Center(
+              child: Text('No projects found'),
             );
           }
 
-          if (state is ManageUsersGetUserProjectsSuccess) {
-            if (state.response.projectsList.isEmpty) {
-              return const Center(
-                child: Text('No projects found'),
-              );
-            }
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: state.response.projectsList.length,
+            itemBuilder: (context, index) {
+              final project = state.response.projectsList[index];
+              return UserProjectCard(project: project);
+            },
+          );
+        }
 
-            return ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: state.response.projectsList.length,
-              itemBuilder: (context, index) {
-                final project = state.response.projectsList[index];
-                return UserProjectCard(project: project);
-              },
-            );
-          }
-
-          return const SizedBox.shrink();
-        },
-      ),
+        return const SizedBox.shrink();
+      },
     );
   }
 }
