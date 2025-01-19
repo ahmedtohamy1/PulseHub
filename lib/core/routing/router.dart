@@ -50,8 +50,11 @@ final router = GoRouter(
       ),
     ),
     StatefulShellRoute.indexedStack(
-      builder: (context, state, navigationShell) => MainLayout(
-        navigationShell: navigationShell,
+      builder: (context, state, navigationShell) => BlocProvider(
+        create: (context) => sl<SettingsCubit>()..getNotifications(),
+        child: MainLayout(
+          navigationShell: navigationShell,
+        ),
       ),
       branches: [
         StatefulShellBranch(
