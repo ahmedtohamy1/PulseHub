@@ -129,33 +129,46 @@ class _UserCardState extends State<UserCard> {
                   // User Picture Banner
                   SizedBox(
                     width: double.infinity,
-                    height: 400,
-                    child: widget.user.pictureUrl?.isNotEmpty == true
-                        ? Image.network(
-                            widget.user.pictureUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
-                              color: colorScheme.primary.withOpacity(0.1),
-                              child: Center(
+                    height: 200,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: widget.user.isSuperuser == true
+                            ? colorScheme.primary.withOpacity(0.05)
+                            : widget.user.isStaff == true
+                                ? colorScheme.tertiary.withOpacity(0.05)
+                                : colorScheme.primary.withOpacity(0.1),
+                      ),
+                      child: widget.user.pictureUrl?.isNotEmpty == true
+                          ? Image.network(
+                              widget.user.pictureUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Center(
                                 child: Icon(
                                   Icons.person,
                                   size: 64,
-                                  color: colorScheme.primary.withOpacity(0.5),
+                                  color: widget.user.isSuperuser == true
+                                      ? colorScheme.primary.withOpacity(0.5)
+                                      : widget.user.isStaff == true
+                                          ? colorScheme.tertiary
+                                              .withOpacity(0.5)
+                                          : colorScheme.primary
+                                              .withOpacity(0.5),
                                 ),
                               ),
-                            ),
-                          )
-                        : Container(
-                            color: colorScheme.primary.withOpacity(0.1),
-                            child: Center(
+                            )
+                          : Center(
                               child: Icon(
                                 Icons.person,
                                 size: 64,
-                                color: colorScheme.primary.withOpacity(0.5),
+                                color: widget.user.isSuperuser == true
+                                    ? colorScheme.primary.withOpacity(0.5)
+                                    : widget.user.isStaff == true
+                                        ? colorScheme.tertiary.withOpacity(0.5)
+                                        : colorScheme.primary.withOpacity(0.5),
                               ),
                             ),
-                          ),
+                    ),
                   ),
                   // Gradient Overlay
                   Positioned.fill(
@@ -186,7 +199,7 @@ class _UserCardState extends State<UserCard> {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: colorScheme.primary,
+                              color: colorScheme.primary.withOpacity(0.9),
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
@@ -225,7 +238,7 @@ class _UserCardState extends State<UserCard> {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: colorScheme.secondary,
+                              color: colorScheme.tertiary.withOpacity(0.9),
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
@@ -241,14 +254,14 @@ class _UserCardState extends State<UserCard> {
                               children: [
                                 Icon(
                                   Icons.badge,
-                                  color: colorScheme.onSecondary,
+                                  color: colorScheme.onTertiary,
                                   size: 16,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Staff',
                                   style: TextStyle(
-                                    color: colorScheme.onSecondary,
+                                    color: colorScheme.onTertiary,
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -302,6 +315,40 @@ class _UserCardState extends State<UserCard> {
                       ],
                     ),
                   ),
+                  // Delete Button
+                  Positioned(
+                    top: 16,
+                    left: 16,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: colorScheme.error,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            spreadRadius: 1,
+                            blurRadius: 5,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => _showDeleteConfirmationDialog(context),
+                          borderRadius: BorderRadius.circular(12),
+                          child: const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Icon(
+                              Icons.delete_outline,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                   // User Name and Email
                   Positioned(
                     left: 16,
@@ -345,56 +392,60 @@ class _UserCardState extends State<UserCard> {
                     ),
                   ),
                 ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Title
-                          _buildInfoRow(
-                            'Title',
-                            widget.user.title?.isNotEmpty == true
-                                ? widget.user.title!
-                                : 'N/A',
-                            Icons.work_outline,
-                            context: context,
-                          ),
-                          if (widget.user.title?.isNotEmpty == true)
-                            const SizedBox(height: 16),
-
-                          // Date Joined
-                          _buildInfoRow(
-                            'Date Joined',
-                            widget.user.dateJoined != null
-                                ? DateFormat('MMM dd, yyyy')
-                                    .format(widget.user.dateJoined!)
-                                : 'N/A',
-                            Icons.calendar_today,
-                            context: context,
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Last Updated
-                          _buildInfoRow(
-                            'Last Updated',
-                            widget.user.dateUpdated != null
-                                ? DateFormat('MMM dd, yyyy')
-                                    .format(widget.user.dateUpdated!)
-                                : 'N/A',
-                            Icons.update,
-                            context: context,
-                          ),
-                        ],
+                child: Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Left Column
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Title
+                            _buildInfoRow(
+                              'Title',
+                              widget.user.title?.isNotEmpty == true
+                                  ? widget.user.title!
+                                  : 'N/A',
+                              Icons.work_outline,
+                              context: context,
+                            ),
+                            if (widget.user.title?.isNotEmpty == true)
+                              const SizedBox(height: 16),
+                            // Date Joined
+                            _buildInfoRow(
+                              'Date Joined',
+                              widget.user.dateJoined != null
+                                  ? DateFormat('MMM dd, yyyy')
+                                      .format(widget.user.dateJoined!)
+                                  : 'N/A',
+                              Icons.calendar_today,
+                              context: context,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    IconButton.filledTonal(
-                      onPressed: () => _showDeleteConfirmationDialog(context),
-                      icon: const Icon(Icons.delete_outline),
-                      color: colorScheme.error,
-                    ),
-                  ],
+                      const SizedBox(width: 24),
+                      // Right Column
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Last Updated
+                            _buildInfoRow(
+                              'Last Updated',
+                              widget.user.dateUpdated != null
+                                  ? DateFormat('MMM dd, yyyy')
+                                      .format(widget.user.dateUpdated!)
+                                  : 'N/A',
+                              Icons.update,
+                              context: context,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

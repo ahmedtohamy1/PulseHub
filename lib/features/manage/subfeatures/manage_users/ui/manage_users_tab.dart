@@ -18,7 +18,10 @@ class _ManageUsersTabState extends State<ManageUsersTab>
   late final ManageUsersCubit _cubit;
   final TextEditingController _searchController = TextEditingController();
   bool _showSearch = false;
+  bool _showFilters = true;
   String _searchQuery = '';
+  String? _selectedRole;
+  bool? _selectedActiveStatus;
 
   @override
   void initState() {
@@ -100,55 +103,164 @@ class _ManageUsersTabState extends State<ManageUsersTab>
                   }
 
                   if (state is ManageUsersSuccess) {
-                    if (state.response.users?.isEmpty ?? true) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'No users found',
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'No users have been added yet',
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                          ],
-                        ),
+                    if (state.response.users == null ||
+                        state.response.users!.isEmpty) {
+                      return const Center(
+                        child: Text('No users found'),
                       );
                     }
 
-                    final filteredUsers = _searchQuery.isEmpty
-                        ? state.response.users!
-                        : state.response.users!
-                            .where((user) =>
-                                (user.firstName ?? '')
-                                    .toLowerCase()
-                                    .contains(_searchQuery.toLowerCase()) ||
-                                (user.lastName ?? '')
-                                    .toLowerCase()
-                                    .contains(_searchQuery.toLowerCase()) ||
-                                (user.email ?? '')
-                                    .toLowerCase()
-                                    .contains(_searchQuery.toLowerCase()))
-                            .toList();
+                    final filteredUsers = state.response.users!.where((user) {
+                      bool matchesSearch = _searchQuery.isEmpty ||
+                          (user.firstName ?? '')
+                              .toLowerCase()
+                              .contains(_searchQuery.toLowerCase()) ||
+                          (user.lastName ?? '')
+                              .toLowerCase()
+                              .contains(_searchQuery.toLowerCase()) ||
+                          (user.email ?? '')
+                              .toLowerCase()
+                              .contains(_searchQuery.toLowerCase());
 
-                    return ListView.builder(
-                      padding: const EdgeInsets.only(
-                        left: 16,
-                        right: 16,
-                        top: 16,
-                        bottom: 80, // Extra padding for FAB
-                      ),
-                      itemCount: filteredUsers.length,
-                      itemBuilder: (context, index) {
-                        final user = filteredUsers[index];
-                        return UserCard(
-                          user: user,
-                          isDic: widget.isDic,
-                        );
-                      },
+                      bool matchesRole = _selectedRole == null ||
+                          (_selectedRole == 'admin' &&
+                              user.isSuperuser == true) ||
+                          (_selectedRole == 'staff' &&
+                              user.isStaff == true &&
+                              user.isSuperuser != true) ||
+                          (_selectedRole == 'user' &&
+                              user.isStaff != true &&
+                              user.isSuperuser != true);
+
+                      bool matchesActiveStatus =
+                          _selectedActiveStatus == null ||
+                              user.isActive == _selectedActiveStatus;
+
+                      return matchesSearch &&
+                          matchesRole &&
+                          matchesActiveStatus;
+                    }).toList();
+
+                    return Column(
+                      children: [
+                        // Filters
+                        if (_showFilters)
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Row(
+                              children: [
+                                // Role Filter
+                                Expanded(
+                                  child: DropdownButtonFormField<String>(
+                                    value: _selectedRole,
+                                    decoration: InputDecoration(
+                                      labelText: 'Role',
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
+                                    ),
+                                    items: [
+                                      DropdownMenuItem(
+                                        value: null,
+                                        child: Text(
+                                          'All Roles',
+                                          style: TextStyle(
+                                            color: colorScheme.onSurface
+                                                .withOpacity(0.7),
+                                          ),
+                                        ),
+                                      ),
+                                      const DropdownMenuItem(
+                                        value: 'admin',
+                                        child: Text('Admin'),
+                                      ),
+                                      const DropdownMenuItem(
+                                        value: 'staff',
+                                        child: Text('Staff'),
+                                      ),
+                                      const DropdownMenuItem(
+                                        value: 'user',
+                                        child: Text('User'),
+                                      ),
+                                    ],
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _selectedRole = value;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                // Active Status Filter
+                                Expanded(
+                                  child: DropdownButtonFormField<bool>(
+                                    value: _selectedActiveStatus,
+                                    decoration: InputDecoration(
+                                      labelText: 'Status',
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
+                                    ),
+                                    items: [
+                                      DropdownMenuItem(
+                                        value: null,
+                                        child: Text(
+                                          'All Status',
+                                          style: TextStyle(
+                                            color: colorScheme.onSurface
+                                                .withOpacity(0.7),
+                                          ),
+                                        ),
+                                      ),
+                                      const DropdownMenuItem(
+                                        value: true,
+                                        child: Text('Active'),
+                                      ),
+                                      const DropdownMenuItem(
+                                        value: false,
+                                        child: Text('Inactive'),
+                                      ),
+                                    ],
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _selectedActiveStatus = value;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        // Users List
+                        Expanded(
+                          child: ListView.builder(
+                            padding: EdgeInsets.only(
+                              left: 16,
+                              right: 16,
+                              top: _showFilters ? 0 : 16,
+                              bottom: 80, // Extra padding for FAB
+                            ),
+                            itemCount: filteredUsers.length,
+                            itemBuilder: (context, index) {
+                              final user = filteredUsers[index];
+                              return UserCard(
+                                user: user,
+                                isDic: widget.isDic,
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     );
                   }
 
@@ -175,53 +287,89 @@ class _ManageUsersTabState extends State<ManageUsersTab>
                       ),
                     ],
                   ),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'Search users...',
-                      prefixIcon: Icon(
-                        Icons.search,
-                        color: colorScheme.primary,
-                      ),
-                      suffixIcon: _searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() {
-                                  _searchQuery = '';
-                                });
-                              },
-                            )
-                          : null,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: colorScheme.outline,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      TextField(
+                        controller: _searchController,
+                        onChanged: (value) {
+                          setState(() {
+                            _searchQuery = value;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          hintText: 'Search users...',
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: colorScheme.primary,
+                          ),
+                          suffixIcon: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (_searchQuery.isNotEmpty)
+                                IconButton(
+                                  icon: const Icon(Icons.clear),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() {
+                                      _searchQuery = '';
+                                    });
+                                  },
+                                ),
+                              SizedBox(
+                                height: 40,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Filters',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                    Transform.scale(
+                                      scale: 0.8,
+                                      child: Checkbox(
+                                        value: _showFilters,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            _showFilters = value ?? false;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: colorScheme.outline,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: colorScheme.outline.withOpacity(0.5),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: colorScheme.primary,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                         ),
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: colorScheme.outline.withOpacity(0.5),
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: colorScheme.primary,
-                        ),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                    ),
+                    ],
                   ),
                 ),
               ),
