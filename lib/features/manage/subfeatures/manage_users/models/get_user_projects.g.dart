@@ -23,7 +23,7 @@ Map<String, dynamic> _$GetUsersProjectsToJson(GetUsersProjects instance) =>
 ProjectsList _$ProjectsListFromJson(Map<String, dynamic> json) => ProjectsList(
       projectId: (json['project_id'] as num).toInt(),
       title: json['title'] as String,
-      picture: json['picture'] as String,
+      picture: json['picture'] as String? ?? '',
       startDate: json['start_date'] == null
           ? null
           : DateTime.parse(json['start_date'] as String),
