@@ -319,11 +319,11 @@ class _CollaboratorsTabState extends State<CollaboratorsTab> {
               }
             },
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Groups Table
+                  const SizedBox(height: 16),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
