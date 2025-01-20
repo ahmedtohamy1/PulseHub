@@ -614,86 +614,147 @@ class UsedSensorsTable extends StatelessWidget {
           )
         else
           Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: DataTable(
-                    showCheckboxColumn: false,
-                    headingRowColor: WidgetStateColor.resolveWith(
-                        (states) => Theme.of(context).colorScheme.primary),
-                    columns: const [
-                      DataColumn(
-                          label: Text('Sensor Name',
-                              style: TextStyle(color: Colors.white))),
-                      DataColumn(
-                          label: Text('Function',
-                              style: TextStyle(color: Colors.white))),
-                      DataColumn(
-                          label: Text('Count',
-                              style: TextStyle(color: Colors.white))),
-                      DataColumn(
-                          label: Text('Actions',
-                              style: TextStyle(color: Colors.white))),
-                    ],
-                    rows: List.generate(usedSensors.length, (index) {
-                      final sensor = usedSensors[index];
-                      final rowColor = index % 2 == 0
-                          ? Theme.of(context).colorScheme.secondaryContainer
-                          : Theme.of(context).colorScheme.surface;
-
-                      return DataRow(
-                        color:
-                            WidgetStateColor.resolveWith((states) => rowColor),
-                        onSelectChanged: (_) =>
-                            _showEditDialog(context, sensor),
-                        cells: [
-                          DataCell(Text(sensor.name ?? 'N/A')),
-                          DataCell(Text(sensor.function ?? 'N/A')),
-                          DataCell(Text(sensor.count?.toString() ?? '0')),
-                          DataCell(
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit, size: 18),
-                                  style: IconButton.styleFrom(
-                                    backgroundColor:
-                                        Theme.of(context).colorScheme.primary,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.all(4),
-                                    minimumSize: const Size(32, 32),
-                                  ),
-                                  onPressed: () =>
-                                      _showEditDialog(context, sensor),
-                                ),
-                                const SizedBox(width: 8),
-                                IconButton(
-                                  icon: const Icon(Icons.delete_forever,
-                                      size: 18),
-                                  style: IconButton.styleFrom(
-                                    backgroundColor: Colors.red.shade700,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.all(4),
-                                    minimumSize: const Size(32, 32),
-                                  ),
-                                  onPressed: () =>
-                                      _showDeleteDialog(context, sensor),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
-                    }),
-                  ),
-                ),
+            child: GridView.builder(
+              padding: const EdgeInsets.all(16),
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 600,
+                mainAxisExtent: 160,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
               ),
+              itemCount: usedSensors.length,
+              itemBuilder: (context, index) {
+                final sensor = usedSensors[index];
+                return _buildSensorCard(context, sensor);
+              },
             ),
           ),
       ],
+    );
+  }
+
+  Widget _buildSensorCard(BuildContext context, UsedSensorList sensor) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Card(
+      elevation: 2,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => _showEditDialog(context, sensor),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Section
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: colorScheme.primary.withOpacity(0.1),
+                border: Border(
+                  left: BorderSide(
+                    color: colorScheme.primary,
+                    width: 4,
+                  ),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          sensor.name ?? 'N/A',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.sensors,
+                              color: colorScheme.onPrimary,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${sensor.count ?? 0}',
+                              style: TextStyle(
+                                color: colorScheme.onPrimary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            // Actions Section
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    "Function: ${sensor.function ?? 'N/A'}",
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.secondary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.edit, size: 18),
+                    style: IconButton.styleFrom(
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor: colorScheme.onPrimary,
+                      padding: const EdgeInsets.all(8),
+                      minimumSize: const Size(36, 36),
+                    ),
+                    onPressed: () => _showEditDialog(context, sensor),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.delete_forever, size: 18),
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.red.shade700,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.all(8),
+                      minimumSize: const Size(36, 36),
+                    ),
+                    onPressed: () => _showDeleteDialog(context, sensor),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
