@@ -25,6 +25,7 @@ class OverviewTab extends StatefulWidget {
   @override
   State<OverviewTab> createState() => _OverviewTabState();
 }
+
 class _OverviewTabState extends State<OverviewTab> {
   final Map<String, TextEditingController> _controllers = {};
   final TextEditingController _deleteConfirmController =
@@ -75,20 +76,18 @@ class _OverviewTabState extends State<OverviewTab> {
   }
 
   void _addController(String field, String? value) {
-    _controllers[field] = TextEditingController();
+    _controllers[field] = TextEditingController(text: value);
   }
 
   ProjectUpdateRequest _collectChanges() {
     Map<String, String?> changes = {};
 
     _controllers.forEach((field, controller) {
-      // Only include fields that have non-empty text
       if (controller.text.trim().isNotEmpty) {
         changes[field] = controller.text.trim();
       }
     });
 
-    // Only include non-null fields in the request
     return ProjectUpdateRequest(
       title: changes['title'],
       acronym: changes['acronym'],
@@ -187,6 +186,72 @@ class _OverviewTabState extends State<OverviewTab> {
     }
   }
 
+  Widget _buildInfoCard(
+    BuildContext context, {
+    required String title,
+    required List<Widget> children,
+    required IconData icon,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withOpacity(0.1),
+              border: Border(
+                left: BorderSide(
+                  color: colorScheme.primary,
+                  width: 4,
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 24,
+                    color: colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: children,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<ProjectDashboardCubit, ProjectDashboardState>(
@@ -194,33 +259,29 @@ class _OverviewTabState extends State<OverviewTab> {
         if (state is ProjectDashboardUpdateProjectSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Project updated successfully'),
-              backgroundColor: Colors.green,
-            ),
+                content: Text('Project updated successfully'),
+                backgroundColor: Colors.green),
           );
           context.read<ProjectsCubit>().getProject(widget.project.projectId!);
           widget.onSave();
         } else if (state is ProjectDashboardUpdateProjectFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Failed to update project: ${state.message}'),
-              backgroundColor: Colors.red,
-            ),
+                content: Text('Failed to update project: ${state.message}'),
+                backgroundColor: Colors.red),
           );
         } else if (state is ProjectDashboardDeleteProjectSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Project deleted successfully'),
-              backgroundColor: Colors.green,
-            ),
+                content: Text('Project deleted successfully'),
+                backgroundColor: Colors.green),
           );
-          Navigator.of(context).pop(); // Return to projects list
+          Navigator.of(context).pop();
         } else if (state is ProjectDashboardDeleteProjectFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Failed to delete project: ${state.message}'),
-              backgroundColor: Colors.red,
-            ),
+                content: Text('Failed to delete project: ${state.message}'),
+                backgroundColor: Colors.red),
           );
         }
       },
@@ -232,250 +293,279 @@ class _OverviewTabState extends State<OverviewTab> {
           return Stack(
             children: [
               SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(6.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxWidth: widget.isEditing ? 48 : 160,
+                    // Actions Row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        FilledButton.icon(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Colors.red.shade700,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                          ),
+                          onPressed: isLoading ? null : _handleDelete,
+                          icon: const Icon(Icons.delete_forever, size: 20),
+                          label: const Text('Delete'),
+                        ),
+                        const SizedBox(width: 8),
+                        if (!widget.isEditing)
+                          FilledButton.icon(
+                            onPressed: isLoading ? null : widget.onEdit,
+                            icon: const Icon(Icons.edit, size: 20),
+                            label: const Text('Edit'),
+                          )
+                        else
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              OutlinedButton.icon(
+                                onPressed: isLoading ? null : widget.onCancel,
+                                icon: const Icon(Icons.cancel, size: 20),
+                                label: const Text('Cancel'),
                               ),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 300),
-                                child: ClipRect(
-                                  child: FilledButton.icon(
-                                    style: FilledButton.styleFrom(
-                                      backgroundColor: Colors.red.shade700,
-                                      padding: widget.isEditing
-                                          ? const EdgeInsets.all(8)
-                                          : const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 8),
-                                    ),
-                                    onPressed: isLoading ? null : _handleDelete,
-                                    icon: const Icon(Icons.delete_forever,
-                                        size: 20),
-                                    label: widget.isEditing
-                                        ? const SizedBox.shrink()
-                                        : const Text('Delete'),
-                                  ),
-                                ),
+                              const SizedBox(width: 8),
+                              FilledButton.icon(
+                                onPressed: isLoading ? null : _handleSave,
+                                icon: isLoading
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 2),
+                                      )
+                                    : const Icon(Icons.save, size: 20),
+                                label: Text(isLoading ? 'Saving' : 'Save'),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 300),
-                              child: !widget.isEditing
-                                  ? FilledButton.icon(
-                                      key: const ValueKey('edit'),
-                                      onPressed:
-                                          isLoading ? null : widget.onEdit,
-                                      icon: const Icon(Icons.edit, size: 20),
-                                      label: const Text('Edit'),
-                                      style: FilledButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 8,
-                                        ),
-                                      ),
-                                    )
-                                  : Row(
-                                      key: const ValueKey('save-cancel'),
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        OutlinedButton.icon(
-                                          onPressed: isLoading
-                                              ? null
-                                              : widget.onCancel,
-                                          icon: const Icon(Icons.cancel,
-                                              size: 20),
-                                          label: const Text('Cancel'),
-                                          style: OutlinedButton.styleFrom(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 12,
-                                              vertical: 8,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        FilledButton.icon(
-                                          onPressed:
-                                              isLoading ? null : _handleSave,
-                                          icon: isLoading
-                                              ? const SizedBox(
-                                                  width: 20,
-                                                  height: 20,
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                          strokeWidth: 2),
-                                                )
-                                              : const Icon(Icons.save,
-                                                  size: 20),
-                                          label: Text(
-                                              isLoading ? 'Saving' : 'Save'),
-                                          style: FilledButton.styleFrom(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 12,
-                                              vertical: 8,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                            ),
-                          ],
-                        );
-                      },
+                            ],
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 16),
-                    EditableInfoRow(
-                      label: 'Project Title:',
-                      value: widget.project.title ?? 'N/A',
-                      isEditing: widget.isEditing,
-                      controller: _controllers['title'],
+
+                    // Basic Information Card
+                    _buildInfoCard(
+                      context,
+                      title: 'Basic Information',
+                      icon: Icons.apartment_rounded,
+                      children: [
+                        EditableInfoRow(
+                          label: 'Project Title',
+                          value: widget.project.title ?? 'N/A',
+                          isEditing: widget.isEditing,
+                          controller: _controllers['title'],
+                          icon: Icons.title_rounded,
+                        ),
+                        EditableInfoRow(
+                          label: 'Project Acronym',
+                          value: widget.project.acronym ?? 'N/A',
+                          isEditing: widget.isEditing,
+                          controller: _controllers['acronym'],
+                          icon: Icons.short_text_rounded,
+                        ),
+                        EditableInfoRow(
+                          label: 'Description',
+                          value: widget.project.description ?? 'N/A',
+                          isEditing: widget.isEditing,
+                          controller: _controllers['description'],
+                          icon: Icons.description_rounded,
+                        ),
+                      ],
                     ),
-                    EditableInfoRow(
-                      label: 'Project Acronym:',
-                      value: widget.project.acronym ?? 'N/A',
-                      isEditing: widget.isEditing,
-                      controller: _controllers['acronym'],
+
+                    // Timeline Card
+                    _buildInfoCard(
+                      context,
+                      title: 'Timeline',
+                      icon: Icons.event_note_rounded,
+                      children: [
+                        EditableInfoRow(
+                          label: 'Start Date',
+                          value: widget.project.startDate ?? 'N/A',
+                          isEditing: widget.isEditing,
+                          controller: _controllers['startDate'],
+                          icon: Icons.calendar_today_rounded,
+                        ),
+                        EditableInfoRow(
+                          label: 'Duration',
+                          value: widget.project.duration ?? 'N/A',
+                          isEditing: widget.isEditing,
+                          controller: _controllers['duration'],
+                          icon: Icons.timer_rounded,
+                        ),
+                        EditableInfoRow(
+                          label: 'Construction Date',
+                          value: widget.project.constructionDate ?? 'N/A',
+                          isEditing: widget.isEditing,
+                          controller: _controllers['constructionDate'],
+                          icon: Icons.construction_rounded,
+                        ),
+                      ],
                     ),
-                    EditableInfoRow(
-                      label: 'Start Date:',
-                      value: widget.project.startDate ?? 'N/A',
-                      isEditing: widget.isEditing,
-                      controller: _controllers['startDate'],
+
+                    // Financial Information Card
+                    _buildInfoCard(
+                      context,
+                      title: 'Financial Information',
+                      icon: Icons.account_balance_rounded,
+                      children: [
+                        EditableInfoRow(
+                          label: 'Budget',
+                          value: widget.project.budget ?? 'N/A',
+                          isEditing: widget.isEditing,
+                          controller: _controllers['budget'],
+                          icon: Icons.monetization_on_rounded,
+                        ),
+                        EditableInfoRow(
+                          label: 'Budget Constraints',
+                          value: widget.project.budgetConstraints ?? 'N/A',
+                          isEditing: widget.isEditing,
+                          controller: _controllers['budgetConstraints'],
+                          icon: Icons.money_off_rounded,
+                        ),
+                      ],
                     ),
-                    EditableInfoRow(
-                      label: 'Duration:',
-                      value: widget.project.duration ?? 'N/A',
-                      isEditing: widget.isEditing,
-                      controller: _controllers['duration'],
+
+                    // Building Details Card
+                    _buildInfoCard(
+                      context,
+                      title: 'Building Details',
+                      icon: Icons.domain_rounded,
+                      children: [
+                        EditableInfoRow(
+                          label: 'Type of Building',
+                          value: widget.project.typeOfBuilding ?? 'N/A',
+                          isEditing: widget.isEditing,
+                          controller: _controllers['typeOfBuilding'],
+                          icon: Icons.category_rounded,
+                        ),
+                        EditableInfoRow(
+                          label: 'Size',
+                          value: widget.project.size ?? 'N/A',
+                          isEditing: widget.isEditing,
+                          controller: _controllers['size'],
+                          icon: Icons.square_foot_rounded,
+                        ),
+                        EditableInfoRow(
+                          label: 'Age of Building',
+                          value: widget.project.ageOfBuilding ?? 'N/A',
+                          isEditing: widget.isEditing,
+                          controller: _controllers['ageOfBuilding'],
+                          icon: Icons.update_rounded,
+                        ),
+                        EditableInfoRow(
+                          label: 'Structure',
+                          value: widget.project.structure ?? 'N/A',
+                          isEditing: widget.isEditing,
+                          controller: _controllers['structure'],
+                          icon: Icons.architecture_rounded,
+                        ),
+                        EditableInfoRow(
+                          label: 'Building History',
+                          value: widget.project.buildingHistory ?? 'N/A',
+                          isEditing: widget.isEditing,
+                          controller: _controllers['buildingHistory'],
+                          icon: Icons.history_rounded,
+                        ),
+                      ],
                     ),
-                    EditableInfoRow(
-                      label: 'Budget:',
-                      value: widget.project.budget ?? 'N/A',
-                      isEditing: widget.isEditing,
-                      controller: _controllers['budget'],
+
+                    // Environment & Risk Card
+                    _buildInfoCard(
+                      context,
+                      title: 'Environment & Risk',
+                      icon: Icons.eco_rounded,
+                      children: [
+                        EditableInfoRow(
+                          label: 'Surrounding Environment',
+                          value: widget.project.surroundingEnvironment ?? 'N/A',
+                          isEditing: widget.isEditing,
+                          controller: _controllers['surroundingEnvironment'],
+                          icon: Icons.landscape_rounded,
+                        ),
+                        EditableInfoRow(
+                          label: 'Importance of Risk Identification',
+                          value:
+                              widget.project.importanceOfRiskIdentification ??
+                                  'N/A',
+                          isEditing: widget.isEditing,
+                          controller:
+                              _controllers['importanceOfRiskIdentification'],
+                          icon: Icons.warning_rounded,
+                        ),
+                      ],
                     ),
-                    EditableInfoRow(
-                      label: 'Consultant:',
-                      value: widget.project.consultant ?? 'N/A',
-                      isEditing: widget.isEditing,
-                      controller: _controllers['consultant'],
+
+                    // Project Settings Card
+                    _buildInfoCard(
+                      context,
+                      title: 'Project Settings',
+                      icon: Icons.tune_rounded,
+                      children: [
+                        EditableInfoRow(
+                          label: 'Time Zone',
+                          value: widget.project.timeZone ?? 'N/A',
+                          isEditing: widget.isEditing,
+                          controller: _controllers['timeZone'],
+                          icon: Icons.schedule_rounded,
+                        ),
+                        EditableInfoRow(
+                          label: 'Coordinate System',
+                          value: widget.project.coordinateSystem ?? 'N/A',
+                          isEditing: widget.isEditing,
+                          controller: _controllers['cordinateSystem'],
+                          icon: Icons.gps_fixed_rounded,
+                        ),
+                        EditableInfoRow(
+                          label: 'Date Format',
+                          value: widget.project.dateFormat ?? 'N/A',
+                          isEditing: widget.isEditing,
+                          controller: _controllers['dateFormate'],
+                          icon: Icons.date_range_rounded,
+                        ),
+                      ],
                     ),
-                    EditableInfoRow(
-                      label: 'Contractor:',
-                      value: widget.project.contractor ?? 'N/A',
-                      isEditing: widget.isEditing,
-                      controller: _controllers['contractor'],
+
+                    // Team Card
+                    _buildInfoCard(
+                      context,
+                      title: 'Team',
+                      icon: Icons.groups_2_rounded,
+                      children: [
+                        EditableInfoRow(
+                          label: 'Consultant',
+                          value: widget.project.consultant ?? 'N/A',
+                          isEditing: widget.isEditing,
+                          controller: _controllers['consultant'],
+                          icon: Icons.person_rounded,
+                        ),
+                        EditableInfoRow(
+                          label: 'Contractor',
+                          value: widget.project.contractor ?? 'N/A',
+                          isEditing: widget.isEditing,
+                          controller: _controllers['contractor'],
+                          icon: Icons.engineering_rounded,
+                        ),
+                      ],
                     ),
-                    EditableInfoRow(
-                      label: 'Construction Date:',
-                      value: widget.project.constructionDate ?? 'N/A',
-                      isEditing: widget.isEditing,
-                      controller: _controllers['constructionDate'],
-                    ),
-                    EditableInfoRow(
-                      label: 'Age of building:',
-                      value: widget.project.ageOfBuilding ?? 'N/A',
-                      isEditing: widget.isEditing,
-                      controller: _controllers['ageOfBuilding'],
-                    ),
-                    EditableInfoRow(
-                      label: 'Type of building:',
-                      value: widget.project.typeOfBuilding ?? 'N/A',
-                      isEditing: widget.isEditing,
-                      controller: _controllers['typeOfBuilding'],
-                    ),
-                    EditableInfoRow(
-                      label: 'Size of building:',
-                      value: widget.project.size ?? 'N/A',
-                      isEditing: widget.isEditing,
-                      controller: _controllers['size'],
-                    ),
-                    EditableInfoRow(
-                      label: 'Structure:',
-                      value: widget.project.structure ?? 'N/A',
-                      isEditing: widget.isEditing,
-                      controller: _controllers['structure'],
-                    ),
-                    EditableInfoRow(
-                      label: 'Building History:',
-                      value: widget.project.buildingHistory ?? 'N/A',
-                      isEditing: widget.isEditing,
-                      controller: _controllers['buildingHistory'],
-                    ),
-                    EditableInfoRow(
-                      label: 'Surrounding Environment:',
-                      value: widget.project.surroundingEnvironment ?? 'N/A',
-                      isEditing: widget.isEditing,
-                      controller: _controllers['surroundingEnvironment'],
-                    ),
-                    EditableInfoRow(
-                      label: 'Importance of Risk Identification:',
-                      value: widget.project.importanceOfRiskIdentification ??
-                          'N/A',
-                      isEditing: widget.isEditing,
-                      controller:
-                          _controllers['importanceOfRiskIdentification'],
-                    ),
-                    EditableInfoRow(
-                      label: 'Budget Constraints:',
-                      value: widget.project.budgetConstraints ?? 'N/A',
-                      isEditing: widget.isEditing,
-                      controller: _controllers['budgetConstraints'],
-                    ),
-                    EditableInfoRow(
-                      label: 'Plans and files:',
-                      value: widget.project.plansAndFiles ?? 'N/A',
-                      isEditing: widget.isEditing,
-                      controller: _controllers['plansAndFiles'],
-                    ),
-                    EditableInfoRow(
-                      label: 'Description:',
-                      value: widget.project.description ?? 'N/A',
-                      isEditing: widget.isEditing,
-                      controller: _controllers['description'],
-                    ),
-                    const SizedBox(height: 24),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        'Project Settings',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    EditableInfoRow(
-                      label: 'Time Zone:',
-                      value: widget.project.timeZone ?? 'N/A',
-                      isEditing: widget.isEditing,
-                      controller: _controllers['timeZone'],
-                    ),
-                    EditableInfoRow(
-                      label: 'Coordinate System:',
-                      value: widget.project.coordinateSystem ?? 'N/A',
-                      isEditing: widget.isEditing,
-                      controller: _controllers['cordinateSystem'],
-                    ),
-                    EditableInfoRow(
-                      label: 'Date Format:',
-                      value: widget.project.dateFormat ?? 'N/A',
-                      isEditing: widget.isEditing,
-                      controller: _controllers['dateFormate'],
+
+                    // Documents Card
+                    _buildInfoCard(
+                      context,
+                      title: 'Documents',
+                      icon: Icons.description_rounded,
+                      children: [
+                        EditableInfoRow(
+                          label: 'Plans and Files',
+                          value: widget.project.plansAndFiles ?? 'N/A',
+                          isEditing: widget.isEditing,
+                          controller: _controllers['plansAndFiles'],
+                          icon: Icons.folder_rounded,
+                        ),
+                      ],
                     ),
                   ],
                 ),

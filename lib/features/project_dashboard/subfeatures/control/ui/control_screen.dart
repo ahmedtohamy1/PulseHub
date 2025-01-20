@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/control/ui/collaborators_tab/collaborators_tab.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/control/ui/customisation_tab.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/control/ui/media_library_tab.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/control/ui/overview_tab.dart';
-import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/projects/data/models/project_response.dart';
 
 class ControlScreen extends StatefulWidget {
@@ -67,16 +67,71 @@ class _ControlScreenState extends State<ControlScreen>
           ],
         ),
         const SizedBox(height: 16),
-        TabBar(
-          labelPadding: const EdgeInsets.symmetric(horizontal: 1),
-          padding: const EdgeInsets.symmetric(horizontal: 1),
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Overview'),
-            Tab(text: 'Customisation'),
-            Tab(text: 'Media Library'),
-            Tab(text: 'Collaborators'),
-          ],
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 1),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: TabBar(
+            controller: _tabController,
+            isScrollable: false,
+            labelPadding:
+                const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            indicatorSize: TabBarIndicatorSize.tab,
+            indicator: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            dividerColor: Colors.transparent,
+            overlayColor:
+                const WidgetStatePropertyAll<Color>(Colors.transparent),
+            labelColor: Theme.of(context).colorScheme.onPrimary,
+            unselectedLabelColor:
+                Theme.of(context).colorScheme.onSurfaceVariant,
+            tabs: [
+              Tooltip(
+                message: 'Overview',
+                child: Tab(
+                  height: 32,
+                  icon: Icon(
+                    Icons.info_outline,
+                    size: 24,
+                  ),
+                ),
+              ),
+              Tooltip(
+                message: 'Customisation',
+                child: Tab(
+                  height: 32,
+                  icon: Icon(
+                    Icons.tune_outlined,
+                    size: 24,
+                  ),
+                ),
+              ),
+              Tooltip(
+                message: 'Media Library',
+                child: Tab(
+                  height: 32,
+                  icon: Icon(
+                    Icons.photo_library_outlined,
+                    size: 24,
+                  ),
+                ),
+              ),
+              Tooltip(
+                message: 'Collaborators',
+                child: Tab(
+                  height: 32,
+                  icon: Icon(
+                    Icons.people_alt_outlined,
+                    size: 24,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
         Expanded(
           child: TabBarView(

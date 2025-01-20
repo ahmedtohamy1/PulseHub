@@ -5,6 +5,7 @@ class EditableInfoRow extends StatefulWidget {
   final String value;
   final bool isEditing;
   final TextEditingController? controller;
+  final IconData? icon;
 
   const EditableInfoRow({
     super.key,
@@ -12,6 +13,7 @@ class EditableInfoRow extends StatefulWidget {
     required this.value,
     required this.isEditing,
     this.controller,
+    this.icon,
   });
 
   @override
@@ -74,11 +76,29 @@ class _EditableInfoRowState extends State<EditableInfoRow> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (widget.icon != null) ...[
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: colorScheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                widget.icon,
+                size: 20,
+                color: colorScheme.primary,
+              ),
+            ),
+            const SizedBox(width: 12),
+          ],
           Expanded(
             flex: 3,
             child: Text(
