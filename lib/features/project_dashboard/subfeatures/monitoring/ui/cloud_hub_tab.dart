@@ -15,25 +15,23 @@ class CloudHubTab extends StatefulWidget {
 class _CloudHubTabState extends State<CloudHubTab>
     with AutomaticKeepAliveClientMixin {
   @override
-  bool get wantKeepAlive => true; // Preserve the state of this tab
+  bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    super.build(context);
     return BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
       builder: (context, state) {
         final cubit = context.read<ProjectDashboardCubit>();
 
-        // Use the stored monitoringCloudHubResponse if available
         if (cubit.monitoringCloudHubResponse != null) {
           final cloudHubs = cubit.monitoringCloudHubResponse!.cloudhubs ?? [];
           if (cloudHubs.isEmpty) {
             return const Center(child: Text("No CloudHubs available."));
           }
-          return _buildCloudHubTable(cloudHubs);
+          return _buildCloudHubGrid(cloudHubs);
         }
 
-        // Handle loading and error states
         if (state is ProjectDashboardMonitoringCloudHubLoading) {
           return const Center(child: CircularProgressIndicator());
         } else if (state is ProjectDashboardMonitoringCloudHubFailure) {
@@ -50,75 +48,189 @@ class _CloudHubTabState extends State<CloudHubTab>
     );
   }
 
-  Widget _buildCloudHubTable(List<CloudHub> cloudHubs) {
-    int globalIndex = 0;
+  Widget _buildCloudHubGrid(List<CloudHub> cloudHubs) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: GridView.builder(
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 600,
+          mainAxisExtent: 150,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+        ),
+        itemCount: cloudHubs.length,
+        itemBuilder: (context, index) {
+          final cloudHub = cloudHubs[index];
+          return _buildCloudHubCard(cloudHub);
+        },
+      ),
+    );
+  }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal, // Horizontal scrolling for the table
-      child: SingleChildScrollView(
-        scrollDirection: Axis.vertical, // Vertical scrolling for the rows
-        child: Padding(
-          padding: const EdgeInsets.only(top: 8.0),
-          child: SizedBox(
-            width: MediaQuery.of(context)
-                .size
-                .width, // Set the width to the screen width
-            child: DataTable(
-              showCheckboxColumn: false,
-              headingRowColor: WidgetStateColor.resolveWith(
-                (states) => Theme.of(context).primaryColor,
+  Widget _buildCloudHubCard(CloudHub cloudHub) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Card(
+      elevation: 2,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () {
+          context
+              .read<ProjectDashboardCubit>()
+              .getCloudhubData(cloudHub.cloudhubId)
+              .then((_) {
+            final state = context.read<ProjectDashboardCubit>().state;
+            if (state is ProjectDashboardCloudhubDataSuccess) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BlocProvider(
+                    create: (context) => sl<ProjectDashboardCubit>(),
+                    child: CloudHubDetailsScreen(
+                      cloudHub: state.cloudhubDetails,
+                    ),
+                  ),
+                ),
+              );
+            }
+          });
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Section with Name and Code
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: colorScheme.primary.withOpacity(0.1),
+                border: Border(
+                  left: BorderSide(
+                    color: colorScheme.primary,
+                    width: 4,
+                  ),
+                ),
               ),
-              columns: const [
-                DataColumn(
-                    label: Text('Name', style: TextStyle(color: Colors.white))),
-                DataColumn(
-                    label:
-                        Text('Notes', style: TextStyle(color: Colors.white))),
-                DataColumn(
-                    label: Text('Code', style: TextStyle(color: Colors.white))),
-              ],
-              rows: cloudHubs.map((cloudHub) {
-                final rowColor = globalIndex % 2 == 0
-                    ? Theme.of(context).colorScheme.secondaryContainer
-                    : Theme.of(context).colorScheme.surface;
-
-                globalIndex++;
-
-                return DataRow(
-                  color: WidgetStateColor.resolveWith((states) => rowColor),
-                  cells: [
-                    DataCell(Text(cloudHub.name)),
-                    DataCell(Text(cloudHub.notes ?? 'N/A')),
-                    DataCell(Text(cloudHub.code ?? 'N/A')),
-                  ],
-                  onSelectChanged: (_) {
-                    // Fetch CloudHub details and navigate to the details screen
-                    context
-                        .read<ProjectDashboardCubit>()
-                        .getCloudhubData(cloudHub.cloudhubId)
-                        .then((_) {
-                      final state = context.read<ProjectDashboardCubit>().state;
-                      if (state is ProjectDashboardCloudhubDataSuccess) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => BlocProvider(
-                              create: (context) => sl<ProjectDashboardCubit>(),
-                              child: CloudHubDetailsScreen(
-                                cloudHub: state.cloudhubDetails,
-                              ),
-                            ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      cloudHub.name,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.code,
+                          color: colorScheme.onPrimary,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          cloudHub.code ?? 'N/A',
+                          style: TextStyle(
+                            color: colorScheme.onPrimary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
                           ),
-                        );
-                      }
-                    });
-                  },
-                );
-              }).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+            // Details Section
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Left Column
+                  Expanded(
+                    child: _buildInfoRow(
+                      'Notes',
+                      cloudHub.notes ?? 'N/A',
+                      Icons.notes,
+                      context: context,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildInfoRow(
+    String label,
+    String value,
+    IconData icon, {
+    required BuildContext context,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: colorScheme.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            size: 16,
+            color: colorScheme.primary,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: colorScheme.secondary,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: colorScheme.onSurface,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
