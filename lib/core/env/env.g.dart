@@ -12,5 +12,5 @@ part of 'env.dart';
 final class _Env {
   static const String devBaseUrl = 'https://pulsehub.synology.me:9099';
 
-  static const String prodBaseUrl = 'https://pulsehub.synology.me:9099';
+  static const String prodBaseUrl = 'https://pulsehub.synology.me:99';
 }

@@ -10,7 +10,7 @@ import 'package:pulsehub/features/manage/subfeatures/manage_projects/data/models
     as owner_model;
 import 'package:pulsehub/features/manage/subfeatures/manage_projects/ui/add_project_screen.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_projects/ui/project_card.dart';
-import 'package:pulsehub/features/project_dashboard/ui/widgets/graph_sensors/number_input.dart';
+import 'package:pulsehub/features/project_dashboard/subfeatures/analyse/ui/graph_sensors/number_input.dart';
 
 class ProjectsList extends StatefulWidget {
   final List<Project> projects;

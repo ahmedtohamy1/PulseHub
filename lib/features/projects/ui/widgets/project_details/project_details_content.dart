@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/core/utils/user_manager.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
-import 'package:pulsehub/features/project_dashboard/ui/widgets/media_library_tab.dart';
+import 'package:pulsehub/features/project_dashboard/subfeatures/control/ui/media_library_tab.dart';
 import 'package:pulsehub/features/projects/data/models/project_response.dart';
 import 'package:pulsehub/features/projects/ui/widgets/project_details/project_overview.dart';
 import 'package:pulsehub/features/projects/ui/widgets/project_details/project_settings.dart';

@@ -18,7 +18,7 @@ import 'package:pulsehub/features/project_dashboard/data/models/timedb_response.
 import 'package:pulsehub/features/project_dashboard/data/models/update_cloudhub_request_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo_impl.dart';
 
- abstract class DashRepository {
+abstract class DashRepository {
   Future<Either<String, ProjectDashboards>> getDashs(
       String token, int projectId);
   Future<Either<String, CloudHubResponse>> getDashDetails(
@@ -28,8 +28,8 @@ import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo_impl.da
   Future<Either<String, bool>> createDash(String token, String name,
       String description, String group, int projectId);
   Future<Either<String, bool>> deleteDash(String token, int dashId);
-  Future<Either<String, bool>> updateDash(String token, int dashId, String name,
-      String description);
+  Future<Either<String, bool>> updateDash(
+      String token, int dashId, String name, String description);
   Future<Either<String, MonitoringResponse>> getMonitoring(
       String token, int projectId);
   Future<Either<String, MonitoringCloudHubResponse>> getMonitoringCloudHub(
@@ -41,7 +41,7 @@ import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo_impl.da
   Future<Either<String, AiAnalyzeDataModel>> analyzeSensorData(
       String token, QueryParams queryParams, String projectId);
   Future<Either<String, AiQ2ResponseModel>> analyzeSensorDataQ2(
-      String token,  String projectId);
+      String token, String projectId);
   Future<Either<String, SensorActivityLog>> getSensorActivityLog(
       String token, int sensorId);
   Future<Either<String, TicketMessagesModel>> getTicketMessages(
@@ -103,8 +103,7 @@ import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo_impl.da
   Future<Either<String, GetAllResponseModel>> getAllUsers(String token);
   Future<Either<String, bool>> updateCloudhub(
       String token, int cloudhubId, UpdateCloudhubRequestModel request);
-  Future<Either<String, bool>> markMessageAsSeen(
-      String token, int messageId);
+  Future<Either<String, bool>> markMessageAsSeen(String token, int messageId);
   Future<Either<String, bool>> assignCloudhubSensor(
       String token, int? cloudhubId, int sensorId);
 }
