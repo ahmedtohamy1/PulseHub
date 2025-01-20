@@ -96,9 +96,12 @@ final class ManageUsersUpdateDicsFailure extends ManageUsersState {
 final class ManageUsersCreateUserLoading extends ManageUsersState {}
 
 final class ManageUsersCreateUserSuccess extends ManageUsersState {
-  final bool success;
+  final int userId;
 
-  const ManageUsersCreateUserSuccess(this.success);
+  const ManageUsersCreateUserSuccess(this.userId);
+
+  @override
+  List<Object> get props => [userId];
 }
 
 final class ManageUsersCreateUserFailure extends ManageUsersState {

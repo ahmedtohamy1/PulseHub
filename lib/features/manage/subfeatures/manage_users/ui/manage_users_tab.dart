@@ -32,7 +32,6 @@ class _ManageUsersTabState extends State<ManageUsersTab>
 
   @override
   void dispose() {
-    _cubit.close();
     _searchController.dispose();
     super.dispose();
   }

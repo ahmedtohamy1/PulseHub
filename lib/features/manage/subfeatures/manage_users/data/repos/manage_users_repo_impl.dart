@@ -204,9 +204,6 @@ class ManageUsersRepositoryImpl implements ManageUsersRepository {
       final response = await myApiService.post(
         EndPoints.getDics,
         token: token,
-        queryParameters: {
-          'user_id': dicServices.user,
-        },
         data: dicServicesWithoutNulls,
       );
 
@@ -227,7 +224,7 @@ class ManageUsersRepositoryImpl implements ManageUsersRepository {
   }
 
   @override
-  Future<Either<String, bool>> createUser(
+  Future<Either<String, int>> createUser(
       String token,
       String password,
       String confirmPassword,
@@ -285,10 +282,31 @@ class ManageUsersRepositoryImpl implements ManageUsersRepository {
         data: requestData,
       );
 
+      print('Create User Response: ${response.data}'); // Debug log
+
       if (response.statusCode == StatusCode.ok && response.data['success']) {
-        return Right(true);
+        // Extract the user ID from the response
+        // The user details are under User_Details in the response
+        final userData = response.data['User_Details'];
+        print('User Data: $userData'); // Debug log
+
+        if (userData == null) {
+          print('Response data structure: ${response.data}'); // Debug log
+          return const Left('Failed to get user data from response');
+        }
+        final userId = userData['user_id'];
+        print('User ID: $userId'); // Debug log
+
+        if (userId == null) {
+          return const Left('Failed to get user ID from response');
+        }
+        return Right(userId is int ? userId : int.parse(userId.toString()));
       } else {
-        return Left('Failed to create user: ${response.statusCode}');
+        final errorMessage = response.data['message'] ??
+            response.data['error'] ??
+            'Failed to create user: ${response.statusCode}';
+        print('Error creating user: $errorMessage'); // Debug log
+        return Left(errorMessage.toString());
       }
     } catch (e) {
       return Left('Exception occurred: $e');

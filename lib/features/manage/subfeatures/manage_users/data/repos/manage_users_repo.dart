@@ -31,7 +31,7 @@ abstract class ManageUsersRepository {
   Future<Either<String, bool>> updateDics(
       String token, UpdateDicRequestModel dicServices);
 
-  Future<Either<String, bool>> createUser(
+  Future<Either<String, int>> createUser(
     String token,
     String password,
     String confirmPassword,

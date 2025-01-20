@@ -392,60 +392,58 @@ class _UserCardState extends State<UserCard> {
                     ),
                   ),
                 ),
-                child: Expanded(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Left Column
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Title
-                            _buildInfoRow(
-                              'Title',
-                              widget.user.title?.isNotEmpty == true
-                                  ? widget.user.title!
-                                  : 'N/A',
-                              Icons.work_outline,
-                              context: context,
-                            ),
-                            if (widget.user.title?.isNotEmpty == true)
-                              const SizedBox(height: 16),
-                            // Date Joined
-                            _buildInfoRow(
-                              'Date Joined',
-                              widget.user.dateJoined != null
-                                  ? DateFormat('MMM dd, yyyy')
-                                      .format(widget.user.dateJoined!)
-                                  : 'N/A',
-                              Icons.calendar_today,
-                              context: context,
-                            ),
-                          ],
-                        ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Left Column
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Title
+                          _buildInfoRow(
+                            'Title',
+                            widget.user.title?.isNotEmpty == true
+                                ? widget.user.title!
+                                : 'N/A',
+                            Icons.work_outline,
+                            context: context,
+                          ),
+                          if (widget.user.title?.isNotEmpty == true)
+                            const SizedBox(height: 16),
+                          // Date Joined
+                          _buildInfoRow(
+                            'Date Joined',
+                            widget.user.dateJoined != null
+                                ? DateFormat('MMM dd, yyyy')
+                                    .format(widget.user.dateJoined!)
+                                : 'N/A',
+                            Icons.calendar_today,
+                            context: context,
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 24),
-                      // Right Column
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Last Updated
-                            _buildInfoRow(
-                              'Last Updated',
-                              widget.user.dateUpdated != null
-                                  ? DateFormat('MMM dd, yyyy')
-                                      .format(widget.user.dateUpdated!)
-                                  : 'N/A',
-                              Icons.update,
-                              context: context,
-                            ),
-                          ],
-                        ),
+                    ),
+                    const SizedBox(width: 24),
+                    // Right Column
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Last Updated
+                          _buildInfoRow(
+                            'Last Updated',
+                            widget.user.dateUpdated != null
+                                ? DateFormat('MMM dd, yyyy')
+                                    .format(widget.user.dateUpdated!)
+                                : 'N/A',
+                            Icons.update,
+                            context: context,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],

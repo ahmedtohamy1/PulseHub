@@ -167,12 +167,14 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                     ),
                   ],
                   const SizedBox(width: 8),
-                  /*      _buildHeaderIcon(
-                    5,
-                    Icons.miscellaneous_services,
-                    'Services',
-                    colorScheme,
-                  ), */
+                  widget.isDic != null && widget.isDic == true
+                      ? _buildHeaderIcon(
+                          5,
+                          Icons.miscellaneous_services,
+                          'Services',
+                          colorScheme,
+                        )
+                      : SizedBox.shrink(),
                 ],
               ),
               Expanded(
