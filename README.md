@@ -109,7 +109,27 @@
   - Performance optimization tools
   - Automated reporting
 
-## 🏗️ Architecture
+## ��️ Architecture
+
+### System Overview
+
+```mermaid
+graph LR
+    A[Mobile/Web Client] --> B[Flutter App]
+    B --> C[API Layer]
+    C --> D[Backend Services]
+    D --> E[(Database)]
+    D --> F[IoT Gateway]
+    F --> G[Sensors Network]
+
+    style A fill:#f9f,stroke:#333
+    style B fill:#bbf,stroke:#333
+    style C fill:#ddf,stroke:#333
+    style D fill:#dfd,stroke:#333
+    style E fill:#fdd,stroke:#333
+    style F fill:#ddf,stroke:#333
+    style G fill:#ffd,stroke:#333
+```
 
 ### Core Technologies
 
@@ -120,38 +140,148 @@ graph TD
     C --> D[Repository Layer]
     D --> E[Data Sources]
     F[MVVM Architecture] --> B
+
+    style A fill:#02569B,stroke:#333,color:#fff
+    style B fill:#0175C2,stroke:#333,color:#fff
+    style C fill:#13B9FD,stroke:#333,color:#fff
+    style D fill:#4CAF50,stroke:#333,color:#fff
+    style E fill:#FF5722,stroke:#333,color:#fff
+    style F fill:#9C27B0,stroke:#333,color:#fff
 ```
 
-### Key Components
+### Data Flow
 
-- **UI Layer**: Material 3 Design, Responsive Layouts
-- **State Management**: BLoC Pattern with Cubit
-- **Navigation**: GoRouter for declarative routing
-- **Dependency Injection**: GetIt with Injectable
-- **API Communication**: Dio with Interceptors
-- **Local Storage**: Secure Storage, SQLite
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant UI as UI Layer
+    participant B as BLoC
+    participant R as Repository
+    participant A as API
+    participant DB as Database
+
+    U->>UI: User Action
+    UI->>B: Event
+    B->>R: Request Data
+    R->>A: API Call
+    A->>DB: Query
+    DB-->>A: Response
+    A-->>R: Data
+    R-->>B: Updated State
+    B-->>UI: UI Update
+    UI-->>U: Visual Feedback
+```
+
+### Feature Architecture
+
+```mermaid
+graph TB
+    subgraph Core
+        A[App Core] --> B[Routing]
+        A --> C[DI]
+        A --> D[Theming]
+        A --> E[Networking]
+    end
+
+    subgraph Features
+        F[Auth] --> J[User Session]
+        G[Dashboard] --> K[Analytics]
+        H[Project] --> L[Management]
+        I[IoT] --> M[Monitoring]
+    end
+
+    Core --> Features
+
+    style A fill:#bbf,stroke:#333
+    style F fill:#bfb,stroke:#333
+    style G fill:#fbf,stroke:#333
+    style H fill:#fbb,stroke:#333
+    style I fill:#bff,stroke:#333
+```
+
+### State Management
+
+```mermaid
+stateDiagram-v2
+    [*] --> Initial
+    Initial --> Loading: Fetch Data
+    Loading --> Success: Data Received
+    Loading --> Error: API Error
+    Success --> Loading: Refresh
+    Error --> Loading: Retry
+    Success --> [*]: Complete
+    Error --> [*]: Cancel
+```
+
+### Authentication Flow
+
+```mermaid
+graph TD
+    A[Start] --> B{Has Token?}
+    B -->|Yes| C[Validate Token]
+    B -->|No| D[Login Screen]
+    C -->|Valid| E[Main App]
+    C -->|Invalid| D
+    D --> F[Credentials Input]
+    F --> G{Valid Login?}
+    G -->|Yes| H[Generate Token]
+    G -->|No| D
+    H --> E
+
+    style A fill:#f9f,stroke:#333
+    style B fill:#bbf,stroke:#333
+    style C fill:#ddf,stroke:#333
+    style D fill:#fdd,stroke:#333
+    style E fill:#dfd,stroke:#333
+    style F fill:#ddf,stroke:#333
+    style G fill:#bbf,stroke:#333
+    style H fill:#dfd,stroke:#333
+```
 
 ### Project Structure
 
-```
-lib/
-├── 🔧 core/
-│   ├── di/          # Dependency Injection
-│   ├── env/         # Environment Config
-│   ├── helpers/     # Utility Functions
-│   ├── layout/      # Base Layouts
-│   ├── networking/  # API Layer
-│   ├── routing/     # Navigation
-│   ├── theming/     # App Theme
-│   └── utils/       # Common Utils
-│
-├── 📱 features/
-│   ├── auth/        # Authentication
-│   ├── dashboard/   # Main Dashboard
-│   ├── manage/      # Management
-│   └── project/     # Project Features
-│
-└── 🚀 main.dart     # Entry Point
+```mermaid
+graph TD
+    subgraph Project Root
+        A[lib] --> B[core]
+        A --> C[features]
+        A --> D[main.dart]
+
+        subgraph Core
+            B --> E[di]
+            B --> F[env]
+            B --> G[helpers]
+            B --> H[layout]
+            B --> I[networking]
+            B --> J[routing]
+            B --> K[theming]
+            B --> L[utils]
+        end
+
+        subgraph Features
+            C --> M[auth]
+            C --> N[dashboard]
+            C --> O[manage]
+            C --> P[project]
+
+            subgraph Feature Structure
+                M --> Q[data]
+                M --> R[domain]
+                M --> S[ui]
+                Q --> T[models]
+                Q --> U[repos]
+                R --> V[entities]
+                R --> W[usecases]
+                S --> X[screens]
+                S --> Y[widgets]
+            end
+        end
+    end
+
+    style A fill:#bbf,stroke:#333
+    style B fill:#ddf,stroke:#333
+    style C fill:#dfd,stroke:#333
+    style D fill:#fdd,stroke:#333
 ```
 
 ## 🚀 Getting Started
