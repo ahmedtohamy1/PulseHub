@@ -37,7 +37,7 @@ class MonitoringTableWidget extends StatelessWidget {
       child: GridView.builder(
         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
           maxCrossAxisExtent: 600,
-          mainAxisExtent: 210,
+          mainAxisExtent: 260,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
         ),
