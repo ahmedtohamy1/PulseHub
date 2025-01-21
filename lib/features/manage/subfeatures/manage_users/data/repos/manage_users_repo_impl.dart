@@ -282,20 +282,20 @@ class ManageUsersRepositoryImpl implements ManageUsersRepository {
         data: requestData,
       );
 
-      print('Create User Response: ${response.data}'); // Debug log
+      // Debug log
 
       if (response.statusCode == StatusCode.ok && response.data['success']) {
         // Extract the user ID from the response
         // The user details are under User_Details in the response
         final userData = response.data['User_Details'];
-        print('User Data: $userData'); // Debug log
+        // Debug log
 
         if (userData == null) {
-          print('Response data structure: ${response.data}'); // Debug log
+          // Debug log
           return const Left('Failed to get user data from response');
         }
         final userId = userData['user_id'];
-        print('User ID: $userId'); // Debug log
+        // Debug log
 
         if (userId == null) {
           return const Left('Failed to get user ID from response');
@@ -305,7 +305,7 @@ class ManageUsersRepositoryImpl implements ManageUsersRepository {
         final errorMessage = response.data['message'] ??
             response.data['error'] ??
             'Failed to create user: ${response.statusCode}';
-        print('Error creating user: $errorMessage'); // Debug log
+        // Debug log
         return Left(errorMessage.toString());
       }
     } catch (e) {

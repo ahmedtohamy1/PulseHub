@@ -170,7 +170,7 @@ class _ManageUsersTabState extends State<ManageUsersTab>
                                           'All Roles',
                                           style: TextStyle(
                                             color: colorScheme.onSurface
-                                                .withOpacity(0.7),
+                                                .withValues(alpha: 0.7),
                                           ),
                                         ),
                                       ),
@@ -217,7 +217,7 @@ class _ManageUsersTabState extends State<ManageUsersTab>
                                           'All Status',
                                           style: TextStyle(
                                             color: colorScheme.onSurface
-                                                .withOpacity(0.7),
+                                                .withValues(alpha: 0.7),
                                           ),
                                         ),
                                       ),
@@ -280,7 +280,7 @@ class _ManageUsersTabState extends State<ManageUsersTab>
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: colorScheme.shadow.withOpacity(0.1),
+                        color: colorScheme.shadow.withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -353,7 +353,7 @@ class _ManageUsersTabState extends State<ManageUsersTab>
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide(
-                              color: colorScheme.outline.withOpacity(0.5),
+                              color: colorScheme.outline.withValues(alpha: 0.5),
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(

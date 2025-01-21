@@ -237,8 +237,10 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                   height: 200,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color:
-                        Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.1),
                     image: _localUser.pictureUrl?.isNotEmpty == true
                         ? DecorationImage(
                             image: NetworkImage(_localUser.pictureUrl!),
@@ -254,7 +256,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                           color: Theme.of(context)
                               .colorScheme
                               .primary
-                              .withOpacity(0.5),
+                              .withValues(alpha: 0.5),
                         )
                       : null,
                 ),
@@ -273,7 +275,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                             color: colorScheme.surfaceContainerHighest,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -294,7 +296,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                             color: colorScheme.surfaceContainerHighest,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -433,7 +435,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                           color: Theme.of(context)
                               .colorScheme
                               .primary
-                              .withOpacity(0.1),
+                              .withValues(alpha: 0.1),
                           image: selectedImage != null
                               ? DecorationImage(
                                   image: FileImage(File(selectedImage!.path)),
@@ -455,7 +457,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
                                 color: Theme.of(context)
                                     .colorScheme
                                     .primary
-                                    .withOpacity(0.5),
+                                    .withValues(alpha: 0.5),
                               )
                             : null,
                       ),
@@ -687,11 +689,11 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
 
     return Card(
       elevation: 0,
-      color: colorScheme.primary.withOpacity(0.05),
+      color: colorScheme.primary.withValues(alpha: 0.05),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: colorScheme.outline.withOpacity(0.2),
+          color: colorScheme.outline.withValues(alpha: 0.2),
         ),
       ),
       child: Padding(
@@ -701,7 +703,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: colorScheme.primary.withOpacity(0.1),
+                color: colorScheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
@@ -753,11 +755,11 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
 
     return Card(
       elevation: 0,
-      color: color.withOpacity(0.05),
+      color: color.withValues(alpha: 0.05),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: color.withOpacity(0.5),
+          color: color.withValues(alpha: 0.5),
         ),
       ),
       child: Padding(
@@ -767,7 +769,7 @@ class _UserDetailsScreenState extends State<UserDetailsScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(

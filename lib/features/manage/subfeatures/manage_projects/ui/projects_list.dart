@@ -105,7 +105,7 @@ class _ProjectsListState extends State<ProjectsList> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: colorScheme.shadow.withOpacity(0.1),
+                    color: colorScheme.shadow.withValues(alpha: 0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -144,7 +144,7 @@ class _ProjectsListState extends State<ProjectsList> {
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: colorScheme.outline.withOpacity(0.5),
+                      color: colorScheme.outline.withValues(alpha: 0.5),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
@@ -270,7 +270,7 @@ class _ProjectsListState extends State<ProjectsList> {
                         color: Theme.of(context)
                             .colorScheme
                             .shadow
-                            .withOpacity(0.1),
+                            .withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -316,11 +316,9 @@ class _ProjectsListState extends State<ProjectsList> {
                               if (image != null && mounted) {
                                 setModalState(() {
                                   _selectedImage = File(image.path);
-                                  print('DEBUG: Image selected successfully');
                                 });
                               }
                             } catch (e) {
-                              print('DEBUG: Error selecting image - $e');
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
@@ -343,7 +341,7 @@ class _ProjectsListState extends State<ProjectsList> {
                                 color: Theme.of(context)
                                     .colorScheme
                                     .outline
-                                    .withOpacity(0.5),
+                                    .withValues(alpha: 0.5),
                               ),
                             ),
                             child: ClipRRect(
@@ -364,7 +362,7 @@ class _ProjectsListState extends State<ProjectsList> {
                                               color: Theme.of(context)
                                                   .colorScheme
                                                   .surface
-                                                  .withOpacity(0.9),
+                                                  .withValues(alpha: 0.9),
                                               borderRadius:
                                                   BorderRadius.circular(8),
                                             ),
@@ -388,13 +386,9 @@ class _ProjectsListState extends State<ProjectsList> {
                                                     setModalState(() {
                                                       _selectedImage =
                                                           File(image.path);
-                                                      print(
-                                                          'DEBUG: Image updated successfully');
                                                     });
                                                   }
                                                 } catch (e) {
-                                                  print(
-                                                      'DEBUG: Error updating image - $e');
                                                   if (mounted) {
                                                     ScaffoldMessenger.of(
                                                             context)
@@ -480,8 +474,6 @@ class _ProjectsListState extends State<ProjectsList> {
                               child: switch (state) {
                                 GetAllOwnersSuccess(owners: final owners) =>
                                   (() {
-                                    print(
-                                        'DEBUG: Owners loaded - Count: ${owners.length}');
                                     return DropdownButtonFormField<String>(
                                       value: _selectedOwner?.name,
                                       decoration: InputDecoration(
@@ -534,13 +526,10 @@ class _ProjectsListState extends State<ProjectsList> {
                                             if (mounted) {
                                               setModalState(() {
                                                 _selectedOwner = selectedOwner;
-                                                print(
-                                                    'DEBUG: Owner selected and state updated - ${selectedOwner.name}');
                                               });
                                             }
                                           } catch (e) {
-                                            print(
-                                                'DEBUG: Error selecting owner - $e');
+                                            rethrow;
                                           }
                                         }
                                       },
@@ -643,8 +632,6 @@ class _ProjectsListState extends State<ProjectsList> {
                                               .error,
                                         ),
                                         onPressed: () {
-                                          print(
-                                              'DEBUG: Retrying to load owners...');
                                           context
                                               .read<ManageProjectsCubit>()
                                               .getAllOwners();
@@ -708,12 +695,8 @@ class _ProjectsListState extends State<ProjectsList> {
                           child: FilledButton(
                             onPressed: () {
                               if (_selectedOwner != null) {
-                                print(
-                                    'DEBUG: Creating project with owner: ${_selectedOwner!.name}');
                                 // TODO: Implement project creation
                               } else {
-                                print(
-                                    'DEBUG: Cannot create project - No owner selected');
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text('Please select an owner'),

@@ -25,7 +25,7 @@ class CircleIcon extends StatelessWidget {
         boxShadow: [
           if (isActive)
             BoxShadow(
-              color: colorScheme.primary.withOpacity(0.3),
+              color: colorScheme.primary.withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),

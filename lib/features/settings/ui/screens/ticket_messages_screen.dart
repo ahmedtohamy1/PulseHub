@@ -83,7 +83,7 @@ class _TicketMessagesScreenState extends State<TicketMessagesScreen> {
                               color: Theme.of(context)
                                   .colorScheme
                                   .shadow
-                                  .withOpacity(0.05),
+                                  .withValues(alpha: 0.05),
                               blurRadius: 4,
                               offset: const Offset(0, 2),
                             ),
@@ -180,7 +180,7 @@ class _TicketMessagesScreenState extends State<TicketMessagesScreen> {
                               color: Theme.of(context)
                                   .colorScheme
                                   .shadow
-                                  .withOpacity(0.05),
+                                  .withValues(alpha: 0.05),
                               blurRadius: 4,
                               offset: const Offset(0, 2),
                             ),
@@ -383,7 +383,7 @@ class _TicketMessagesScreenState extends State<TicketMessagesScreen> {
                         color: Theme.of(context)
                             .colorScheme
                             .surfaceContainerHighest
-                            .withOpacity(0.5),
+                            .withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child:
@@ -476,7 +476,7 @@ class _TicketMessagesScreenState extends State<TicketMessagesScreen> {
                                         color: Theme.of(context)
                                             .colorScheme
                                             .shadow
-                                            .withOpacity(0.05),
+                                            .withValues(alpha: 0.05),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       ),
@@ -563,7 +563,7 @@ class _TicketMessagesScreenState extends State<TicketMessagesScreen> {
                                                   : Theme.of(context)
                                                       .colorScheme
                                                       .onSurfaceVariant
-                                                      .withOpacity(0.5),
+                                                      .withValues(alpha: 0.5),
                                             ),
                                             const SizedBox(width: 4),
                                           ],
@@ -590,7 +590,8 @@ class _TicketMessagesScreenState extends State<TicketMessagesScreen> {
                                                         : Theme.of(context)
                                                             .colorScheme
                                                             .onSurfaceVariant
-                                                            .withOpacity(0.7),
+                                                            .withValues(
+                                                                alpha: 0.7),
                                                     fontSize: 12,
                                                     decoration: message.seen
                                                                 ?.isNotEmpty ==
@@ -620,7 +621,8 @@ class _TicketMessagesScreenState extends State<TicketMessagesScreen> {
                                                           : Theme.of(context)
                                                               .colorScheme
                                                               .onSurfaceVariant
-                                                              .withOpacity(0.7),
+                                                              .withValues(
+                                                                  alpha: 0.7),
                                                       fontSize: 12,
                                                       decoration: message.seen
                                                                   ?.isNotEmpty ==
@@ -658,7 +660,7 @@ class _TicketMessagesScreenState extends State<TicketMessagesScreen> {
                           color: Theme.of(context)
                               .colorScheme
                               .shadow
-                              .withOpacity(0.05),
+                              .withValues(alpha: 0.05),
                           blurRadius: 8,
                           offset: const Offset(0, -2),
                         ),

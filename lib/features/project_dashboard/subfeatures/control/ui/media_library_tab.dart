@@ -109,7 +109,7 @@ class _MediaLibraryTabState extends State<MediaLibraryTab> {
                             color: Theme.of(context)
                                 .colorScheme
                                 .primaryContainer
-                                .withOpacity(0.3),
+                                .withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
@@ -269,7 +269,7 @@ class _MediaLibraryTabState extends State<MediaLibraryTab> {
                   color: Theme.of(context).colorScheme.surface,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 5,
                       offset: const Offset(0, 2),
                     ),
@@ -331,7 +331,7 @@ class _MediaLibraryTabState extends State<MediaLibraryTab> {
                               color: Theme.of(context)
                                   .colorScheme
                                   .primary
-                                  .withOpacity(0.5),
+                                  .withValues(alpha: 0.5),
                             ),
                             const SizedBox(height: 16),
                             Text(
@@ -343,7 +343,7 @@ class _MediaLibraryTabState extends State<MediaLibraryTab> {
                                     color: Theme.of(context)
                                         .colorScheme
                                         .onSurface
-                                        .withOpacity(0.6),
+                                        .withValues(alpha: 0.6),
                                   ),
                             ),
                             const SizedBox(height: 8),
@@ -398,7 +398,7 @@ class _MediaLibraryTabState extends State<MediaLibraryTab> {
                                         color: Theme.of(context)
                                             .colorScheme
                                             .primaryContainer
-                                            .withOpacity(0.1),
+                                            .withValues(alpha: 0.1),
                                         child: isImage && file.fileUrl != null
                                             ? Image.network(
                                                 file.fileUrl!,

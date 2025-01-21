@@ -107,7 +107,7 @@ class _CloudHubTabState extends State<CloudHubTab>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: colorScheme.primary.withOpacity(0.1),
+                color: colorScheme.primary.withValues(alpha: 0.1),
                 border: Border(
                   left: BorderSide(
                     color: colorScheme.primary,
@@ -197,7 +197,7 @@ class _CloudHubTabState extends State<CloudHubTab>
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: colorScheme.primary.withOpacity(0.1),
+            color: colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(

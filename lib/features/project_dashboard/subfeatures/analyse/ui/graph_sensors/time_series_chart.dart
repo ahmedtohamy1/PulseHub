@@ -582,11 +582,17 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
               horizontalInterval: yInterval,
               verticalInterval: xInterval,
               getDrawingHorizontalLine: (value) => FlLine(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.1),
                 strokeWidth: 0.5,
               ),
               getDrawingVerticalLine: (value) => FlLine(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.1),
                 strokeWidth: 0.5,
               ),
             ),
@@ -659,13 +665,16 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
             borderData: FlBorderData(
               show: true,
               border: Border.all(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.2),
                 width: 1,
               ),
             ),
             clipData: const FlClipData.all(),
             backgroundColor:
-                Theme.of(context).colorScheme.surface.withOpacity(0.5),
+                Theme.of(context).colorScheme.surface.withValues(alpha: 0.5),
             lineTouchData: LineTouchData(
               enabled: true,
               touchTooltipData: LineTouchTooltipData(
@@ -844,7 +853,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
           show: showPoints,
           getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
             radius: pointSize,
-            color: color.withOpacity(0.7),
+            color: color.withValues(alpha: 0.7),
             strokeWidth: 1,
             strokeColor: Theme.of(context).colorScheme.surface,
           ),
@@ -905,13 +914,13 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                     FlSpot(startTime, minY - (maxY - minY) * 0.1),
                   ],
                   isCurved: false,
-                  color: colorScheme.error.withOpacity(0.1),
+                  color: colorScheme.error.withValues(alpha: 0.1),
                   barWidth: 0,
                   isStrokeCapRound: true,
                   dotData: const FlDotData(show: false),
                   belowBarData: BarAreaData(
                     show: true,
-                    color: colorScheme.error.withOpacity(0.1),
+                    color: colorScheme.error.withValues(alpha: 0.1),
                   ),
                 ),
               );
@@ -921,7 +930,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                 LineChartBarData(
                   spots: anomalySpots,
                   isCurved: false,
-                  color: colorScheme.error.withOpacity(0.5),
+                  color: colorScheme.error.withValues(alpha: 0.5),
                   barWidth: 2,
                   isStrokeCapRound: true,
                   dotData: FlDotData(
@@ -929,7 +938,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                     getDotPainter: (spot, percent, barData, index) =>
                         FlDotCirclePainter(
                       radius: pointSize + 1,
-                      color: colorScheme.error.withOpacity(0.5),
+                      color: colorScheme.error.withValues(alpha: 0.5),
                       strokeWidth: 1,
                       strokeColor: Theme.of(context).colorScheme.surface,
                     ),

@@ -53,7 +53,7 @@ class GroupsTable extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: colorScheme.primary.withOpacity(0.1),
+                color: colorScheme.primary.withValues(alpha: 0.1),
                 border: Border(
                   left: BorderSide(
                     color: colorScheme.primary,

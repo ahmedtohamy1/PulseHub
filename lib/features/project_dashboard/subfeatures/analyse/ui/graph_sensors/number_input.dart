@@ -54,8 +54,10 @@ class NumberInput extends StatelessWidget {
                 child: Icon(
                   Icons.keyboard_arrow_up,
                   size: 18,
-                  color:
-                      Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6),
                 ),
               ),
               InkWell(
@@ -63,8 +65,10 @@ class NumberInput extends StatelessWidget {
                 child: Icon(
                   Icons.keyboard_arrow_down,
                   size: 18,
-                  color:
-                      Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6),
                 ),
               ),
             ],

@@ -178,23 +178,26 @@ class ProjectCard extends StatelessWidget {
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) =>
                                   Container(
-                                color: colorScheme.primary.withOpacity(0.1),
+                                color:
+                                    colorScheme.primary.withValues(alpha: 0.1),
                                 child: Center(
                                   child: Icon(
                                     Icons.image_not_supported,
                                     size: 64,
-                                    color: colorScheme.primary.withOpacity(0.5),
+                                    color: colorScheme.primary
+                                        .withValues(alpha: 0.5),
                                   ),
                                 ),
                               ),
                             )
                           : Container(
-                              color: colorScheme.primary.withOpacity(0.1),
+                              color: colorScheme.primary.withValues(alpha: 0.1),
                               child: Center(
                                 child: Icon(
                                   Icons.image_not_supported,
                                   size: 64,
-                                  color: colorScheme.primary.withOpacity(0.5),
+                                  color: colorScheme.primary
+                                      .withValues(alpha: 0.5),
                                 ),
                               ),
                             ),
@@ -207,8 +210,8 @@ class ProjectCard extends StatelessWidget {
                             begin: Alignment.bottomCenter,
                             end: Alignment.topCenter,
                             colors: [
-                              Colors.black.withOpacity(0.8),
-                              Colors.black.withOpacity(0.0),
+                              Colors.black.withValues(alpha: 0.8),
+                              Colors.black.withValues(alpha: 0.0),
                             ],
                           ),
                         ),
@@ -224,7 +227,7 @@ class ProjectCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               spreadRadius: 1,
                               blurRadius: 5,
                               offset: const Offset(0, 2),
@@ -290,7 +293,8 @@ class ProjectCard extends StatelessWidget {
                                       project.acronym ?? '',
                                       style:
                                           theme.textTheme.titleMedium?.copyWith(
-                                        color: Colors.white.withOpacity(0.9),
+                                        color:
+                                            Colors.white.withValues(alpha: 0.9),
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -355,7 +359,7 @@ class ProjectCard extends StatelessWidget {
                           height: 80,
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: colorScheme.primary.withOpacity(0.1),
+                            color: colorScheme.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: ClipRRect(
@@ -377,7 +381,7 @@ class ProjectCard extends StatelessWidget {
                           width: 80,
                           height: 80,
                           decoration: BoxDecoration(
-                            color: colorScheme.primary.withOpacity(0.1),
+                            color: colorScheme.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
@@ -506,11 +510,6 @@ class ProjectCard extends StatelessWidget {
     );
   }
 
-  bool _shouldBeFullWidth(String? value) {
-    if (value == null || value.isEmpty) return false;
-    return value.length > 30; // Adjust this threshold as needed
-  }
-
   Widget _buildInfoRow(
     String label,
     String value,
@@ -532,7 +531,7 @@ class ProjectCard extends StatelessWidget {
             height: 32,
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: colorScheme.primary.withOpacity(0.1),
+              color: colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6),
             ),
             child: ClipRRect(
@@ -552,7 +551,7 @@ class ProjectCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: colorScheme.primary.withOpacity(0.1),
+              color: colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(

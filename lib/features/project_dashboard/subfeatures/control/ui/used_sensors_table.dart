@@ -324,8 +324,10 @@ class UsedSensorsTable extends StatelessWidget {
                         : null,
                     style: FilledButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.error,
-                      disabledBackgroundColor:
-                          Theme.of(context).colorScheme.error.withOpacity(0.3),
+                      disabledBackgroundColor: Theme.of(context)
+                          .colorScheme
+                          .error
+                          .withValues(alpha: 0.3),
                     ),
                     child: const Text('Delete'),
                   ),
@@ -653,7 +655,7 @@ class UsedSensorsTable extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: colorScheme.primary.withOpacity(0.1),
+                color: colorScheme.primary.withValues(alpha: 0.1),
                 border: Border(
                   left: BorderSide(
                     color: colorScheme.primary,

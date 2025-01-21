@@ -263,7 +263,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                                       color: Theme.of(context)
                                           .colorScheme
                                           .outline
-                                          .withOpacity(0.5),
+                                          .withValues(alpha: 0.5),
                                     ),
                                   ),
                                   child: _ownerLogo != null
@@ -546,7 +546,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                       color: Theme.of(context)
                           .colorScheme
                           .outline
-                          .withOpacity(0.5),
+                          .withValues(alpha: 0.5),
                     ),
                   ),
                   child: ClipRRect(
@@ -577,7 +577,7 @@ class _AddProjectScreenState extends State<AddProjectScreen> {
                                     color: Theme.of(context)
                                         .colorScheme
                                         .surface
-                                        .withOpacity(0.9),
+                                        .withValues(alpha: 0.9),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: IconButton(

@@ -351,7 +351,7 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
                                             color: Theme.of(context)
                                                 .colorScheme
                                                 .primaryContainer
-                                                .withOpacity(0.3),
+                                                .withValues(alpha: 0.3),
                                             borderRadius:
                                                 BorderRadius.circular(8),
                                           ),
@@ -396,7 +396,7 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
                                                     color: Theme.of(context)
                                                         .colorScheme
                                                         .primary
-                                                        .withOpacity(0.2),
+                                                        .withValues(alpha: 0.2),
                                                   ),
                                                   borderRadius:
                                                       BorderRadius.circular(12),
@@ -410,7 +410,8 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
                                                       Theme.of(context)
                                                           .colorScheme
                                                           .primaryContainer
-                                                          .withOpacity(0.1),
+                                                          .withValues(
+                                                              alpha: 0.1),
                                                   shape: RoundedRectangleBorder(
                                                       borderRadius:
                                                           BorderRadius.circular(
@@ -1143,7 +1144,7 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: (color ?? Colors.grey[600])?.withOpacity(0.1),
+              color: (color ?? Colors.grey[600])?.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(

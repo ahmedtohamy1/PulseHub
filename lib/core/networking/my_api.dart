@@ -175,11 +175,9 @@ class MyApi {
         options: dioOptions,
       );
 
-      // Log cookies for debugging
+  /*     // Log cookies for debugging
       final cookies = await _cookieJar
-          .loadForRequest(Uri.parse(EndPoints.apiUrl + endpoint));
-      print(
-          'Cookies after request: ${cookies.map((c) => '${c.name}=${c.value}').join('; ')}');
+          .loadForRequest(Uri.parse(EndPoints.apiUrl + endpoint)); */
 
       return response;
     } on DioException catch (e) {

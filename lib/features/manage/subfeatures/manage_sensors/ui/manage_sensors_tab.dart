@@ -115,7 +115,7 @@ class _ManageSensorsViewState extends State<ManageSensorsView> {
                     'Cancel',
                     style: TextStyle(
                       color: isLoading
-                          ? colorScheme.onSurface.withOpacity(0.38)
+                          ? colorScheme.onSurface.withValues(alpha: 0.38)
                           : colorScheme.primary,
                     ),
                   ),
@@ -295,7 +295,7 @@ class _ManageSensorsViewState extends State<ManageSensorsView> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: colorScheme.shadow.withOpacity(0.1),
+                      color: colorScheme.shadow.withValues(alpha: 0.1),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -334,7 +334,7 @@ class _ManageSensorsViewState extends State<ManageSensorsView> {
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
-                        color: colorScheme.outline.withOpacity(0.5),
+                        color: colorScheme.outline.withValues(alpha: 0.5),
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
@@ -456,7 +456,7 @@ class SensorCard extends StatelessWidget {
                   'Cancel',
                   style: TextStyle(
                     color: isLoading
-                        ? colorScheme.onSurface.withOpacity(0.38)
+                        ? colorScheme.onSurface.withValues(alpha: 0.38)
                         : colorScheme.primary,
                   ),
                 ),
@@ -503,7 +503,7 @@ class SensorCard extends StatelessWidget {
                         style: TextStyle(
                           color: confirmController.text == sensorType.name
                               ? colorScheme.error
-                              : colorScheme.onSurface.withOpacity(0.38),
+                              : colorScheme.onSurface.withValues(alpha: 0.38),
                         ),
                       ),
               ),
@@ -565,7 +565,7 @@ class SensorCard extends StatelessWidget {
                   'Cancel',
                   style: TextStyle(
                     color: isLoading
-                        ? colorScheme.onSurface.withOpacity(0.38)
+                        ? colorScheme.onSurface.withValues(alpha: 0.38)
                         : colorScheme.primary,
                   ),
                 ),
@@ -630,7 +630,7 @@ class SensorCard extends StatelessWidget {
 
     return Card(
       elevation: 0,
-      color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -644,7 +644,7 @@ class SensorCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.1),
+                    color: colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
