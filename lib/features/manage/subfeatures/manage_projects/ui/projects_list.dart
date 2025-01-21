@@ -1,16 +1,10 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_projects/cubit/manage_projects_cubit.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_projects/data/models/get_all_projects_response_model.dart';
-import 'package:pulsehub/features/manage/subfeatures/manage_projects/data/models/owner_model.dart'
-    as owner_model;
 import 'package:pulsehub/features/manage/subfeatures/manage_projects/ui/add_project_screen.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_projects/ui/project_card.dart';
-import 'package:pulsehub/features/project_dashboard/subfeatures/analyse/ui/graph_sensors/number_input.dart';
 
 class ProjectsList extends StatefulWidget {
   final List<Project> projects;
@@ -25,9 +19,9 @@ class _ProjectsListState extends State<ProjectsList> {
   final TextEditingController _searchController = TextEditingController();
   bool _showSearch = false;
   String _searchQuery = '';
-  File? _selectedImage;
+/*   File? _selectedImage;
   final _imagePicker = ImagePicker();
-  owner_model.OwnerModel? _selectedOwner;
+  owner_model.OwnerModel? _selectedOwner; */
 
   @override
   void initState() {
@@ -56,7 +50,7 @@ class _ProjectsListState extends State<ProjectsList> {
     });
   }
 
-  Future<void> _pickImage() async {
+ /*  Future<void> _pickImage() async {
     final XFile? image = await _imagePicker.pickImage(
       source: ImageSource.gallery,
       imageQuality: 80,
@@ -67,7 +61,7 @@ class _ProjectsListState extends State<ProjectsList> {
       });
     }
   }
-
+ */
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -222,7 +216,7 @@ class _ProjectsListState extends State<ProjectsList> {
     );
   }
 
-  void _showAddProjectSheet(BuildContext context) {
+/*   void _showAddProjectSheet(BuildContext context) {
     // Reset image when opening sheet
     _selectedImage = null;
     _selectedOwner = null;
@@ -695,8 +689,7 @@ class _ProjectsListState extends State<ProjectsList> {
                           child: FilledButton(
                             onPressed: () {
                               if (_selectedOwner != null) {
-                                // TODO: Implement project creation
-                              } else {
+                          } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text('Please select an owner'),
@@ -732,8 +725,8 @@ class _ProjectsListState extends State<ProjectsList> {
       constructionDateController.dispose();
     });
   }
-
-  Widget _buildDateField({
+ */
+/*   Widget _buildDateField({
     required BuildContext context,
     required String label,
     required TextEditingController controller,
@@ -847,4 +840,4 @@ class _ProjectsListState extends State<ProjectsList> {
       ],
     );
   }
-}
+ */}

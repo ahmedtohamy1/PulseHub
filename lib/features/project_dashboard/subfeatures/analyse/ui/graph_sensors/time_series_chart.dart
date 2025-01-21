@@ -6,12 +6,12 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+
 import 'package:pulsehub/features/project_dashboard/data/models/timedb_response.dart';
 import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo_impl.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/analyse/ui/graph_sensors/components/analysis_parameters_dialog.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/analyse/ui/graph_sensors/components/fl_dot_triangle_painter.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class TimeSeriesChart extends StatefulWidget {
   final SensorDataResponse data;
@@ -55,11 +55,11 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     _initializeMaps();
   }
 
-  // get theme from shared preferences
+/*   // get theme from shared preferences
   Future<bool> _isDarkMode() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool('isDarkMode') ?? false;
-  }
+  } */
 
   @override
   void didUpdateWidget(TimeSeriesChart oldWidget) {
@@ -134,7 +134,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
           imageHeight + titlePainter.height + 32; // 32 for padding
       final recorder = ui.PictureRecorder();
       final canvas = Canvas(recorder);
-      final paint = Paint()..color = Colors.white;
+ /*      final paint = Paint()..color = Colors.white; */
 
       // Draw white background for entire image
       canvas.drawRect(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pulsehub/core/routing/404.dart';
+import 'package:pulsehub/core/routing/not_found_screen.dart';
 
 class Routes {
   Routes._();

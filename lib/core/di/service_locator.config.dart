@@ -1,3 +1,4 @@
+// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 // **************************************************************************
@@ -22,7 +23,6 @@ import '../../features/auth/data/repositories/auth_repository_impl.dart'
 import '../../features/dics/cubit/dic_cubit.dart' as _i819;
 import '../../features/dics/data/repos/dic_repo.dart' as _i90;
 import '../../features/dics/data/repos/dic_repo_impl.dart' as _i1046;
-import '../../features/manage/cubit/manage_cubit.dart' as _i526;
 import '../../features/manage/data/repos/manage_repo.dart' as _i87;
 import '../../features/manage/data/repos/manage_repo_impl.dart' as _i176;
 import '../../features/manage/subfeatures/manage_owners/cubit/manage_owners_cubit.dart'
@@ -108,8 +108,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i438.ProjectsCubit(gh<_i234.ProjectsRepository>()));
     gh.lazySingleton<_i767.AiReportRepository>(
         () => _i1064.AiReportRepositoryImpl(gh<_i713.MyApi>()));
-    gh.factory<_i526.ManageCubit>(
-        () => _i526.ManageCubit(gh<_i87.ManageRepository>()));
     gh.lazySingleton<_i878.SettingsRepository>(
         () => _i181.SettingsRepoImpl(gh<_i713.MyApi>()));
     gh.factory<_i988.ManageSensorsCubit>(

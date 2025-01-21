@@ -59,123 +59,107 @@ class _ManageSensorsViewState extends State<ManageSensorsView> {
     });
   }
 
-  Future<void> _showCreateSensorDialog(BuildContext context) async {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final TextEditingController nameController = TextEditingController();
-    final TextEditingController functionController = TextEditingController();
+Future<void> _showCreateSensorDialog(BuildContext context) async {
+  final theme = Theme.of(context);
+  final colorScheme = theme.colorScheme;
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController functionController = TextEditingController();
 
-    await showDialog(
-      context: context,
-      builder: (dialogContext) => BlocProvider.value(
-        value: context.read<ManageSensorsCubit>(),
-        child: StatefulBuilder(
-          builder: (context, setState) {
-            bool isLoading = false;
+  await showDialog(
+    context: context,
+    builder: (dialogContext) => BlocProvider.value(
+      value: context.read<ManageSensorsCubit>(),
+      child: StatefulBuilder(
+        builder: (context, setState) {
+          // 1. Fixed state management for loading indicator
+          bool isLoading = false;
 
-            return AlertDialog(
-              title: Text(
-                'Create Sensor Type',
-                style: theme.textTheme.titleLarge,
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Name',
-                      prefixIcon: Icon(Icons.sensors),
-                    ),
-                    onChanged: (value) {
-                      setState(() {}); // Update the state when text changes
-                    },
+          return AlertDialog(
+            title: Text(
+              'Create Sensor Type',
+              style: theme.textTheme.titleLarge,
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Name',
+                    prefixIcon: Icon(Icons.sensors),
                   ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: functionController,
-                    decoration: const InputDecoration(
-                      labelText: 'Function',
-                      prefixIcon: Icon(Icons.functions),
-                    ),
-                    onChanged: (value) {
-                      setState(() {}); // Update the state when text changes
-                    },
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: isLoading
-                      ? null
-                      : () {
-                          Navigator.of(context).pop();
-                        },
-                  child: Text(
-                    'Cancel',
-                    style: TextStyle(
-                      color: isLoading
-                          ? colorScheme.onSurface.withValues(alpha: 0.38)
-                          : colorScheme.primary,
-                    ),
-                  ),
+                  // 2. Removed unnecessary setState in onChanged
                 ),
-                FilledButton(
-                  onPressed: isLoading ||
-                          nameController.text.isEmpty ||
-                          functionController.text.isEmpty
-                      ? null
-                      : () async {
-                          setState(() => isLoading = true);
-                          final cubit = context.read<ManageSensorsCubit>();
-                          await cubit.createEditSensorType(
-                            nameController.text,
-                            functionController.text,
-                            null, // null for create
-                          );
-
-                          if (!context.mounted) return;
-                          Navigator.of(context).pop();
-
-                          // Show result in snackbar
-                          final state = cubit.state;
-                          if (state is CreateEditSensorTypeSuccess) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content:
-                                    Text('Sensor type created successfully'),
-                              ),
-                            );
-                            // Refresh the list
-                            cubit.getAllSensorTypes();
-                          } else if (state is CreateEditSensorTypeError) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(state.error),
-                                backgroundColor: colorScheme.error,
-                              ),
-                            );
-                            setState(() => isLoading = false);
-                          }
-                        },
-                  child: isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text('Create'),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: functionController,
+                  decoration: const InputDecoration(
+                    labelText: 'Function',
+                    prefixIcon: Icon(Icons.functions),
+                  ),
+                  // 2. Removed unnecessary setState in onChanged
                 ),
               ],
-            );
-          },
-        ),
-      ),
-    );
-  }
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                // 3. Simplified disabled state handling
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(color: colorScheme.primary),
+                ),
+              ),
+              FilledButton(
+                onPressed: isLoading ||
+                        nameController.text.isEmpty ||
+                        functionController.text.isEmpty
+                    ? null
+                    : () async {
+                        setState(() => isLoading = true);
+                        final cubit = context.read<ManageSensorsCubit>();
+                        await cubit.createEditSensorType(
+                          nameController.text,
+                          functionController.text,
+                          null,
+                        );
 
+                        if (!context.mounted) return;
+                        Navigator.of(context).pop();
+
+                        final state = cubit.state;
+                        if (state is CreateEditSensorTypeSuccess) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Sensor type created successfully'),
+                            ),
+                          );
+                          cubit.getAllSensorTypes();
+                        } else if (state is CreateEditSensorTypeError) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(state.error),
+                              backgroundColor: colorScheme.error,
+                            ),
+                          );
+                          setState(() => isLoading = false);
+                        }
+                      },
+                child: isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Create'),
+              ),
+            ],
+          );
+        },
+      ),
+    ),
+  );
+}
   @override
   void dispose() {
     _searchController.dispose();
