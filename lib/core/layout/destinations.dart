@@ -74,5 +74,5 @@ const destinations = [
     icon: LucideIcons.bell,
     badgeBuilder: _buildNotificationBadge,
   ),
-  Destination(label: 'More', icon: Icons.menu),
+  Destination(label: 'Profile', icon: Icons.person),
 ];
