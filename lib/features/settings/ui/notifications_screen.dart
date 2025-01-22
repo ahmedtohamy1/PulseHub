@@ -101,7 +101,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   void initState() {
     super.initState();
     _dashboardCubit = sl<ProjectDashboardCubit>();
-    context.read<SettingsCubit>().getNotifications();
+    context.read<SettingsCubit>()
+      ..getUnseenMessages()
+      ..getNotifications();
   }
 
   @override

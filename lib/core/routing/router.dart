@@ -50,12 +50,14 @@ final router = GoRouter(
       ),
     ),
     StatefulShellRoute.indexedStack(
-      builder: (context, state, navigationShell) => BlocProvider(
-        create: (context) => sl<SettingsCubit>()..getNotifications(),
-        child: MainLayout(
-          navigationShell: navigationShell,
-        ),
-      ),
+      builder: (context, state, navigationShell) {
+        return BlocProvider(
+          create: (context) => sl<SettingsCubit>()..getUnseenMessages(),
+          child: MainLayout(
+            navigationShell: navigationShell,
+          ),
+        );
+      },
       branches: [
         StatefulShellBranch(
           routes: [
@@ -113,19 +115,18 @@ final router = GoRouter(
               ),
               routes: [
                 GoRoute(
-                  path: 'profile', // Use relative path for nested routes
+                  path: 'profile',
                   builder: (context, state) => const ProfileScreen(),
                 ),
                 GoRoute(
-                  path:
-                      'session-manager', // Use relative path for nested routes
+                  path: 'session-manager',
                   builder: (context, state) => BlocProvider(
                     create: (context) => sl<SettingsCubit>(),
                     child: const SessionScreen(),
                   ),
                 ),
                 GoRoute(
-                  path: 'manage', // Use relative path for nested routes
+                  path: 'manage',
                   builder: (context, state) => const ManageScreen(),
                 ),
               ],

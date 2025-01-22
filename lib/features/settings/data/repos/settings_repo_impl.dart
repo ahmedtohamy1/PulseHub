@@ -15,6 +15,29 @@ class SettingsRepoImpl implements SettingsRepository {
   SettingsRepoImpl(this.myApiService);
 
   @override
+  Future<Either<String, int>> getUnseenMessages(String token) async {
+    try {
+      final response = await myApiService.get(
+        EndPoints.getUnseenMessages,
+        token: token,
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        if (response.data['unseen_messages'] == [] ||
+            response.data['unseen_messages'] == null) {
+          return const Right(0);
+        }
+
+        return Right(response.data['unseen_messages'].length);
+      } else {
+        return Left('Failed to get unseen messages: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+  @override
   Future<Either<String, ManageSessionResponse>> getSettions(
       String token) async {
     try {

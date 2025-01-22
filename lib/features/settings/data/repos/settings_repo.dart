@@ -20,4 +20,5 @@ abstract class SettingsRepository {
       String confirmPassword, String token);
   Future<Either<String, GetNotificationResponseModel>> getNotifications(
       String token);
+  Future<Either<String, int>> getUnseenMessages(String token);
 }

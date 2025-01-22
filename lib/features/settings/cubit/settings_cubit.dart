@@ -35,6 +35,16 @@ class SettingsCubit extends Cubit<SettingsState> {
     );
   }
 
+  Future<void> getUnseenMessages() async {
+    emit(GetUnseenMessagesLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res = await _repository.getUnseenMessages(token);
+    res.fold(
+      (failure) => emit(GetUnseenMessagesError(failure)),
+      (message) => emit(GetUnseenMessagesSuccess(message)),
+    );
+  }
+
   UserDetails? userDetails;
   Future<void> getUserDetails() async {
     emit(UserDetailsLoading());
