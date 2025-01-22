@@ -29,197 +29,36 @@ class _TicketMessagesScreenState extends State<TicketMessagesScreen> {
   int totalTicketUsers = 0;
   List<dynamic>? ticketUsers;
 
-  void _showDeliveredUsersDialog(
-      BuildContext context, dynamic message, List<dynamic> users) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(
-              Icons.people,
-              color: Theme.of(context).colorScheme.primary,
-              size: 24,
-            ),
-            const SizedBox(width: 8),
-            const Text('Delivered to'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${users.length} users should receive this message',
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 8),
-            Container(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.4,
-              ),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    ...users.map((user) {
-                      final isSeen = message.seen?.any((seenUser) =>
-                              seenUser['user_details'] != null &&
-                              seenUser['user_details']['user_id'] ==
-                                  user.userId) ??
-                          false;
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .shadow
-                                  .withValues(alpha: 0.05),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                '${user.firstName} ${user.lastName}',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                            ),
-                            if (isSeen)
-                              Icon(
-                                Icons.done_all,
-                                color: Theme.of(context).colorScheme.primary,
-                                size: 16,
-                              ),
-                          ],
-                        ),
-                      );
-                    }),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
+  String _formatDateTime(DateTime? dateTime) {
+    if (dateTime == null) return 'Unknown date';
+    try {
+      // Convert UTC to local time
+      final localDateTime = dateTime.toLocal();
+
+      // Format date
+      final date =
+          '${localDateTime.month}/${localDateTime.day}/${localDateTime.year}';
+
+      // Format time
+      final hour = localDateTime.hour % 12 == 0 ? 12 : localDateTime.hour % 12;
+      final minute = localDateTime.minute.toString().padLeft(2, '0');
+      final period = localDateTime.hour >= 12 ? 'PM' : 'AM';
+
+      return '$date, $hour:$minute $period';
+    } catch (e) {
+      return 'Invalid date';
+    }
   }
 
-  void _showSeenByDialog(BuildContext context, dynamic message) {
-    final seenUsers = message.seen
-            ?.where((userId) => userId['user_details'] != null)
-            .toList() ??
-        [];
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(
-              Icons.visibility,
-              color: Theme.of(context).colorScheme.primary,
-              size: 24,
-            ),
-            const SizedBox(width: 8),
-            const Text('Seen by'),
-          ],
+  void _showMessageInfoScreen(
+      BuildContext context, dynamic message, List<dynamic>? users) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MessageInfoScreen(
+          message: message,
+          ticketUsers: users,
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${seenUsers.length} users have seen this message',
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 8),
-            Container(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.4,
-              ),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    ...seenUsers.map((user) {
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .shadow
-                                  .withValues(alpha: 0.05),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                '${user['user_details']['first_name']} ${user['user_details']['last_name']}',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                            ),
-                            Icon(
-                              Icons.done_all,
-                              color: Theme.of(context).colorScheme.primary,
-                              size: 16,
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
       ),
     );
   }
@@ -291,12 +130,25 @@ class _TicketMessagesScreenState extends State<TicketMessagesScreen> {
             } else if (state is TicketMessagesSuccess) {
               // Mark all unread messages as seen
               final currentUserId = UserManager().user?.userId;
-              for (final message
-                  in state.ticketMessagesModel.ticketMessages ?? []) {
-                if (!(message.seen?.contains(currentUserId) ?? false)) {
-                  context
-                      .read<ProjectDashboardCubit>()
-                      .markMessageAsSeen(message.ticketMessageId ?? 0);
+              if (currentUserId != null) {
+                for (final message
+                    in state.ticketMessagesModel.ticketMessages ?? []) {
+                  // Skip messages sent by current user
+                  if (message.user == currentUserId) continue;
+
+                  // Check if message is not already seen by current user
+                  final isAlreadySeen = message.seen?.any((seenInfo) =>
+                          seenInfo['user_details'] != null &&
+                          seenInfo['user_details']['user_id'] ==
+                              currentUserId) ??
+                      false;
+
+                  // Only mark unseen messages that have a valid ID
+                  if (!isAlreadySeen && message.ticketMessageId != null) {
+                    context
+                        .read<ProjectDashboardCubit>()
+                        .markMessageAsSeen(message.ticketMessageId!);
+                  }
                 }
               }
             }
@@ -455,7 +307,7 @@ class _TicketMessagesScreenState extends State<TicketMessagesScreen> {
                                 final DateTime messageDate =
                                     message.createdAt ?? DateTime.now();
                                 final String messageFormattedDate =
-                                    '${messageDate.month}/${messageDate.day}/${messageDate.year}, ${messageDate.hour}:${messageDate.minute.toString().padLeft(2, '0')}:${messageDate.second.toString().padLeft(2, '0')} ${messageDate.hour >= 12 ? 'PM' : 'AM'}';
+                                    _formatDateTime(messageDate);
 
                                 final currentUserId =
                                     UserManager().user?.userId;
@@ -570,10 +422,8 @@ class _TicketMessagesScreenState extends State<TicketMessagesScreen> {
                                           InkWell(
                                             onTap: () {
                                               if (ticketUsers != null) {
-                                                _showDeliveredUsersDialog(
-                                                    context,
-                                                    message,
-                                                    ticketUsers!);
+                                                _showMessageInfoScreen(context,
+                                                    message, ticketUsers);
                                               }
                                             },
                                             child: Column(
@@ -602,37 +452,6 @@ class _TicketMessagesScreenState extends State<TicketMessagesScreen> {
                                                   ),
                                                 ),
                                                 const SizedBox(height: 4),
-                                                InkWell(
-                                                  onTap: () {
-                                                    if (message
-                                                            .seen?.isNotEmpty ==
-                                                        true) {
-                                                      _showSeenByDialog(
-                                                          context, message);
-                                                    }
-                                                  },
-                                                  child: Text(
-                                                    'Seen by ${message.seen?.where((userId) => userId['user_details'] != null).length ?? 0} user${message.seen?.where((userId) => userId['user_details'] != null).length != 1 ? 's' : ''}',
-                                                    style: TextStyle(
-                                                      color: isSeenByCurrentUser
-                                                          ? Theme.of(context)
-                                                              .colorScheme
-                                                              .primary
-                                                          : Theme.of(context)
-                                                              .colorScheme
-                                                              .onSurfaceVariant
-                                                              .withValues(
-                                                                  alpha: 0.7),
-                                                      fontSize: 12,
-                                                      decoration: message.seen
-                                                                  ?.isNotEmpty ==
-                                                              true
-                                                          ? TextDecoration
-                                                              .underline
-                                                          : null,
-                                                    ),
-                                                  ),
-                                                ),
                                               ],
                                             ),
                                           ),
@@ -710,5 +529,290 @@ class _TicketMessagesScreenState extends State<TicketMessagesScreen> {
         ),
       ),
     );
+  }
+}
+
+class MessageInfoScreen extends StatelessWidget {
+  final dynamic message;
+  final List<dynamic>? ticketUsers;
+
+  const MessageInfoScreen({
+    super.key,
+    required this.message,
+    this.ticketUsers,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final seenUsers = message.seen
+            ?.where((userId) => userId['user_details'] != null)
+            .toList() ??
+        [];
+    final totalDelivered = ticketUsers?.length ?? 0;
+    final totalSeen = seenUsers.length;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Message info'),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Message Content
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.2),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    message.message ?? '',
+                    style: theme.textTheme.bodyLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _formatDateTime(message.createdAt),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Stats Section
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildStatRow(
+                    context,
+                    icon: Icons.done_all,
+                    title: 'Delivered to',
+                    count: totalDelivered,
+                    color: colorScheme.primary,
+                  ),
+                  const SizedBox(height: 8),
+                  _buildStatRow(
+                    context,
+                    icon: Icons.visibility,
+                    title: 'Seen by',
+                    count: totalSeen,
+                    color: colorScheme.primary,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Delivered Section
+            if (ticketUsers != null && ticketUsers!.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Delivered to',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: ticketUsers!.length,
+                itemBuilder: (context, index) {
+                  final user = ticketUsers![index];
+                  final isSeen = message.seen?.any((seenUser) =>
+                          seenUser['user_details'] != null &&
+                          seenUser['user_details']['user_id'] == user.userId) ??
+                      false;
+
+                  return _buildUserListTile(
+                    context,
+                    name: '${user.firstName} ${user.lastName}',
+                    subtitle: isSeen ? 'Seen' : 'Delivered',
+                    icon: isSeen ? Icons.visibility : Icons.done_all,
+                    iconColor: isSeen
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant,
+                  );
+                },
+              ),
+            ],
+
+            const SizedBox(height: 24),
+
+            // Seen Section
+            if (seenUsers.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Seen by',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: seenUsers.length,
+                itemBuilder: (context, index) {
+                  final user = seenUsers[index];
+                  return _buildUserListTile(
+                    context,
+                    name:
+                        '${user['user_details']['first_name']} ${user['user_details']['last_name']}',
+                    subtitle: _formatDateTime(_parseDateTime(user['seen_at'])),
+                    icon: Icons.visibility,
+                    iconColor: colorScheme.primary,
+                  );
+                },
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatRow(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required int count,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+                Text(
+                  '$count ${count == 1 ? 'user' : 'users'}',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserListTile(
+    BuildContext context, {
+    required String name,
+    required String subtitle,
+    required IconData icon,
+    required Color iconColor,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor:
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+          child: Icon(
+            Icons.person,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+        title: Text(
+          name,
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+        ),
+        trailing: Icon(
+          icon,
+          color: iconColor,
+          size: 20,
+        ),
+      ),
+    );
+  }
+
+  String _formatDateTime(DateTime? dateTime) {
+    if (dateTime == null) return 'Unknown date';
+    try {
+      // Convert UTC to local time
+      final localDateTime = dateTime.toLocal();
+
+      // Format date
+      final date =
+          '${localDateTime.month}/${localDateTime.day}/${localDateTime.year}';
+
+      // Format time
+      final hour = localDateTime.hour % 12 == 0 ? 12 : localDateTime.hour % 12;
+      final minute = localDateTime.minute.toString().padLeft(2, '0');
+      final period = localDateTime.hour >= 12 ? 'PM' : 'AM';
+
+      return '$date, $hour:$minute $period';
+    } catch (e) {
+      return 'Invalid date';
+    }
+  }
+
+  DateTime? _parseDateTime(String? dateString) {
+    if (dateString == null || dateString.isEmpty) return null;
+    try {
+      // Parse ISO 8601 format (e.g. "2025-01-09T18:13:09.479386Z")
+      return DateTime.parse(dateString).toLocal();
+    } catch (e) {
+      print('Error parsing date: $dateString');
+      return null;
+    }
   }
 }
