@@ -37,7 +37,7 @@ class MonitoringTableWidget extends StatelessWidget {
       child: GridView.builder(
         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
           maxCrossAxisExtent: 600,
-          mainAxisExtent: 210,
+          mainAxisExtent: 170,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
         ),
@@ -247,13 +247,6 @@ class MonitoringTableWidget extends StatelessWidget {
                     child: Column(
                       children: [
                         _buildInfoRow(
-                          'Install Date',
-                          sensor.installDate ?? 'N/A',
-                          Icons.calendar_today,
-                          context: context,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildInfoRow(
                           'Data Source',
                           sensor.dataSource ?? 'N/A',
                           Icons.data_usage,
@@ -271,13 +264,6 @@ class MonitoringTableWidget extends StatelessWidget {
                           'Readings/Day',
                           sensor.readingsPerDay?.toString() ?? 'N/A',
                           Icons.speed,
-                          context: context,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildInfoRow(
-                          'Coordinates',
-                          '${sensor.coordinateX ?? 'N/A'}, ${sensor.coordinateY ?? 'N/A'}, ${sensor.coordinateZ ?? 'N/A'}',
-                          Icons.location_on,
                           context: context,
                         ),
                       ],
