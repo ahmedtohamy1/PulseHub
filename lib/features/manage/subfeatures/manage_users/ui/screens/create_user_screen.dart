@@ -22,7 +22,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
   final _titleController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _maxActiveSessionsController = TextEditingController(text: '5');
+  final _maxActiveSessionsController = TextEditingController(text: '1');
 
   bool _isActive = true;
   bool _isStaff = false;
