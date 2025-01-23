@@ -34,7 +34,8 @@ class _CustomisationTabState extends State<CustomisationTab> {
   Widget build(BuildContext context) {
     return BlocConsumer<ProjectDashboardCubit, ProjectDashboardState>(
       listenWhen: (previous, current) =>
-          current is ProjectDashboardMonitoringSuccess,
+          current is ProjectDashboardMonitoringSuccess ||
+          current is ProjectDashboardMonitoringFailure,
       listener: (context, state) {
         if (state is ProjectDashboardMonitoringSuccess) {
           setState(() {
@@ -45,9 +46,11 @@ class _CustomisationTabState extends State<CustomisationTab> {
       buildWhen: (previous, current) =>
           current is ProjectDashboardGetUsedSensorsLoading ||
           current is ProjectDashboardGetUsedSensorsFailure ||
-          current is ProjectDashboardGetUsedSensorsSuccess,
+          current is ProjectDashboardGetUsedSensorsSuccess ||
+          current is ProjectDashboardMonitoringLoading,
       builder: (context, state) {
-        if (state is ProjectDashboardGetUsedSensorsLoading) {
+        if (state is ProjectDashboardGetUsedSensorsLoading ||
+            state is ProjectDashboardMonitoringLoading) {
           return const Center(child: CircularProgressIndicator());
         }
 
@@ -71,6 +74,10 @@ class _CustomisationTabState extends State<CustomisationTab> {
                   .toList()
               : [];
 
+          if (filteredSensors.isEmpty && _monitorings == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -85,7 +92,7 @@ class _CustomisationTabState extends State<CustomisationTab> {
           );
         }
 
-        return const Center(child: Text('No data available'));
+        return const Center(child: CircularProgressIndicator());
       },
     );
   }
