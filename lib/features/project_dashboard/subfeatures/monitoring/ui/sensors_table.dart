@@ -135,101 +135,106 @@ class MonitoringTableWidget extends StatelessWidget {
                   ),
                 ),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          sensor.name,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          usedSensor.name,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.secondary,
-                          ),
-                        ),
-                      ],
+                  Text(
+                    sensor.name,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        margin: const EdgeInsets.only(right: 8),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: sensor.active ? Colors.green : Colors.grey,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(
-                              sensor.active ? Icons.power : Icons.power_off,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                            const SizedBox(width: 4),
+                            const SizedBox(height: 4),
                             Text(
-                              sensor.active ? 'Active' : 'Inactive',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                              usedSensor.name,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.secondary,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: sensor.event == 'green'
-                              ? Colors.green
-                              : sensor.event == 'orange'
-                                  ? Colors.orange
-                                  : Colors.red,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              sensor.event == 'green'
-                                  ? Icons.check_circle
-                                  : sensor.event == 'orange'
-                                      ? Icons.warning
-                                      : Icons.error,
-                              color: Colors.white,
-                              size: 16,
+                      Row(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(right: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
                             ),
-                            const SizedBox(width: 4),
-                            Text(
-                              sensor.event == 'green'
-                                  ? 'Operational'
-                                  : sensor.event == 'orange'
-                                      ? 'Warning'
-                                      : 'Critical',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            decoration: BoxDecoration(
+                              color: sensor.active ? Colors.green : Colors.grey,
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                          ],
-                        ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  sensor.active ? Icons.power : Icons.power_off,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  sensor.active ? 'Active' : 'Inactive',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: sensor.event == 'green'
+                                  ? Colors.green
+                                  : sensor.event == 'orange'
+                                      ? Colors.orange
+                                      : Colors.red,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  sensor.event == 'green'
+                                      ? Icons.check_circle
+                                      : sensor.event == 'orange'
+                                          ? Icons.warning
+                                          : Icons.error,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  sensor.event == 'green'
+                                      ? 'Operational'
+                                      : sensor.event == 'orange'
+                                          ? 'Warning'
+                                          : 'Critical',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
