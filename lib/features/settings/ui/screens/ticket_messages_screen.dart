@@ -312,7 +312,17 @@ class _TicketMessagesScreenState extends State<TicketMessagesScreen> {
                                 final currentUserId =
                                     UserManager().user?.userId;
                                 final isSeenByCurrentUser =
-                                    message.seen?.contains(currentUserId) ??
+                                    message.seen?.any((seenInfo) {
+                                          if (seenInfo is! Map<String, dynamic>)
+                                            return false;
+                                          final userDetails =
+                                              seenInfo['user_details'];
+                                          if (userDetails
+                                              is! Map<String, dynamic>)
+                                            return false;
+                                          return userDetails['user_id'] ==
+                                              currentUserId;
+                                        }) ??
                                         false;
                                 final isCurrentUserMessage =
                                     message.user == currentUserId;
@@ -320,9 +330,25 @@ class _TicketMessagesScreenState extends State<TicketMessagesScreen> {
                                 return Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color:
-                                        Theme.of(context).colorScheme.surface,
+                                    color: !isCurrentUserMessage &&
+                                            !isSeenByCurrentUser
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .primaryContainer
+                                            .withValues(alpha: 0.3)
+                                        : Theme.of(context).colorScheme.surface,
                                     borderRadius: BorderRadius.circular(12),
+                                    border: !isCurrentUserMessage &&
+                                            !isSeenByCurrentUser
+                                        ? Border(
+                                            left: BorderSide(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                              width: 4,
+                                            ),
+                                          )
+                                        : null,
                                     boxShadow: [
                                       BoxShadow(
                                         color: Theme.of(context)
@@ -339,57 +365,99 @@ class _TicketMessagesScreenState extends State<TicketMessagesScreen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
-                                          CircleAvatar(
-                                            backgroundColor:
-                                                isCurrentUserMessage
-                                                    ? Theme.of(context)
-                                                        .colorScheme
-                                                        .primary
-                                                    : Theme.of(context)
-                                                        .colorScheme
-                                                        .secondary,
-                                            radius: 16,
-                                            child: Icon(
-                                              Icons.person,
-                                              size: 20,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onPrimary,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 12),
                                           Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                            child: Row(
                                               children: [
-                                                Text(
-                                                  isCurrentUserMessage
-                                                      ? 'You'
-                                                      : 'User ${message.user}',
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .titleSmall
-                                                      ?.copyWith(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                      ),
+                                                CircleAvatar(
+                                                  radius: 16,
+                                                  backgroundColor:
+                                                      Theme.of(context)
+                                                          .colorScheme
+                                                          .secondaryContainer,
+                                                  child: Text(
+                                                    'U',
+                                                    style: TextStyle(
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onSecondaryContainer,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
                                                 ),
-                                                Text(
-                                                  messageFormattedDate,
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodySmall
-                                                      ?.copyWith(
-                                                        color: Theme.of(context)
-                                                            .colorScheme
-                                                            .onSurfaceVariant,
-                                                      ),
+                                                const SizedBox(width: 8),
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      'User ${message.user}',
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .titleSmall
+                                                          ?.copyWith(
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                          ),
+                                                    ),
+                                                    Text(
+                                                      messageFormattedDate,
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodySmall
+                                                          ?.copyWith(
+                                                            color: Theme.of(
+                                                                    context)
+                                                                .colorScheme
+                                                                .onSurfaceVariant,
+                                                          ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ],
                                             ),
                                           ),
+                                          if (!isCurrentUserMessage &&
+                                              !isSeenByCurrentUser)
+                                            InkWell(
+                                              onTap: () {
+                                                if (message.ticketMessageId !=
+                                                    null) {
+                                                  context
+                                                      .read<
+                                                          ProjectDashboardCubit>()
+                                                      .markMessageAsSeen(message
+                                                          .ticketMessageId!);
+                                                }
+                                              },
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .primary,
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
+                                                child: Text(
+                                                  'New',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .labelSmall
+                                                      ?.copyWith(
+                                                        color: Theme.of(context)
+                                                            .colorScheme
+                                                            .onPrimary,
+                                                      ),
+                                                ),
+                                              ),
+                                            ),
                                         ],
                                       ),
                                       const SizedBox(height: 12),
@@ -811,7 +879,6 @@ class MessageInfoScreen extends StatelessWidget {
       // Parse ISO 8601 format (e.g. "2025-01-09T18:13:09.479386Z")
       return DateTime.parse(dateString).toLocal();
     } catch (e) {
-      print('Error parsing date: $dateString');
       return null;
     }
   }
