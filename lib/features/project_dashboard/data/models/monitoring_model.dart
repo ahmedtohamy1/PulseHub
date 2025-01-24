@@ -6,7 +6,7 @@ part 'monitoring_model.g.dart';
 class MonitoringResponse {
   final bool success;
 
-  @JsonKey(name: 'Monitorings')
+  @JsonKey(name: 'Monitoring_list')
   final List<Monitoring>? monitorings;
 
   MonitoringResponse({

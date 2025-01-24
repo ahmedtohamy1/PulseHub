@@ -313,13 +313,15 @@ class _TicketMessagesScreenState extends State<TicketMessagesScreen> {
                                     UserManager().user?.userId;
                                 final isSeenByCurrentUser =
                                     message.seen?.any((seenInfo) {
-                                          if (seenInfo is! Map<String, dynamic>)
+                                          if (seenInfo is! Map<String, dynamic>) {
                                             return false;
+                                          }
                                           final userDetails =
                                               seenInfo['user_details'];
                                           if (userDetails
-                                              is! Map<String, dynamic>)
+                                              is! Map<String, dynamic>) {
                                             return false;
+                                          }
                                           return userDetails['user_id'] ==
                                               currentUserId;
                                         }) ??

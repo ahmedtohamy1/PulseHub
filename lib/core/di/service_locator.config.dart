@@ -25,6 +25,12 @@ import '../../features/dics/data/repos/dic_repo.dart' as _i90;
 import '../../features/dics/data/repos/dic_repo_impl.dart' as _i1046;
 import '../../features/manage/data/repos/manage_repo.dart' as _i87;
 import '../../features/manage/data/repos/manage_repo_impl.dart' as _i176;
+import '../../features/manage/subfeatures/manage_monitorings/cubit/manage_monitorings_cubit.dart'
+    as _i503;
+import '../../features/manage/subfeatures/manage_monitorings/data/manage_monitroings_repo.dart'
+    as _i103;
+import '../../features/manage/subfeatures/manage_monitorings/data/manage_monitroings_repo_impl.dart'
+    as _i86;
 import '../../features/manage/subfeatures/manage_owners/cubit/manage_owners_cubit.dart'
     as _i694;
 import '../../features/manage/subfeatures/manage_owners/data/repos/manage_owners_repo.dart'
@@ -98,6 +104,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i320.ManageProjectsRepositoryImpl(gh<_i713.MyApi>()));
     gh.factory<_i1047.ManageSensorsRepository>(
         () => _i62.ManageSensorsRepositoryImpl(gh<_i713.MyApi>()));
+    gh.factory<_i103.ManageMonitoringsRepo>(
+        () => _i86.ManageMonitoringsRepoImpl(gh<_i713.MyApi>()));
     gh.lazySingleton<_i573.AuthRepository>(
         () => _i153.AuthRepositoryImpl(gh<_i713.MyApi>()));
     gh.factory<_i818.ManageUsersRepository>(
@@ -122,6 +130,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i446.ManageProjectsCubit(gh<_i423.ManageProjectsRepository>()));
     gh.factory<_i698.AuthCubit>(
         () => _i698.AuthCubit(gh<_i573.AuthRepository>()));
+    gh.factory<_i503.ManageMonitoringsCubit>(
+        () => _i503.ManageMonitoringsCubit(gh<_i103.ManageMonitoringsRepo>()));
     gh.factory<_i819.DicCubit>(() => _i819.DicCubit(
           gh<_i90.DicRepository>(),
           gh<_i878.SettingsRepository>(),
