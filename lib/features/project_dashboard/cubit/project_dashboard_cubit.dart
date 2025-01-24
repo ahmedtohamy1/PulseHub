@@ -585,6 +585,19 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
     );
   }
 
+  Future<void> updateCloudhubSensors(
+      int cloudhubId, List<int> sensorIds) async {
+    emit(ProjectDashboardUpdateCloudhubSensorsLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res =
+        await _repository.updateCloudhubSensors(token, cloudhubId, sensorIds);
+    res.fold(
+      (failure) => emit(ProjectDashboardUpdateCloudhubSensorsFailure(failure)),
+      (response) =>
+          emit(ProjectDashboardUpdateCloudhubSensorsSuccess(response)),
+    );
+  }
+
   Future<void> analyzeSensorDataQ2(String projectId) async {
     emit(ProjectDashboardAnalyzeSensorDataQ2Loading());
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);

@@ -15,6 +15,20 @@ class MonitoringDropdownWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (monitorings.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Text(
+          'No monitorings available',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.black54,
+          ),
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
@@ -48,14 +62,22 @@ class MonitoringDropdownWidget extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<Monitoring>(
-                value: selectedMonitoring ?? monitorings.first,
-                icon: const Icon(Icons.arrow_drop_down, color: Colors.green),
-                style: const TextStyle(color: Colors.green, fontSize: 16),
+                value: selectedMonitoring,
+                icon: const Icon(Icons.arrow_drop_down),
+                elevation: 16,
+                style: const TextStyle(color: Colors.black),
                 onChanged: onChanged,
-                items: monitorings.map((Monitoring monitoring) {
+                items: monitorings
+                    .map<DropdownMenuItem<Monitoring>>((Monitoring monitoring) {
                   return DropdownMenuItem<Monitoring>(
                     value: monitoring,
-                    child: Text(monitoring.name),
+                    child: Text(
+                      monitoring.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   );
                 }).toList(),
               ),

@@ -17,7 +17,7 @@ MonitoringResponse _$MonitoringResponseFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$MonitoringResponseToJson(MonitoringResponse instance) =>
     <String, dynamic>{
       'success': instance.success,
-      'Monitoring_list': instance.monitorings,
+      if (instance.monitorings case final value?) 'Monitoring_list': value,
     };
 
 Monitoring _$MonitoringFromJson(Map<String, dynamic> json) => Monitoring(

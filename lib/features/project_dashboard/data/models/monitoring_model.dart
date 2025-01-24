@@ -6,7 +6,7 @@ part 'monitoring_model.g.dart';
 class MonitoringResponse {
   final bool success;
 
-  @JsonKey(name: 'Monitoring_list')
+  @JsonKey(name: 'Monitoring_list', includeIfNull: false)
   final List<Monitoring>? monitorings;
 
   MonitoringResponse({
@@ -14,8 +14,16 @@ class MonitoringResponse {
     this.monitorings,
   });
 
-  factory MonitoringResponse.fromJson(Map<String, dynamic> json) =>
-      _$MonitoringResponseFromJson(json);
+  // Custom factory method to handle both "Monitoring_list" and "Monitorings" keys
+  factory MonitoringResponse.fromJson(Map<String, dynamic> json) {
+    return MonitoringResponse(
+      success: json['success'] as bool,
+      monitorings: (json['Monitoring_list'] ?? json['Monitorings'])
+          ?.map<Monitoring>((dynamic item) =>
+              Monitoring.fromJson(item as Map<String, dynamic>))
+          .toList(),
+    );
+  }
 
   Map<String, dynamic> toJson() => _$MonitoringResponseToJson(this);
 }

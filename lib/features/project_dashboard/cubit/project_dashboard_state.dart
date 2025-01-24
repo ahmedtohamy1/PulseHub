@@ -534,9 +534,11 @@ final class ProjectDashboardGetAllUsersFailure extends ProjectDashboardState {
   List<Object> get props => [message];
 }
 
-final class ProjectDashboardUpdateCloudhubLoading extends ProjectDashboardState {}
+final class ProjectDashboardUpdateCloudhubLoading
+    extends ProjectDashboardState {}
 
-final class ProjectDashboardUpdateCloudhubSuccess extends ProjectDashboardState {
+final class ProjectDashboardUpdateCloudhubSuccess
+    extends ProjectDashboardState {
   final bool success;
 
   const ProjectDashboardUpdateCloudhubSuccess(this.success);
@@ -545,7 +547,8 @@ final class ProjectDashboardUpdateCloudhubSuccess extends ProjectDashboardState 
   List<Object> get props => [success];
 }
 
-final class ProjectDashboardUpdateCloudhubFailure extends ProjectDashboardState {
+final class ProjectDashboardUpdateCloudhubFailure
+    extends ProjectDashboardState {
   final String message;
 
   const ProjectDashboardUpdateCloudhubFailure(this.message);
@@ -596,7 +599,7 @@ final class ProjectDashboardCreateCloudhubSensorFailure
 
 final class ProjectDashboardDeleteDashLoading extends ProjectDashboardState {}
 
-  final class ProjectDashboardDeleteDashSuccess extends ProjectDashboardState {
+final class ProjectDashboardDeleteDashSuccess extends ProjectDashboardState {
   final bool success;
 
   const ProjectDashboardDeleteDashSuccess(this.success);
@@ -633,7 +636,7 @@ final class ProjectDashboardAnalyzeSensorDataQ2Loading
 
 final class ProjectDashboardAnalyzeSensorDataQ2Success
     extends ProjectDashboardState {
-    final AiQ2ResponseModel aiQ2ResponseModel;  
+  final AiQ2ResponseModel aiQ2ResponseModel;
 
   const ProjectDashboardAnalyzeSensorDataQ2Success(this.aiQ2ResponseModel);
 
@@ -646,6 +649,29 @@ final class ProjectDashboardAnalyzeSensorDataQ2Failure
   final String message;
 
   const ProjectDashboardAnalyzeSensorDataQ2Failure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
+final class ProjectDashboardUpdateCloudhubSensorsLoading
+    extends ProjectDashboardState {}
+
+final class ProjectDashboardUpdateCloudhubSensorsSuccess
+    extends ProjectDashboardState {
+  final bool success;
+
+  const ProjectDashboardUpdateCloudhubSensorsSuccess(this.success);
+
+  @override
+  List<Object> get props => [success];
+}
+
+final class ProjectDashboardUpdateCloudhubSensorsFailure
+    extends ProjectDashboardState {
+  final String message;
+
+  const ProjectDashboardUpdateCloudhubSensorsFailure(this.message);
 
   @override
   List<Object> get props => [message];

@@ -58,46 +58,58 @@ class _MonitoringScreenState extends State<MonitoringScreen>
             builder: (context, state) {
               if (state is ProjectDashboardMonitoringSuccess) {
                 final monitorings = state.monitoringResponse.monitorings ?? [];
-                if (monitorings.isNotEmpty &&
-                    (selectedMonitoring == null ||
-                        !monitorings.contains(selectedMonitoring))) {
-                  // Update the selectedMonitoring to the first valid item
-                  selectedMonitoring = monitorings.first;
-                }
-                return Row(
-                  children: [
-                    Expanded(
-                      child: MonitoringDropdownWidget(
-                        selectedMonitoring: selectedMonitoring,
-                        monitorings: monitorings,
-                        onChanged: (newValue) {
-                          setState(() {
-                            selectedMonitoring = newValue;
-                          });
-                        },
-                      ),
-                    ),
-                    // Show filter button only in the Sensors tab
-                    if (_tabController.index == 0)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        child: FilterButtonWidget(
-                          selectedFilter: selectedFilter,
-                          onFilterChanged: (newFilter) {
+                // Only update selectedMonitoring if we have monitorings and current selection is invalid
+                if (monitorings.isNotEmpty) {
+                  if (selectedMonitoring == null ||
+                      !monitorings.contains(selectedMonitoring)) {
+                    selectedMonitoring = monitorings.first;
+                  }
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: MonitoringDropdownWidget(
+                          selectedMonitoring: selectedMonitoring,
+                          monitorings: monitorings,
+                          onChanged: (newValue) {
                             setState(() {
-                              selectedFilter = newFilter;
+                              selectedMonitoring = newValue;
                             });
                           },
                         ),
                       ),
-                  ],
-                );
+                      // Show filter button only in the Sensors tab
+                      if (_tabController.index == 0)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: FilterButtonWidget(
+                            selectedFilter: selectedFilter,
+                            onFilterChanged: (newFilter) {
+                              setState(() {
+                                selectedFilter = newFilter;
+                              });
+                            },
+                          ),
+                        ),
+                    ],
+                  );
+                } else {
+                  return const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text("No monitorings available"),
+                  );
+                }
               } else if (state is ProjectDashboardMonitoringFailure) {
-                return Center(
+                return Padding(
+                  padding: const EdgeInsets.all(16.0),
                   child: Text(
                     "Error: ${state.message}",
                     style: const TextStyle(color: Colors.red),
                   ),
+                );
+              } else if (state is ProjectDashboardMonitoringLoading) {
+                return const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Center(child: CircularProgressIndicator()),
                 );
               }
               return const SizedBox.shrink();

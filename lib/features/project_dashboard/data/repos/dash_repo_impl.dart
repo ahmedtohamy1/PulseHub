@@ -282,6 +282,31 @@ class DashRepoImpl implements DashRepository {
   }
 
   @override
+  Future<Either<String, bool>> updateCloudhubSensors(
+      String token, int cloudhubId, List<int> sensorIds) async {
+    try {
+      final data = FormData();
+      final response = await myApiService.post(EndPoints.getCloudhubData,
+          token: token,
+          queryParameters: {
+            'cloudhub_id': cloudhubId,
+            'sensors': sensorIds.join(',')
+          },
+          data: data);
+
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return const Right(true);
+      } else {
+        return Left('Failed to get sensor data: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
   Future<Either<String, SensorActivityLog>> getSensorActivityLog(
       String token, int sensorId) async {
     try {
