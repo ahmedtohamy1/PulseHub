@@ -463,6 +463,121 @@ class MonitoringCard extends StatelessWidget {
     );
   }
 
+  Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final TextEditingController confirmController = TextEditingController();
+    bool isLoading = false;
+    final cubit = context.read<ManageMonitoringsCubit>();
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => BlocProvider.value(
+        value: cubit,
+        child: StatefulBuilder(
+          builder: (context, setState) => PopScope(
+            canPop: !isLoading,
+            child: AlertDialog(
+              title: Text(
+                'Delete Monitoring',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: colorScheme.error,
+                ),
+              ),
+              content:
+                  BlocConsumer<ManageMonitoringsCubit, ManageMonitoringsState>(
+                listener: (context, state) {
+                  if (state is ManageMonitoringsDeleteSuccess) {
+                    Navigator.of(context).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Monitoring deleted successfully'),
+                      ),
+                    );
+                    cubit.getMonitorings();
+                  } else if (state is ManageMonitoringsDeleteFailure) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.error),
+                        backgroundColor: colorScheme.error,
+                      ),
+                    );
+                    setState(() => isLoading = false);
+                  }
+                },
+                builder: (context, state) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'This action cannot be undone. Please type "${monitoring.name}" to confirm.',
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: confirmController,
+                        decoration: InputDecoration(
+                          hintText: 'Type monitoring name to confirm',
+                          errorText: confirmController.text.isNotEmpty &&
+                                  confirmController.text != monitoring.name
+                              ? 'Name does not match'
+                              : null,
+                        ),
+                        onChanged: (value) => setState(() {}),
+                      ),
+                    ],
+                  );
+                },
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isLoading
+                      ? null
+                      : () {
+                          Navigator.of(context).pop();
+                        },
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(
+                      color: isLoading
+                          ? colorScheme.onSurface.withOpacity(0.38)
+                          : colorScheme.primary,
+                    ),
+                  ),
+                ),
+                FilledButton(
+                  onPressed: isLoading ||
+                          confirmController.text != monitoring.name
+                      ? null
+                      : () async {
+                          setState(() => isLoading = true);
+                          await cubit.deleteMonitoring(monitoring.monitoringId);
+                        },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: colorScheme.error,
+                    foregroundColor: colorScheme.onError,
+                  ),
+                  child: isLoading
+                      ? SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: colorScheme.onError,
+                          ),
+                        )
+                      : const Text('Delete'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -541,9 +656,7 @@ class MonitoringCard extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  onPressed: () {
-                    // TODO: Implement delete monitoring
-                  },
+                  onPressed: () => _showDeleteConfirmationDialog(context),
                   icon: Icon(
                     Icons.delete,
                     color: colorScheme.error,

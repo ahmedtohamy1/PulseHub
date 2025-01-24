@@ -79,7 +79,28 @@ final Map<String, dynamic> data = {
     }
   }
 
-
+  @override
+  Future<Either<String, bool>> deleteMonitoring(
+      String token, int monitoringId) async {
+    try {
+      final response = await myApiService.delete(
+        EndPoints.getMonitoring,
+        token: token,
+        queryParameters: {
+          'id': monitoringId,
+        },
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return Right(true);
+      } else {
+        return Left('Failed to delete monitoring: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
     @override
   Future<Either<String, GetProjectsResponse>> getProjects(String token) async {
     try {

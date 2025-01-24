@@ -7,5 +7,8 @@ abstract class ManageMonitoringsRepo {
   Future<Either<String, bool>> editMonitoring(String token,
       String? communications, String? name, int? projectId, int monitoringId);
 
+  Future<Either<String, bool>> deleteMonitoring(
+      String token, int monitoringId);
+
   Future<Either<String, GetProjectsResponse>> getProjects(String token);
 }

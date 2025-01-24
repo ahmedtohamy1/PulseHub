@@ -82,6 +82,19 @@ class ManageMonitoringsCubit extends Cubit<ManageMonitoringsState> {
     );
   }
 
+  Future<void> deleteMonitoring(int monitoringId) async {
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final result = await _repo.deleteMonitoring(token, monitoringId);
+    result.fold(
+      (l) => emit(ManageMonitoringsDeleteFailure(l,
+          monitoringResponse: _cachedMonitorings,
+          projectsResponse: _cachedProjects)),
+      (r) => emit(ManageMonitoringsDeleteSuccess(r,
+          monitoringResponse: _cachedMonitorings,
+          projectsResponse: _cachedProjects)),
+    );
+  }
+
   Future<void> getProjects() async {
     // Always emit cached projects first if available
     if (_cachedProjects != null) {
