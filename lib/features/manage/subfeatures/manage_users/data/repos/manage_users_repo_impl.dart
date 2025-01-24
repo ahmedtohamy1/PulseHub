@@ -6,6 +6,7 @@ import 'package:pulsehub/core/networking/end_points.dart';
 import 'package:pulsehub/core/networking/my_api.dart';
 import 'package:pulsehub/core/networking/status_code.dart';
 import 'package:pulsehub/features/dics/data/models/dic_services_model.dart';
+import 'package:pulsehub/features/manage/subfeatures/manage_users/models/get_all_users_log_response.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_users/models/get_user_projects.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_users/models/update_dic_request_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_all_users_response_model.dart';
@@ -309,6 +310,35 @@ class ManageUsersRepositoryImpl implements ManageUsersRepository {
         return Left(errorMessage.toString());
       }
     } catch (e) {
+      return Left('Exception occurred: $e');
+    }
+  }
+
+  @override
+  Future<Either<String, GetAllUserLogResponse>> getAllUserLog(
+      String token) async {
+    try {
+      print('DEBUG: Fetching user logs...');
+      final response =
+          await myApiService.get(EndPoints.getAllUserLog, token: token);
+      print('DEBUG: Response received - Status: ${response.statusCode}');
+      print('DEBUG: Response data: ${response.data}');
+
+      if (response.statusCode == StatusCode.ok) {
+        try {
+          final parsedResponse = GetAllUserLogResponse.fromJson(response.data);
+          print('DEBUG: Successfully parsed response');
+          return Right(parsedResponse);
+        } catch (parseError) {
+          print('DEBUG: Failed to parse response: $parseError');
+          return Left('Failed to parse response: $parseError');
+        }
+      } else {
+        print('DEBUG: Request failed with status: ${response.statusCode}');
+        return Left('Failed to get all user log: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('DEBUG: Exception in getAllUserLog: $e');
       return Left('Exception occurred: $e');
     }
   }

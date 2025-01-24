@@ -54,6 +54,7 @@ class EndPoints {
   static const String getAllOwners = "/owner/";
   static const String updateDeleteOwner = "/owner/update/";
   static const String getAllSensorTypes = "/utilities/sensor-type/";
+  static const String getAllUserLog = "/user/log/";
 
   // imgs
   static String imageUrl(String path) => '$baseUrl$path';
