@@ -18,7 +18,7 @@ class _ManageUsersTabState extends State<ManageUsersTab>
   late final ManageUsersCubit _cubit;
   final TextEditingController _searchController = TextEditingController();
   bool _showSearch = false;
-  bool _showFilters = true;
+  bool _showFilters = false;
   String _searchQuery = '';
   String? _selectedRole;
   bool? _selectedActiveStatus;
