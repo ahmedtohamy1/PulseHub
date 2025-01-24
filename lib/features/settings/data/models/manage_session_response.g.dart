@@ -10,12 +10,10 @@ ManageSessionResponse _$ManageSessionResponseFromJson(
         Map<String, dynamic> json) =>
     ManageSessionResponse(
       success: json['success'] as bool,
-      currentActiveSession: json['currentActiveSession'] == null
-          ? null
-          : Session.fromJson(
-              json['currentActiveSession'] as Map<String, dynamic>),
-      otherActiveSessions: (json['otherActiveSessions'] as List<dynamic>)
-          .map((e) => Session.fromJson(e as Map<String, dynamic>))
+      currentActiveSession: ActiveSession.fromJson(
+          json['current_active_session'] as Map<String, dynamic>),
+      otherActiveSessions: (json['other_active_sessions'] as List<dynamic>)
+          .map((e) => ActiveSession.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
 
@@ -23,40 +21,42 @@ Map<String, dynamic> _$ManageSessionResponseToJson(
         ManageSessionResponse instance) =>
     <String, dynamic>{
       'success': instance.success,
-      'currentActiveSession': instance.currentActiveSession,
-      'otherActiveSessions': instance.otherActiveSessions,
+      'current_active_session': instance.currentActiveSession,
+      'other_active_sessions': instance.otherActiveSessions,
     };
 
-Session _$SessionFromJson(Map<String, dynamic> json) => Session(
-      userActivateSessionId: (json['userActivateSessionId'] as num).toInt(),
+ActiveSession _$ActiveSessionFromJson(Map<String, dynamic> json) =>
+    ActiveSession(
+      userActivateSessionId: (json['user_activate_session_id'] as num).toInt(),
       deviceInfo:
-          DeviceInfo.fromJson(json['deviceInfo'] as Map<String, dynamic>),
-      sessionExpire: json['sessionExpire'] as String,
+          DeviceInfo.fromJson(json['device_info'] as Map<String, dynamic>),
+      sessionExpire: DateTime.parse(json['session_expire'] as String),
       location: Location.fromJson(json['location'] as Map<String, dynamic>),
-      ipAddress: json['ipAddress'] as String,
-      sessionStart: json['sessionStart'] as String,
+      ipAddress: json['ip_address'] as String,
+      sessionStart: DateTime.parse(json['session_start'] as String),
     );
 
-Map<String, dynamic> _$SessionToJson(Session instance) => <String, dynamic>{
-      'userActivateSessionId': instance.userActivateSessionId,
-      'deviceInfo': instance.deviceInfo,
-      'sessionExpire': instance.sessionExpire,
+Map<String, dynamic> _$ActiveSessionToJson(ActiveSession instance) =>
+    <String, dynamic>{
+      'user_activate_session_id': instance.userActivateSessionId,
+      'device_info': instance.deviceInfo,
+      'session_expire': instance.sessionExpire.toIso8601String(),
       'location': instance.location,
-      'ipAddress': instance.ipAddress,
-      'sessionStart': instance.sessionStart,
+      'ip_address': instance.ipAddress,
+      'session_start': instance.sessionStart.toIso8601String(),
     };
 
 DeviceInfo _$DeviceInfoFromJson(Map<String, dynamic> json) => DeviceInfo(
-      device: json['device'] as String,
-      deviceType: json['deviceType'] as String,
-      browser: json['browser'] as String,
+      device: json['Device'] as String?,
+      deviceType: json['Device Type'] as String,
+      browser: json['Browser'] as String,
     );
 
 Map<String, dynamic> _$DeviceInfoToJson(DeviceInfo instance) =>
     <String, dynamic>{
-      'device': instance.device,
-      'deviceType': instance.deviceType,
-      'browser': instance.browser,
+      'Device': instance.device,
+      'Device Type': instance.deviceType,
+      'Browser': instance.browser,
     };
 
 Location _$LocationFromJson(Map<String, dynamic> json) => Location(
