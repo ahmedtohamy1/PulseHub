@@ -648,19 +648,60 @@ class MonitoringCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                IconButton(
-                  onPressed: () => _showEditMonitoringDialog(context),
-                  icon: Icon(
-                    Icons.edit,
-                    color: colorScheme.primary,
+                PopupMenuButton<String>(
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                ),
-                IconButton(
-                  onPressed: () => _showDeleteConfirmationDialog(context),
                   icon: Icon(
-                    Icons.delete,
-                    color: colorScheme.error,
+                    Icons.more_vert,
+                    color: colorScheme.onSurfaceVariant,
                   ),
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.edit_outlined,
+                            size: 20,
+                            color: colorScheme.onSurface,
+                          ),
+                          const SizedBox(width: 12),
+                          Text('Edit Monitoring'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.delete_outline,
+                            size: 20,
+                            color: Colors.red,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Delete Monitoring',
+                            style: TextStyle(
+                              color: Colors.red,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'edit':
+                        _showEditMonitoringDialog(context);
+                        break;
+                      case 'delete':
+                        _showDeleteConfirmationDialog(context);
+                        break;
+                    }
+                  },
                 ),
               ],
             ),
