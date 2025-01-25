@@ -1,3 +1,4 @@
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pulsehub/core/layout/destinations.dart';
@@ -22,43 +23,46 @@ class MainLayout extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        body: SafeArea(child: navigationShell),
-        bottomNavigationBar: NavigationBar(
-          height: 70,
-          selectedIndex: navigationShell.currentIndex,
-          onDestinationSelected: (index) =>
-              _onDestinationSelected(context, index),
-          indicatorColor: Theme.of(context).primaryColor,
-          destinations: destinations
-              .map((destination) => NavigationDestination(
-                    icon: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Icon(destination.icon),
-                        if (destination.badgeBuilder != null)
-                          Positioned(
-                            top: -8,
-                            right: -8,
-                            child: destination.badgeBuilder!(context),
-                          ),
-                      ],
-                    ),
-                    label: destination.label,
-                    selectedIcon: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Icon(destination.icon, color: Colors.white),
-                        if (destination.badgeBuilder != null)
-                          Positioned(
-                            top: -8,
-                            right: -8,
-                            child: destination.badgeBuilder!(context),
-                          ),
-                      ],
-                    ),
-                  ))
-              .toList(),
-        ),
-      );
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+      body: SafeArea(child: navigationShell),
+      bottomNavigationBar: CurvedNavigationBar(
+        key: const ValueKey<String>('CurvedNavigationBar'),
+        index: navigationShell.currentIndex,
+        height: 60,
+        backgroundColor: colorScheme.surface,
+        color: colorScheme.surfaceContainerHighest,
+        buttonBackgroundColor: colorScheme.primary,
+        animationDuration: const Duration(milliseconds: 300),
+        animationCurve: Curves.easeInOut,
+        items: destinations.map((destination) {
+          final isSelected =
+              destinations.indexOf(destination) == navigationShell.currentIndex;
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Icon(
+                destination.icon,
+                size: 30,
+                color: isSelected
+                    ? colorScheme.onPrimary
+                    : colorScheme.onSurfaceVariant,
+              ),
+              if (destination.badgeBuilder != null)
+                Positioned(
+                  top: -8,
+                  right: -8,
+                  child: destination.badgeBuilder!(context),
+                ),
+            ],
+          );
+        }).toList(),
+        onTap: (index) => _onDestinationSelected(context, index),
+      ),
+    );
+  }
 }
