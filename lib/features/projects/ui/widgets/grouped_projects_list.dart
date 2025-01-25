@@ -61,41 +61,6 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
 
     return Column(
       children: [
-        // Header
-        Container(
-          height: kToolbarHeight,
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 2,
-                offset: const Offset(0, 1),
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'All Projects',
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              IconButton.filled(
-                onPressed: () => context.read<ProjectsCubit>().getProjects(),
-                icon: const Icon(Icons.refresh),
-                style: IconButton.styleFrom(
-                  backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
-                  foregroundColor: colorScheme.primary,
-                ),
-              ),
-            ],
-          ),
-        ),
-
         // Projects List
         Expanded(
           child: BlocBuilder<ProjectsCubit, ProjectsState>(
@@ -128,8 +93,7 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
                                   borderRadius: BorderRadius.circular(16),
                                   boxShadow: [
                                     BoxShadow(
-                                      color:
-                                          Colors.black.withValues(alpha: 0.1),
+                                      color: Colors.black.withOpacity(0.1),
                                       blurRadius: 8,
                                       offset: const Offset(0, 4),
                                     ),
@@ -148,14 +112,14 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
                                             Icons.business,
                                             size: 32,
                                             color: colorScheme.primary
-                                                .withValues(alpha: 0.5),
+                                                .withOpacity(0.5),
                                           ),
                                         )
                                       : Icon(
                                           Icons.business,
                                           size: 32,
                                           color: colorScheme.primary
-                                              .withValues(alpha: 0.5),
+                                              .withOpacity(0.5),
                                         ),
                                 ),
                               ),
@@ -193,16 +157,76 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black
-                                            .withValues(alpha: 0.05),
+                                        color: Colors.black.withOpacity(0.05),
                                         blurRadius: 4,
                                         offset: const Offset(0, 2),
                                       ),
                                     ],
                                   ),
-                                  child: Icon(
-                                    Icons.drag_handle,
-                                    color: colorScheme.onSurfaceVariant,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: List.generate(3, (index) {
+                                          return Container(
+                                            width:
+                                                4, // Adjust the size of the dots
+                                            height:
+                                                4, // Adjust the size of the dots
+                                            margin: const EdgeInsets.all(
+                                                2), // Adjust spacing between dots
+                                            decoration: const BoxDecoration(
+                                              color: Colors.grey, // Dot color
+                                              shape: BoxShape.circle,
+                                            ),
+                                          );
+                                        }),
+                                      ),
+                                      const SizedBox(
+                                          height:
+                                              4), // Adjust spacing between rows of dots
+                                      Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: List.generate(3, (index) {
+                                          return Container(
+                                            width:
+                                                4, // Adjust the size of the dots
+                                            height:
+                                                4, // Adjust the size of the dots
+                                            margin: const EdgeInsets.all(
+                                                2), // Adjust spacing between dots
+                                            decoration: const BoxDecoration(
+                                              color: Colors.grey, // Dot color
+                                              shape: BoxShape.circle,
+                                            ),
+                                          );
+                                        }),
+                                      ),
+                                      const SizedBox(
+                                          height:
+                                              4), // Adjust spacing between rows of dots
+                                      Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: List.generate(3, (index) {
+                                          return Container(
+                                            width:
+                                                4, // Adjust the size of the dots
+                                            height:
+                                                4, // Adjust the size of the dots
+                                            margin: const EdgeInsets.all(
+                                                2), // Adjust spacing between dots
+                                            decoration: const BoxDecoration(
+                                              color: Colors.grey, // Dot color
+                                              shape: BoxShape.circle,
+                                            ),
+                                          );
+                                        }),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),

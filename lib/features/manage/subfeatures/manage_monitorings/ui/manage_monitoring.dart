@@ -253,7 +253,7 @@ class _ManageMonitoringsViewState extends State<ManageMonitoringsView> {
                   FloatingActionButton(
                     heroTag: 'manage_monitorings_add_fab',
                     onPressed: () {
-                      // TODO: Implement create monitoring dialog
+                 
                     },
                     child: Icon(
                       Icons.add,

@@ -8,62 +8,116 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ProjectsCubit, ProjectsState>(
-      builder: (context, state) {
-        if (state is ProjectsLoading) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (state is ProjectsLoaded) {
-          return ProjectsView(projects: state.projects.projects);
-        } else if (state is ProjectsError) {
-          return Column(
-            children: [
-              SizedBox(
-                height: kToolbarHeight, // Use AppBar's default height
-                child: Container(
-                  color: Theme.of(context)
-                      .primaryColor, // Set the AppBar background color
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment
-                        .spaceBetween, // Space title and actions
-                    children: [
-                      // Title Section
-                      const Text(
-                        'All Projects',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-                      // Actions Section
-                      Row(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: IconButton.filled(
-                              icon: const Icon(
-                                Icons.refresh,
-                                color: Colors.white,
-                              ),
-                              onPressed: () {
-                                context.read<ProjectsCubit>().getProjects();
-                              },
-                            ),
-                          ),
-                        ],
+    return Column(
+      children: [
+        // Header
+        Container(
+          height: kToolbarHeight,
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 2,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            children: [
+              Text(
+                'All Projects',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              IconButton.filled(
+                onPressed: () => context.read<ProjectsCubit>().getProjects(),
+                icon: const Icon(Icons.refresh),
+                style: IconButton.styleFrom(
+                  backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+                  foregroundColor: colorScheme.primary,
+                ),
+              ),
+              IconButton.filled(
+                onPressed: () => context.read<ProjectsCubit>().getProjects(),
+                icon: const Icon(Icons.menu),
+                style: IconButton.styleFrom(
+                  backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+                  foregroundColor: colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Content
+        Expanded(
+          child: BlocBuilder<ProjectsCubit, ProjectsState>(
+            builder: (context, state) {
+              if (state is ProjectsLoading) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (state is ProjectsLoaded) {
+                return ProjectsView(projects: state.projects.projects);
+              } else if (state is ProjectsError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: colorScheme.error,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        state.message,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: colorScheme.error,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      FilledButton.icon(
+                        onPressed: () =>
+                            context.read<ProjectsCubit>().getProjects(),
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Try Again'),
                       ),
                     ],
                   ),
+                );
+              }
+              return const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.folder_outlined,
+                      size: 64,
+                      color: Colors.grey,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Welcome to Projects',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              Center(child: Text(state.message)),
-            ],
-          );
-        }
-        return const Center(child: Text('Welcome to Projects'));
-      },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

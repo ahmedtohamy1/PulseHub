@@ -4,7 +4,6 @@ import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_sensors/ui/sensor_card.dart';
 
 import '../cubit/manage_sensors_cubit.dart';
-import '../data/models/get_all_sensor_types_response_model.dart';
 
 class ManageSensorsTab extends StatefulWidget {
   const ManageSensorsTab({super.key});

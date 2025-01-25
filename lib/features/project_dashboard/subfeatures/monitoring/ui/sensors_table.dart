@@ -119,7 +119,7 @@ class _MonitoringTableWidgetState extends State<MonitoringTableWidget> {
               calibrationComments: sensor.calibrationComments,
               event: sensor.event ?? 'unknown',
               eventLastStatus: sensor.eventLastStatus ?? 'unknown',
-              status: sensor.status ?? 'unknown',
+              status: sensor.status,
               cloudHubTime: sensor.cloudHubTime,
               sendTime: sensor.sendTime,
             ))
@@ -211,7 +211,7 @@ class _MonitoringTableWidgetState extends State<MonitoringTableWidget> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                sensor.name ?? 'Unknown Sensor',
+                                sensor.name,
                                 style: Theme.of(context)
                                     .textTheme
                                     .titleMedium
@@ -430,16 +430,5 @@ class _MonitoringTableWidgetState extends State<MonitoringTableWidget> {
         ),
       ],
     );
-  }
-
-  Widget _buildStatusIcon(String? status) {
-    final color = switch (status?.toLowerCase()) {
-      'green' => Colors.green,
-      'orange' => Colors.orange,
-      'red' => Colors.red,
-      _ => Colors.grey,
-    };
-
-    return Icon(Icons.circle, color: color, size: 12);
   }
 }
