@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_material_design_icons/flutter_material_design_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:pulsehub/core/di/service_locator.dart';
@@ -24,7 +23,7 @@ class ProjectCardState extends State<ProjectCard> {
   @override
   void initState() {
     super.initState();
-    isPinned = widget.project.isFlag; // Initialize pinned state
+    isPinned = widget.project.isFlag;
   }
 
   void togglePin(BuildContext context) async {
@@ -32,7 +31,7 @@ class ProjectCardState extends State<ProjectCard> {
     final cubit = sl<ProjectsCubit>();
 
     setState(() {
-      isPinned = !isPinned; // Optimistic update
+      isPinned = !isPinned;
     });
 
     try {
@@ -58,6 +57,8 @@ class ProjectCardState extends State<ProjectCard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final formattedDate = widget.project.startDate != null
         ? DateFormat('MMMM dd, yyyy')
             .format(DateTime.parse(widget.project.startDate!))
@@ -72,102 +73,320 @@ class ProjectCardState extends State<ProjectCard> {
         );
       },
       child: Card(
-        elevation: 3,
+        elevation: 4,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(20),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Project Image
-            ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(8)),
-              child: Image.network(
-                widget.project.pictureUrl,
-                height: 200, // Increased image height
-                width: double.infinity,
-                fit: BoxFit.cover, // Properly fills the area
-                errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.broken_image, size: 50),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title with Pin Icon
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          widget.project.title,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                      ),
-                      IconButton.filled(
-                        onPressed: () => togglePin(context),
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.green.withValues(alpha: 0),
-                        ),
-                        icon: isPinned
-                            ? const Icon(
-                                MdiIcons.pin,
+        clipBehavior: Clip.antiAlias,
+        child: IntrinsicHeight(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Project Image Section
+              AspectRatio(
+                aspectRatio: 4 / 3, // Bigger banner
+                child: Stack(
+                  children: [
+                    // Project Image
+                    Hero(
+                      tag: 'project_image_${widget.project.projectId}',
+                      child: SizedBox.expand(
+                        child: widget.project.pictureUrl.isNotEmpty
+                            ? Image.network(
+                                widget.project.pictureUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(
+                                  color: colorScheme.primary
+                                      .withValues(alpha: 0.1),
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.image_not_supported,
+                                      size: 64,
+                                      color: colorScheme.primary
+                                          .withValues(alpha: 0.5),
+                                    ),
+                                  ),
+                                ),
                               )
-                            : const Icon(
-                                MdiIcons.pinOff,
+                            : Container(
+                                color:
+                                    colorScheme.primary.withValues(alpha: 0.1),
+                                child: Center(
+                                  child: Icon(
+                                    Icons.image_not_supported,
+                                    size: 64,
+                                    color: colorScheme.primary
+                                        .withValues(alpha: 0.5),
+                                  ),
+                                ),
                               ),
-                        color: isPinned ? Colors.green : Colors.grey,
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Start Date
-                  Row(
-                    children: [
-                      const Icon(Icons.calendar_today,
-                          size: 14, color: Colors.green),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Start Date: $formattedDate',
-                        style: const TextStyle(
-                          fontSize: 12,
+                    ),
+                    // Gradient Overlay
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.9),
+                              Colors.black.withValues(alpha: 0.5),
+                              Colors.transparent,
+                            ],
+                            stops: const [0.0, 0.5, 1.0],
+                          ),
                         ),
                       ),
-                      if (widget.project.warnings > 0) const Spacer(),
-                      if (widget.project.warnings > 0)
-                        Row(
-                          children: [
-                            const Icon(Icons.warning,
-                                color: Colors.red, size: 14),
-                            const SizedBox(width: 8),
-                            Text(
-                              '${widget.project.warnings}',
-                              style: const TextStyle(
-                                color: Colors.red,
-                                fontSize: 12,
-                              ),
+                    ),
+                    // Pin Button
+                    Positioned(
+                      top: 16,
+                      right: 16,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: colorScheme.surfaceContainerHighest
+                              .withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              spreadRadius: 1,
+                              blurRadius: 5,
+                              offset: const Offset(0, 2),
                             ),
                           ],
                         ),
-                    ],
-                  ),
-
-                  // Warning Badge
-                ],
+                        child: IconButton(
+                          onPressed: () => togglePin(context),
+                          icon: Icon(
+                            isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+                            color: isPinned
+                                ? colorScheme.primary
+                                : colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Warning Badge
+                    if (widget.project.warnings > 0)
+                      Positioned(
+                        top: 16,
+                        left: 16,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colorScheme.error.withValues(alpha: 0.9),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                spreadRadius: 1,
+                                blurRadius: 5,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.warning_amber_rounded,
+                                color: colorScheme.onError,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${widget.project.warnings}',
+                                style: TextStyle(
+                                  color: colorScheme.onError,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    // Project Info
+                    Positioned(
+                      left: 16,
+                      right: 16,
+                      bottom: 16,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.project.title,
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              height: 1.2,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+              // Project Details
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    left: BorderSide(
+                      color: widget.project.warnings > 0
+                          ? colorScheme.error
+                          : colorScheme.primary,
+                      width: 4,
+                    ),
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildInfoRow(
+                            'Project ID',
+                            '#${widget.project.projectId}',
+                            Icons.tag,
+                            context: context,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildInfoRow(
+                            'Start Date',
+                            formattedDate,
+                            Icons.calendar_today,
+                            context: context,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildInfoRow(
+                            'Warnings',
+                            '${widget.project.warnings}',
+                            Icons.warning_amber_rounded,
+                            context: context,
+                            iconColor: widget.project.warnings > 0
+                                ? colorScheme.error
+                                : colorScheme.outline,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildInfoRow(
+                            'Owner',
+                            widget.project.owner.name,
+                            Icons.business,
+                            context: context,
+                            iconColor: colorScheme.secondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildInfoRow(
+    String label,
+    String value,
+    IconData icon, {
+    required BuildContext context,
+    String? imageUrl,
+    int? maxLines,
+    Color? iconColor,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        if (imageUrl != null && imageUrl.isNotEmpty)
+          Container(
+            width: 32,
+            height: 32,
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => Icon(
+                  icon,
+                  size: 16,
+                  color: iconColor ?? colorScheme.primary,
+                ),
+              ),
+            ),
+          )
+        else
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: (iconColor ?? colorScheme.primary).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              size: 16,
+              color: iconColor ?? colorScheme.primary,
+            ),
+          ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: colorScheme.secondary,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: colorScheme.onSurface,
+                  fontWeight: FontWeight.w500,
+                  height: 1.3,
+                ),
+                maxLines: maxLines,
+                overflow: maxLines != null ? TextOverflow.ellipsis : null,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

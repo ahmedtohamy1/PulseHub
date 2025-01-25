@@ -56,51 +56,53 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Column(
       children: [
-        // Custom Row as Header
-        SizedBox(
+        // Header
+        Container(
           height: kToolbarHeight,
-          child: Container(
-            color: Theme.of(context).appBarTheme.backgroundColor,
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'All Projects',
-                  style: TextStyle(
-                    color: Theme.of(context).appBarTheme.foregroundColor,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 2,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'All Projects',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
                 ),
-                Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: IconButton.filled(
-                        icon: const Icon(
-                          Icons.refresh,
-                        ),
-                        onPressed: () {
-                          context.read<ProjectsCubit>().getProjects();
-                        },
-                      ),
-                    ),
-                  ],
+              ),
+              IconButton.filled(
+                onPressed: () => context.read<ProjectsCubit>().getProjects(),
+                icon: const Icon(Icons.refresh),
+                style: IconButton.styleFrom(
+                  backgroundColor: colorScheme.primary.withValues(alpha: 0.1),
+                  foregroundColor: colorScheme.primary,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
 
-        // Grouped Projects List Below
+        // Projects List
         Expanded(
           child: BlocBuilder<ProjectsCubit, ProjectsState>(
             builder: (context, state) {
               return ReorderableListView(
-                padding: const EdgeInsets.all(10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
                 onReorder: _onReorder,
                 buildDefaultDragHandles: false,
                 children: owners.map((owner) {
@@ -108,133 +110,119 @@ class GroupedProjectsListState extends State<GroupedProjectsList> {
 
                   return Container(
                     key: ValueKey(owner.ownerId),
-                    margin: const EdgeInsets.only(bottom: 10),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                    margin: const EdgeInsets.only(bottom: 32),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Owner Header
                         Container(
-                          decoration: BoxDecoration(
-                            color: Colors.green.withValues(alpha: 0.2),
-                            borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(10)),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 10, horizontal: 5),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 48, // Set a specific width
-                                  height: 48, // Set a specific height
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(
-                                        6), // Rounded corners
-                                    color: Colors.white.withValues(
-                                        alpha:
-                                            0.99), // White background with opacity
-                                  ),
-                                  // ignore: unnecessary_null_comparison
-                                  child: owner.logoUrl != null
-                                      ? ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                              6), // Match container border radius
-                                          child: Image.network(
-                                            owner.logoUrl,
-                                            fit: BoxFit
-                                                .contain, // Ensure the image fits inside the container
+                          margin: const EdgeInsets.only(bottom: 20),
+                          child: Row(
+                            children: [
+                              // Owner Logo
+                              Container(
+                                width: 56,
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  color: colorScheme.surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                          Colors.black.withValues(alpha: 0.1),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                padding: const EdgeInsets.all(8),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: owner.logoUrl.isNotEmpty
+                                      ? Image.network(
+                                          owner.logoUrl,
+                                          fit: BoxFit.contain,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  Icon(
+                                            Icons.business,
+                                            size: 32,
+                                            color: colorScheme.primary
+                                                .withValues(alpha: 0.5),
                                           ),
                                         )
-                                      : const Icon(
-                                          Icons.person,
-                                          color: Colors
-                                              .grey, // Fallback icon color
+                                      : Icon(
+                                          Icons.business,
+                                          size: 32,
+                                          color: colorScheme.primary
+                                              .withValues(alpha: 0.5),
                                         ),
                                 ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  '${owner.name} ',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
+                              ),
+                              const SizedBox(width: 16),
+                              // Owner Info
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      owner.name,
+                                      style:
+                                          theme.textTheme.titleLarge?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${ownerProjects.length} Projects',
+                                      style:
+                                          theme.textTheme.titleSmall?.copyWith(
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // Reorder Handle
+                              ReorderableDragStartListener(
+                                index: owners.indexOf(owner),
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.surfaceContainerHighest,
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black
+                                            .withValues(alpha: 0.05),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Icon(
+                                    Icons.drag_handle,
+                                    color: colorScheme.onSurfaceVariant,
                                   ),
                                 ),
-                                const Spacer(),
-                                ReorderableDragStartListener(
-                                  index: owners.indexOf(owner),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color:
-                                          Colors.white.withValues(alpha: 0.0),
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: List.generate(3, (index) {
-                                            return Container(
-                                              width:
-                                                  4, // Adjust the size of the dots
-                                              height:
-                                                  4, // Adjust the size of the dots
-                                              margin: const EdgeInsets.all(
-                                                  2), // Adjust spacing between dots
-                                              decoration: const BoxDecoration(
-                                                color: Colors.grey, // Dot color
-                                                shape: BoxShape.circle,
-                                              ),
-                                            );
-                                          }),
-                                        ),
-                                        const SizedBox(
-                                            height:
-                                                4), // Adjust spacing between rows of dots
-                                        Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: List.generate(3, (index) {
-                                            return Container(
-                                              width:
-                                                  4, // Adjust the size of the dots
-                                              height:
-                                                  4, // Adjust the size of the dots
-                                              margin: const EdgeInsets.all(
-                                                  2), // Adjust spacing between dots
-                                              decoration: const BoxDecoration(
-                                                color: Colors.grey, // Dot color
-                                                shape: BoxShape.circle,
-                                              ),
-                                            );
-                                          }),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
-
-                        // Horizontal Scrolling Projects
+                        // Projects Horizontal List
                         SizedBox(
-                          height: 310,
+                          height: 400, // Increased height for bigger cards
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
                             itemCount: ownerProjects.length,
-                            itemBuilder: (context, projectIndex) {
+                            itemBuilder: (context, index) {
                               return Padding(
-                                padding: const EdgeInsets.only(right: 10),
+                                padding: const EdgeInsets.only(right: 20),
                                 child: SizedBox(
-                                  width: 300,
+                                  width:
+                                      340, // Increased width for bigger cards
                                   child: ProjectCard(
-                                      project: ownerProjects[projectIndex]),
+                                      project: ownerProjects[index]),
                                 ),
                               );
                             },
