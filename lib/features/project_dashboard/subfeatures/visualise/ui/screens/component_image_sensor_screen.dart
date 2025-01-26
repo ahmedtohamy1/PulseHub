@@ -131,29 +131,59 @@ class _ComponentImageSensorScreenState
   }
 
   void _handleSave() {
-    // Print component info
-    print('Component ID: ${widget.componentId}');
-    print('Image Name: ${widget.imageName}');
-    print('Image URL: ${widget.imageUrl}');
-
-    // Convert placed sensors to required format
-    final sensorsIdsAndCoordinates = <String, List<double>>{};
+    // Convert current placed sensors to map format for comparison
+    final currentSensors = <String, List<double>>{};
     for (final sensor in _placedSensors) {
-      sensorsIdsAndCoordinates[sensor.sensorId.toString()] = [
+      currentSensors[sensor.sensorId.toString()] = [
         sensor.coordinateX ?? 0.0,
         sensor.coordinateY ?? 0.0,
       ];
     }
 
-    print('Sensors Info:');
-    for (final sensor in _placedSensors) {
-      print('- Sensor ID: ${sensor.sensorId}');
-      print('  Name: ${sensor.name}');
-      print('  Type: ${sensor.typeId}');
-      print('  Coordinates: (${sensor.coordinateX}, ${sensor.coordinateY})');
+    // Check if anything has changed
+    bool hasChanges = false;
+    if (currentSensors.length != widget.existingSensors.length) {
+      hasChanges = true;
+    } else {
+      for (final entry in currentSensors.entries) {
+        final sensorId = entry.key;
+        final currentCoords = entry.value;
+        final existingCoords = widget.existingSensors[sensorId];
+        if (existingCoords == null ||
+            currentCoords[0] != existingCoords[0] ||
+            currentCoords[1] != existingCoords[1]) {
+          hasChanges = true;
+          break;
+        }
+      }
     }
 
-    print('Formatted Sensors Data: $sensorsIdsAndCoordinates');
+    // If nothing changed, just return
+    if (!hasChanges) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No changes to save')),
+      );
+      return;
+    }
+
+    // Convert placed sensors to required format for API
+    final sensorsIdsAndCoordinates = _placedSensors.map((sensor) {
+      return {
+        sensor.sensorId.toString(): {
+          'x': sensor.coordinateX,
+          'y': sensor.coordinateY,
+        }
+      };
+    }).toList();
+
+    // Call updateDashboardComponent
+    context.read<VisualiseCubit>().updateDashboardComponent(
+          widget.dashboardId,
+          widget.componentId,
+          "2D Sensor Placement",
+          widget.imageName,
+          sensorsIdsAndCoordinates,
+        );
   }
 
   void _onImageTap(
@@ -316,87 +346,115 @@ class _ComponentImageSensorScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<ProjectDashboardCubit, ProjectDashboardState>(
+          listener: (context, state) {
+            if (state is ProjectDashboardMonitoringSuccess) {
+              // Monitoring data loaded successfully
+            }
+          },
         ),
-        title: Text(
-          'Edit Sensor Placement',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-        actions: [
-          ValueListenableBuilder<bool>(
-            valueListenable: _isListExpanded,
-            builder: (context, isExpanded, _) {
-              return IconButton(
-                onPressed: () => _isListExpanded.value = !isExpanded,
-                icon: Badge(
-                  label: Text(_placedSensors.length.toString()),
-                  child: Icon(
-                    isExpanded ? Icons.sensors_off : Icons.sensors,
-                  ),
+        BlocListener<VisualiseCubit, VisualiseState>(
+          listener: (context, state) {
+            if (state is UpdateDashboardComponentSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Changes saved successfully')),
+              );
+              Navigator.pop(context);
+            } else if (state is UpdateDashboardComponentFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to save changes: ${state.message}'),
+                  backgroundColor: Theme.of(context).colorScheme.error,
                 ),
               );
-            },
+            }
+          },
+        ),
+      ],
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.pop(),
           ),
-          IconButton(
-            onPressed: _handleSave,
-            icon: const Icon(Icons.save),
+          title: Text(
+            'Edit Sensor Placement',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
           ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          PhotoView(
-            imageProvider: NetworkImage(widget.imageUrl),
-            controller: _photoViewController,
-            basePosition: Alignment.center,
-            initialScale: PhotoViewComputedScale.contained,
-            minScale: PhotoViewComputedScale.contained * 0.8,
-            maxScale: PhotoViewComputedScale.covered * 2,
-            backgroundDecoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-            ),
-            onTapUp: (context, details, controllerValue) =>
-                _onImageTap(details, controllerValue),
-            loadingBuilder: (context, event) => const Center(
-              child: CircularProgressIndicator(),
-            ),
-          ),
-          if (_placedSensors.isNotEmpty)
-            Positioned.fill(
-              child: ValueListenableBuilder<int>(
-                valueListenable: _repaintNotifier,
-                builder: (context, _, __) {
-                  return IgnorePointer(
-                    child: CustomPaint(
-                      painter: SensorOverlayPainter(
-                        sensors: _placedSensors,
-                        imageSize: _imageSize,
-                        scale: _photoViewController.scale,
-                        position: _photoViewController.position,
-                      ),
+          actions: [
+            ValueListenableBuilder<bool>(
+              valueListenable: _isListExpanded,
+              builder: (context, isExpanded, _) {
+                return IconButton(
+                  onPressed: () => _isListExpanded.value = !isExpanded,
+                  icon: Badge(
+                    label: Text(_placedSensors.length.toString()),
+                    child: Icon(
+                      isExpanded ? Icons.sensors_off : Icons.sensors,
                     ),
-                  );
-                },
+                  ),
+                );
+              },
+            ),
+            IconButton(
+              onPressed: _handleSave,
+              icon: const Icon(Icons.save),
+            ),
+          ],
+        ),
+        body: Stack(
+          children: [
+            PhotoView(
+              imageProvider: NetworkImage(widget.imageUrl),
+              controller: _photoViewController,
+              basePosition: Alignment.center,
+              initialScale: PhotoViewComputedScale.contained,
+              minScale: PhotoViewComputedScale.contained * 0.8,
+              maxScale: PhotoViewComputedScale.covered * 2,
+              backgroundDecoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+              ),
+              onTapUp: (context, details, controllerValue) =>
+                  _onImageTap(details, controllerValue),
+              loadingBuilder: (context, event) => const Center(
+                child: CircularProgressIndicator(),
               ),
             ),
-          ValueListenableBuilder<bool>(
-            valueListenable: _isListExpanded,
-            builder: (context, isExpanded, _) {
-              if (!isExpanded) return const SizedBox.shrink();
-              return _PlacedSensorsList(
-                placedSensors: _placedSensors,
-                onRemove: (index) =>
-                    setState(() => _placedSensors.removeAt(index)),
-              );
-            },
-          ),
-        ],
+            if (_placedSensors.isNotEmpty)
+              Positioned.fill(
+                child: ValueListenableBuilder<int>(
+                  valueListenable: _repaintNotifier,
+                  builder: (context, _, __) {
+                    return IgnorePointer(
+                      child: CustomPaint(
+                        painter: SensorOverlayPainter(
+                          sensors: _placedSensors,
+                          imageSize: _imageSize,
+                          scale: _photoViewController.scale,
+                          position: _photoViewController.position,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ValueListenableBuilder<bool>(
+              valueListenable: _isListExpanded,
+              builder: (context, isExpanded, _) {
+                if (!isExpanded) return const SizedBox.shrink();
+                return _PlacedSensorsList(
+                  placedSensors: _placedSensors,
+                  onRemove: (index) =>
+                      setState(() => _placedSensors.removeAt(index)),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

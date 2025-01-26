@@ -5,7 +5,6 @@ import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/utils/shared_pref_helper.dart';
 import 'package:pulsehub/core/utils/shared_pref_keys.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_medial_library_response_model.dart';
-import 'package:pulsehub/features/project_dashboard/data/models/project_dashboards.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/data/models/get_one_dash_components.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/data/visualise_repo.dart';
 
@@ -62,7 +61,6 @@ class VisualiseCubit extends Cubit<VisualiseState> {
     result.fold(
       (error) => emit(ImageWithSensorsFailure(error)),
       (success) {
-   
         emit(ImageWithSensorsSuccess(success));
       },
     );
@@ -76,6 +74,28 @@ class VisualiseCubit extends Cubit<VisualiseState> {
     result.fold(
       (error) => emit(GetMediaLibraryFailure(error)),
       (success) => emit(GetMediaLibrarySuccess(success)),
+    );
+  }
+
+  Future<void> updateDashboardComponent(
+      int dashboardId,
+      int componentId,
+      String componentName,
+      String imageName,
+      List<Map<String, Map<String, dynamic>>> sensorsIdsAndCoordinates) async {
+    emit(UpdateDashboardComponentLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final result = await visualiseRepo.updateDashboardComponent(
+        token,
+        dashboardId,
+        componentId,
+        componentName,
+        imageName,
+        sensorsIdsAndCoordinates);
+
+    result.fold(
+      (error) => emit(UpdateDashboardComponentFailure(error)),
+      (success) => emit(UpdateDashboardComponentSuccess()),
     );
   }
 }

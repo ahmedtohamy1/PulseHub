@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:injectable/injectable.dart';
@@ -7,7 +6,6 @@ import 'package:pulsehub/core/networking/end_points.dart';
 import 'package:pulsehub/core/networking/my_api.dart';
 import 'package:pulsehub/core/networking/status_code.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_medial_library_response_model.dart';
-import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/data/models/get_dash_components.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/data/models/get_one_dash_components.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/data/visualise_repo.dart';
 
@@ -69,7 +67,6 @@ class VisualiseRepoImpl implements VisualiseRepo {
   Future<Either<String, bool>> createMediaLibraryFile(
       String token, int projectId, String fileName, XFile file) async {
     try {
-  
       // Create form data
       final formData = FormData.fromMap({
         'project': projectId,
@@ -81,13 +78,11 @@ class VisualiseRepoImpl implements VisualiseRepo {
         ),
       });
 
-
       final response = await myApi.post(
         EndPoints.mediaLibrary,
         token: token,
         data: formData,
       );
-
 
       if ((response.statusCode == StatusCode.created ||
               response.statusCode == StatusCode.ok) &&
@@ -122,8 +117,7 @@ class VisualiseRepoImpl implements VisualiseRepo {
     }
   }
 
-
-    @override
+  @override
   Future<Either<String, GetMediaLibrariesResponseModel>> getMediaLibrary(
       String token, int projectId) async {
     try {
@@ -144,4 +138,53 @@ class VisualiseRepoImpl implements VisualiseRepo {
     }
   }
 
+  @override
+  Future<Either<String, bool>> updateDashboardComponent(
+      String token,
+      int dashboardId,
+      int componentId,
+      String componentName,
+      String imageName,
+      List<Map<String, Map<String, dynamic>>> sensorsIdsAndCoordinates) async {
+    try {
+      // Convert sensor coordinates to required format: { sensorId: [x, y] }
+      final formattedSensors = <String, List<double>>{};
+      for (final sensorMap in sensorsIdsAndCoordinates) {
+        sensorMap.forEach((sensorId, coordinates) {
+          formattedSensors[sensorId] = [
+            (coordinates['x'] as num).toDouble(),
+            (coordinates['y'] as num).toDouble(),
+          ];
+        });
+      }
+
+      final content = {
+        "picture_name": imageName,
+        "sensors": formattedSensors,
+      };
+
+      final requestBody = {
+        'dashboard': dashboardId,
+        'name': componentName,
+        'content': content,
+      };
+
+      final response = await myApi.post(
+        EndPoints.saveImageWithSensor,
+        token: token,
+        queryParameters: {'component_id': componentId},
+        encodeAsJson: true,
+        data: requestBody,
+      );
+
+      if (response.statusCode == StatusCode.ok ||
+          response.statusCode == StatusCode.created) {
+        return right(true);
+      }
+
+      return left('Failed to save image with sensors: ${response.data}');
+    } catch (e) {
+      return left(e.toString());
+    }
+  }
 }

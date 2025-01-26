@@ -60,3 +60,14 @@ final class GetMediaLibraryFailure extends VisualiseState {
   final String message;
   const GetMediaLibraryFailure(this.message);
 }
+
+
+final class UpdateDashboardComponentLoading extends VisualiseState {}
+
+final class UpdateDashboardComponentSuccess extends VisualiseState {}
+
+final class UpdateDashboardComponentFailure extends VisualiseState {
+  final String message;
+  const UpdateDashboardComponentFailure(this.message);
+}
+  
