@@ -4,14 +4,19 @@ import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubi
 
 class SensorSelectionDialog extends StatefulWidget {
   final int projectId;
-  const SensorSelectionDialog({super.key, required this.projectId});
+  final List<String> placedSensorIds;
+  const SensorSelectionDialog({
+    super.key,
+    required this.projectId,
+    required this.placedSensorIds,
+  });
 
   @override
   State<SensorSelectionDialog> createState() => _SensorSelectionDialogState();
 }
 
 class _SensorSelectionDialogState extends State<SensorSelectionDialog> {
-  final selectedSensorIds = <int>[];
+  String? selectedSensorId;
 
   @override
   void initState() {
@@ -36,7 +41,7 @@ class _SensorSelectionDialogState extends State<SensorSelectionDialog> {
             size: 24,
           ),
           const SizedBox(width: 12),
-          const Text('Select Sensors'),
+          const Text('Select a Sensor'),
         ],
       ),
       content: BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
@@ -120,7 +125,7 @@ class _SensorSelectionDialogState extends State<SensorSelectionDialog> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Select sensors to place on the image:',
+                            'Select a sensor to place on the image:',
                             style: TextStyle(
                               fontSize: 14,
                               color: colorScheme.primary,
@@ -192,20 +197,18 @@ class _SensorSelectionDialogState extends State<SensorSelectionDialog> {
                                 ...monitoring.usedSensors!.expand(
                                   (usedSensor) =>
                                       usedSensor.sensors?.map(
-                                        (sensor) => CheckboxListTile(
-                                          value: selectedSensorIds
-                                              .contains(sensor.sensorId),
-                                          onChanged: sensor.cloudHub != null
+                                        (sensor) => RadioListTile(
+                                          value: sensor.sensorId.toString(),
+                                          groupValue: selectedSensorId,
+                                          onChanged: (sensor.cloudHub != null ||
+                                                  widget.placedSensorIds
+                                                      .contains(sensor.sensorId
+                                                          .toString()))
                                               ? null
-                                              : (selected) {
+                                              : (value) {
                                                   setState(() {
-                                                    if (selected == true) {
-                                                      selectedSensorIds
-                                                          .add(sensor.sensorId);
-                                                    } else {
-                                                      selectedSensorIds.remove(
-                                                          sensor.sensorId);
-                                                    }
+                                                    selectedSensorId =
+                                                        value as String;
                                                   });
                                                 },
                                           title: Text(sensor.name),
@@ -253,6 +256,24 @@ class _SensorSelectionDialogState extends State<SensorSelectionDialog> {
                                                       ),
                                                     ),
                                                   ],
+                                                  if (widget.placedSensorIds
+                                                      .contains(sensor.sensorId
+                                                          .toString())) ...[
+                                                    const SizedBox(width: 8),
+                                                    Icon(
+                                                      Icons.place,
+                                                      size: 12,
+                                                      color: colorScheme.error,
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      'Already placed',
+                                                      style: TextStyle(
+                                                        color:
+                                                            colorScheme.error,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ],
                                               ),
                                             ],
@@ -286,12 +307,12 @@ class _SensorSelectionDialogState extends State<SensorSelectionDialog> {
           ),
         ),
         FilledButton(
-          onPressed: selectedSensorIds.isEmpty
+          onPressed: selectedSensorId == null
               ? null
               : () {
-                  Navigator.pop(context, selectedSensorIds);
+                  Navigator.pop(context, selectedSensorId);
                 },
-          child: const Text('Place Selected Sensors'),
+          child: const Text('Place Sensor'),
         ),
       ],
     );
