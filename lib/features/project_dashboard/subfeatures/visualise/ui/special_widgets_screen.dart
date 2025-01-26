@@ -174,31 +174,111 @@ class _SpecialWidgetsScreenState extends State<SpecialWidgetsScreen> {
                     ),
                     const SizedBox(height: 8),
                     ..._sensorPlacements.map((placement) => Card(
+                          elevation: 4,
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 8, horizontal: 4),
+                          clipBehavior: Clip.antiAlias,
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (placement['imageUrl'] != null)
-                                Image.network(
-                                  placement['imageUrl']!,
-                                  height: 200,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
+                              if (placement['imageUrl'] != null) ...[
+                                Stack(
+                                  children: [
+                                    Image.network(
+                                      placement['imageUrl']!,
+                                      height: 200,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                    ),
+                                    Positioned(
+                                      top: 0,
+                                      left: 0,
+                                      right: 0,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: [
+                                              Colors.black.withOpacity(0.7),
+                                              Colors.transparent,
+                                            ],
+                                          ),
+                                        ),
+                                        padding: const EdgeInsets.all(16),
+                                        child: Text(
+                                          placement['pictureName'],
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ListTile(
-                                leading: const Icon(Icons.sensors),
-                                title: Text(placement['pictureName']),
-                                subtitle: Text(
-                                    '${(placement['sensors'] as Map).length} sensors placed'),
-                                trailing: IconButton(
-                                  icon: const Icon(Icons.edit),
-                                  onPressed: () {
-                                    context.push(
-                                      Routes.imageSensorPlacing,
-                                      extra: [
-                                        widget.projectId,
-                                        widget.dashboardId
+                                const SizedBox(height: 8),
+                              ],
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 6,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primaryContainer,
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.sensors,
+                                                size: 18,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onPrimaryContainer,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                '${(placement['sensors'] as Map).length} Sensors',
+                                                style: TextStyle(
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .onPrimaryContainer,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        FilledButton.tonalIcon(
+                                          onPressed: () {
+                                            context.push(
+                                              Routes.imageSensorPlacing,
+                                              extra: [
+                                                widget.projectId,
+                                                widget.dashboardId
+                                              ],
+                                            );
+                                          },
+                                          icon: const Icon(Icons.edit),
+                                          label: const Text('Edit'),
+                                        ),
                                       ],
-                                    );
-                                  },
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
