@@ -1,5 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/get_medial_library_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/data/models/get_dash_components.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/data/models/get_one_dash_components.dart';
 
@@ -19,4 +20,7 @@ abstract class VisualiseRepo {
     String token,
     int dashboardId,
   );
+
+  Future<Either<String, GetMediaLibrariesResponseModel>> getMediaLibrary(
+      String token, int projectId);
 }

@@ -48,3 +48,15 @@ final class ImageWithSensorsFailure extends VisualiseState {
   const ImageWithSensorsFailure(this.message);
 }
 
+
+final class GetMediaLibraryLoading extends VisualiseState {}
+
+final class GetMediaLibrarySuccess extends VisualiseState {
+  final GetMediaLibrariesResponseModel mediaLibraries;
+  const GetMediaLibrarySuccess(this.mediaLibraries);
+}
+
+final class GetMediaLibraryFailure extends VisualiseState {
+  final String message;
+  const GetMediaLibraryFailure(this.message);
+}

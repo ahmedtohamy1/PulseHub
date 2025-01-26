@@ -6,6 +6,7 @@ import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/networking/end_points.dart';
 import 'package:pulsehub/core/networking/my_api.dart';
 import 'package:pulsehub/core/networking/status_code.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/get_medial_library_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/data/models/get_dash_components.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/data/models/get_one_dash_components.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/data/visualise_repo.dart';
@@ -120,4 +121,27 @@ class VisualiseRepoImpl implements VisualiseRepo {
       return Left(e.toString());
     }
   }
+
+
+    @override
+  Future<Either<String, GetMediaLibrariesResponseModel>> getMediaLibrary(
+      String token, int projectId) async {
+    try {
+      final response = await myApi.get(
+        EndPoints.mediaLibrary,
+        token: token,
+        queryParameters: {'project_id': projectId},
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return Right(GetMediaLibrariesResponseModel.fromJson(response.data));
+      } else {
+        return Left('Failed to get media library: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
 }

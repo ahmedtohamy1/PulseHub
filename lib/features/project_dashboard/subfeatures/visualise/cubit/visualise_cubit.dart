@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/utils/shared_pref_helper.dart';
 import 'package:pulsehub/core/utils/shared_pref_keys.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/get_medial_library_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/project_dashboards.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/data/models/get_one_dash_components.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/data/visualise_repo.dart';
@@ -64,6 +65,17 @@ class VisualiseCubit extends Cubit<VisualiseState> {
    
         emit(ImageWithSensorsSuccess(success));
       },
+    );
+  }
+
+  Future<void> getMediaLibrary(int projectId) async {
+    emit(GetMediaLibraryLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final result = await visualiseRepo.getMediaLibrary(token, projectId);
+
+    result.fold(
+      (error) => emit(GetMediaLibraryFailure(error)),
+      (success) => emit(GetMediaLibrarySuccess(success)),
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pulsehub/core/routing/routes.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/get_medial_library_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/cubit/visualise_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/ui/special_widgets/chart_container.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/ui/special_widgets/chart_data_editor.dart';
@@ -46,54 +47,107 @@ class _SpecialWidgetsScreenState extends State<SpecialWidgetsScreen> {
 
   Future<void> _loadDashboardComponents() async {
     await _visualiseCubit.getImageWithSensors(widget.dashboardId);
+    // After getting components, fetch media library
+    await _visualiseCubit.getMediaLibrary(widget.projectId);
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<VisualiseCubit, VisualiseState>(
-      listener: (context, state) {
-        if (state is ImageWithSensorsLoading) {
-          setState(() => _isLoading = true);
-        } else if (state is ImageWithSensorsSuccess) {
-          setState(() {
-            _isLoading = false;
-            // Clear existing components
-            _charts.clear();
-            _tables.clear();
-            _sensorPlacements.clear();
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<VisualiseCubit, VisualiseState>(
+          listener: (context, state) {
+            if (state is ImageWithSensorsLoading) {
+              setState(() => _isLoading = true);
+            } else if (state is ImageWithSensorsSuccess) {
+              setState(() {
+                // Clear existing components
+                _charts.clear();
+                _tables.clear();
+                _sensorPlacements.clear();
 
-            // Add components from the response
-            final dashComponents = state.components;
-            final components = dashComponents.dashboard.components;
+                // Add components from the response
+                final dashComponents = state.components;
+                final components = dashComponents.dashboard.components;
 
-            for (final component in components) {
-              if (component.name == "2D Sensor Placement" &&
-                  component.content != null) {
-                // Add sensor placement component
-                _sensorPlacements.add({
-                  'id': component.componentId,
-                  'pictureName': component.content!.pictureName,
-                  'sensors': component.content!.sensors,
-                });
-              } else if (component.content != null) {
-                // Add other components based on their type
-                _charts.add({
-                  'type': 'line', // Default type, adjust based on content
-                  'data': component.content,
-                });
-              }
+                for (final component in components) {
+                  if (component.name == "2D Sensor Placement" &&
+                      component.content != null) {
+                    // Add sensor placement component
+                    _sensorPlacements.add({
+                      'id': component.componentId,
+                      'pictureName': component.content!.pictureName,
+                      'sensors': component.content!.sensors,
+                      'imageUrl':
+                          null, // Will be populated when media library loads
+                    });
+                  } else if (component.content != null) {
+                    // Add other components based on their type
+                    _charts.add({
+                      'type': 'line', // Default type, adjust based on content
+                      'data': component.content,
+                    });
+                  }
+                }
+              });
+            } else if (state is ImageWithSensorsFailure) {
+              setState(() => _isLoading = false);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to load components: ${state.message}'),
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                ),
+              );
             }
-          });
-        } else if (state is ImageWithSensorsFailure) {
-          setState(() => _isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to load components: ${state.message}'),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-          );
-        }
-      },
+          },
+        ),
+        BlocListener<VisualiseCubit, VisualiseState>(
+          listener: (context, state) {
+            if (state is GetMediaLibrarySuccess) {
+              setState(() {
+                _isLoading = false;
+                // Match media library files with sensor placements
+                final mediaFiles = state.mediaLibraries.mediaLibraries ?? [];
+
+                if (mediaFiles.isNotEmpty) {
+                  for (var placement in _sensorPlacements) {
+                    final pictureName = placement['pictureName'] as String;
+                    MediaLibrary? matchingFile;
+
+                    // First try exact match
+                    try {
+                      matchingFile = mediaFiles.firstWhere(
+                        (file) => file.fileName == pictureName,
+                      );
+                    } catch (_) {
+                      // Then try without 'scaled_' prefix
+                      try {
+                        matchingFile = mediaFiles.firstWhere(
+                          (file) =>
+                              file.fileName ==
+                              pictureName.replaceAll('scaled_', ''),
+                        );
+                      } catch (_) {
+                        // If no match found, use first file
+                        matchingFile = mediaFiles.first;
+                      }
+                    }
+
+                    placement['imageUrl'] = matchingFile.file;
+                  }
+                }
+              });
+            } else if (state is GetMediaLibraryFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to load media: ${state.message}'),
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                ),
+              );
+            }
+          },
+        ),
+      ],
       child: Stack(
         children: [
           SingleChildScrollView(
@@ -120,21 +174,34 @@ class _SpecialWidgetsScreenState extends State<SpecialWidgetsScreen> {
                     ),
                     const SizedBox(height: 8),
                     ..._sensorPlacements.map((placement) => Card(
-                          child: ListTile(
-                            leading: const Icon(Icons.sensors),
-                            title: Text(placement['pictureName']),
-                            subtitle: Text(
-                                '${(placement['sensors'] as Map).length} sensors placed'),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () {
-                                // Navigate to edit screen
-                                context.push(
-                                  Routes.imageSensorPlacing,
-                                  extra: [widget.projectId, widget.dashboardId],
-                                );
-                              },
-                            ),
+                          child: Column(
+                            children: [
+                              if (placement['imageUrl'] != null)
+                                Image.network(
+                                  placement['imageUrl']!,
+                                  height: 200,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                              ListTile(
+                                leading: const Icon(Icons.sensors),
+                                title: Text(placement['pictureName']),
+                                subtitle: Text(
+                                    '${(placement['sensors'] as Map).length} sensors placed'),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () {
+                                    context.push(
+                                      Routes.imageSensorPlacing,
+                                      extra: [
+                                        widget.projectId,
+                                        widget.dashboardId
+                                      ],
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
                         )),
                   ],
