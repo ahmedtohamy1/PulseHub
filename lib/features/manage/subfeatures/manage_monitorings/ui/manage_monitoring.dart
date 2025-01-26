@@ -252,9 +252,7 @@ class _ManageMonitoringsViewState extends State<ManageMonitoringsView> {
                 else ...[
                   FloatingActionButton(
                     heroTag: 'manage_monitorings_add_fab',
-                    onPressed: () {
-                 
-                    },
+                    onPressed: () => _showCreateMonitoringDialog(context),
                     child: Icon(
                       Icons.add,
                       color: colorScheme.onPrimaryContainer,
@@ -274,6 +272,182 @@ class _ManageMonitoringsViewState extends State<ManageMonitoringsView> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _showCreateMonitoringDialog(BuildContext context) async {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final TextEditingController nameController = TextEditingController();
+    final TextEditingController communicationsController =
+        TextEditingController();
+    int? selectedProjectId;
+    bool isLoading = false;
+    final cubit = context.read<ManageMonitoringsCubit>();
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => BlocProvider.value(
+        value: cubit,
+        child: StatefulBuilder(
+          builder: (context, setState) {
+            // Load projects when dialog is first shown
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (context.mounted) {
+                cubit.getProjects();
+              }
+            });
+
+            bool isFormValid =
+                nameController.text.isNotEmpty && selectedProjectId != null;
+
+            return PopScope(
+              canPop: !isLoading,
+              child: AlertDialog(
+                title: Text(
+                  'Create Monitoring',
+                  style: theme.textTheme.titleLarge,
+                ),
+                content: BlocConsumer<ManageMonitoringsCubit,
+                    ManageMonitoringsState>(
+                  listener: (context, state) {
+                    if (state is ManageMonitoringsCreateSuccess) {
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Monitoring created successfully'),
+                        ),
+                      );
+                      cubit.getMonitorings();
+                    } else if (state is ManageMonitoringsCreateFailure) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(state.error),
+                          backgroundColor: colorScheme.error,
+                        ),
+                      );
+                      setState(() => isLoading = false);
+                    }
+                  },
+                  builder: (context, state) {
+                    if (state is ManageMonitoringsGetProjectsLoading) {
+                      return const Center(
+                        heightFactor: 1,
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+
+                    if (state is ManageMonitoringsGetProjectsFailure) {
+                      return Center(
+                        child: Text(
+                          'Failed to load projects: ${state.error}',
+                          style: TextStyle(color: colorScheme.error),
+                        ),
+                      );
+                    }
+
+                    if (state is ManageMonitoringsGetProjectsSuccess) {
+                      final projects = state.projectsResponse?.projects ?? [];
+
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextField(
+                            controller: nameController,
+                            onChanged: (value) {
+                              setState(() {
+                                isFormValid = value.isNotEmpty &&
+                                    selectedProjectId != null;
+                              });
+                            },
+                            decoration: const InputDecoration(
+                              labelText: 'Name',
+                              prefixIcon: Icon(Icons.monitor),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          TextField(
+                            controller: communicationsController,
+                            decoration: const InputDecoration(
+                              labelText: 'Communications',
+                              prefixIcon: Icon(Icons.comment),
+                            ),
+                            maxLines: 3,
+                          ),
+                          const SizedBox(height: 16),
+                          DropdownButtonFormField<int>(
+                            value: selectedProjectId,
+                            decoration: const InputDecoration(
+                              labelText: 'Project',
+                              prefixIcon: Icon(Icons.folder),
+                            ),
+                            items: projects.map((project) {
+                              return DropdownMenuItem(
+                                value: project.projectId,
+                                child: Text(project.title),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                selectedProjectId = value;
+                                isFormValid = nameController.text.isNotEmpty &&
+                                    value != null;
+                              });
+                            },
+                          ),
+                        ],
+                      );
+                    }
+
+                    return const SizedBox.shrink();
+                  },
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: isLoading
+                        ? null
+                        : () {
+                            Navigator.of(context).pop();
+                          },
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(
+                        color: isLoading
+                            ? colorScheme.onSurface.withOpacity(0.38)
+                            : colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                  FilledButton(
+                    onPressed: (!isFormValid || isLoading)
+                        ? null
+                        : () async {
+                            setState(() => isLoading = true);
+                            await cubit.createMonitoring(
+                              nameController.text,
+                              selectedProjectId!,
+                              communicationsController.text.isEmpty
+                                  ? null
+                                  : communicationsController.text,
+                            );
+                          },
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text('Create'),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }

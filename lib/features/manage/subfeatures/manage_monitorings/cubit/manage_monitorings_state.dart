@@ -133,3 +133,33 @@ final class ManageMonitoringsDeleteFailure extends ManageMonitoringsState {
   @override
   List<Object?> get props => [...super.props, error];
 }
+
+final class ManageMonitoringsCreateLoading extends ManageMonitoringsState {
+  const ManageMonitoringsCreateLoading({
+    super.monitoringResponse,
+    super.projectsResponse,
+  });
+}
+
+final class ManageMonitoringsCreateSuccess extends ManageMonitoringsState {
+  const ManageMonitoringsCreateSuccess(
+    bool success, {
+    super.monitoringResponse,
+    super.projectsResponse,
+  });
+
+  @override
+    List<Object?> get props => [...super.props, ];
+}
+
+final class ManageMonitoringsCreateFailure extends ManageMonitoringsState {
+  final String error;
+  const ManageMonitoringsCreateFailure(
+    this.error, {
+    super.monitoringResponse,
+    super.projectsResponse,
+  });
+
+  @override
+  List<Object?> get props => [...super.props, error];
+}

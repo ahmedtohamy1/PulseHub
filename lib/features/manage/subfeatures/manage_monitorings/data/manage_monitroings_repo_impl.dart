@@ -75,6 +75,36 @@ class ManageMonitoringsRepoImpl extends ManageMonitoringsRepo {
   }
 
   @override
+  Future<Either<String, bool>> createMonitoring(
+      String token, String? communications, String name, int projectId) async {
+    try {
+      final Map<String, dynamic> data = {
+        "name": name,
+        "project": projectId,
+      };
+
+      if (communications != null) {
+        data["communications"] = communications;
+      }
+
+      final response = await myApiService.post(
+        EndPoints.getMonitoring,
+        token: token,
+        data: data,
+      );
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return Right(true);
+      } else {
+        return Left('Failed to get monitoring: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
   Future<Either<String, bool>> deleteMonitoring(
       String token, int monitoringId) async {
     try {
