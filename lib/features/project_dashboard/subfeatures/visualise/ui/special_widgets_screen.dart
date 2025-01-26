@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/core/routing/routes.dart';
+import 'package:pulsehub/core/utils/user_manager.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_medial_library_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/cubit/visualise_cubit.dart';
@@ -359,14 +360,15 @@ class _SpecialWidgetsScreenState extends State<SpecialWidgetsScreen> {
             const Center(
               child: CircularProgressIndicator(),
             ),
-          Positioned(
-            right: 16,
-            bottom: 16,
-            child: FloatingActionButton(
-              onPressed: () => _openWidgetSelector(context),
-              child: const Icon(Icons.add),
+          if (UserManager().user!.isStaff || UserManager().user!.isSuperuser)
+            Positioned(
+              right: 16,
+              bottom: 16,
+              child: FloatingActionButton(
+                onPressed: () => _openWidgetSelector(context),
+                child: const Icon(Icons.add),
+              ),
             ),
-          ),
         ],
       ),
     );
