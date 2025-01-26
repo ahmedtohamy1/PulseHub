@@ -9,12 +9,42 @@ sealed class VisualiseState extends Equatable {
 
 final class VisualiseInitial extends VisualiseState {}
 
-final class VisualiseLoading extends VisualiseState {}
+// Media Library States
+final class MediaLibraryLoading extends VisualiseState {}
 
-final class VisualiseSuccess extends VisualiseState {}
+final class MediaLibrarySuccess extends VisualiseState {}
 
-final class VisualiseFailure extends VisualiseState {
+final class MediaLibraryFailure extends VisualiseState {
   final String message;
+  const MediaLibraryFailure(this.message);
 
-  const VisualiseFailure(this.message);
+  @override
+  List<Object> get props => [message];
 }
+
+// Sensor Saving States
+final class SensorSavingLoading extends VisualiseState {}
+
+final class SensorSavingSuccess extends VisualiseState {}
+
+final class SensorSavingFailure extends VisualiseState {
+  final String message;
+  const SensorSavingFailure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
+// Image with sensors states
+final class ImageWithSensorsLoading extends VisualiseState {}
+
+final class ImageWithSensorsSuccess extends VisualiseState {
+  final GetOneDashComponents components;
+  const ImageWithSensorsSuccess(this.components);
+}
+
+final class ImageWithSensorsFailure extends VisualiseState {
+  final String message;
+  const ImageWithSensorsFailure(this.message);
+}
+

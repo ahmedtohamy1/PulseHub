@@ -1,8 +1,13 @@
+import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/networking/end_points.dart';
 import 'package:pulsehub/core/networking/my_api.dart';
 import 'package:pulsehub/core/networking/status_code.dart';
+import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/data/models/get_dash_components.dart';
+import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/data/models/get_one_dash_components.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/data/visualise_repo.dart';
 
 @Injectable(as: VisualiseRepo)
@@ -36,13 +41,11 @@ class VisualiseRepoImpl implements VisualiseRepo {
         "sensors": formattedSensors,
       };
 
-
       final requestBody = {
         'dashboard': dashboardId,
         'name': componentName,
         'content': content,
       };
-
 
       final response = await myApi.post(
         EndPoints.saveImageWithSensor,
@@ -51,7 +54,6 @@ class VisualiseRepoImpl implements VisualiseRepo {
         data: requestBody,
       );
 
-
       if (response.statusCode == StatusCode.created) {
         return right(true);
       }
@@ -59,6 +61,63 @@ class VisualiseRepoImpl implements VisualiseRepo {
       return left('Failed to save image with sensors: ${response.data}');
     } catch (e) {
       return left(e.toString());
+    }
+  }
+
+  @override
+  Future<Either<String, bool>> createMediaLibraryFile(
+      String token, int projectId, String fileName, XFile file) async {
+    try {
+  
+      // Create form data
+      final formData = FormData.fromMap({
+        'project': projectId,
+        'file_name': fileName,
+        'description': 'Dashboard 2d sensor placement component image',
+        'file': await MultipartFile.fromFile(
+          file.path,
+          filename: file.name,
+        ),
+      });
+
+
+      final response = await myApi.post(
+        EndPoints.mediaLibrary,
+        token: token,
+        data: formData,
+      );
+
+
+      if ((response.statusCode == StatusCode.created ||
+              response.statusCode == StatusCode.ok) &&
+          response.data['success']) {
+        return const Right(true);
+      } else {
+        return Left(
+            'Failed to create media library file: ${response.statusCode}');
+      }
+    } catch (error) {
+      return Left('Exception occurred: $error');
+    }
+  }
+
+  @override
+  Future<Either<String, GetOneDashComponents>> getImageWithSensors(
+      String token, int dashboardId) async {
+    try {
+      final response = await myApi.get(
+        EndPoints.createDash,
+        token: token,
+        queryParameters: {'dashboard_id': dashboardId},
+      );
+
+      if (response.statusCode == StatusCode.ok) {
+        return Right(GetOneDashComponents.fromJson(response.data));
+      }
+
+      return Left('Failed to get image with sensors: ${response.data}');
+    } catch (e) {
+      return Left(e.toString());
     }
   }
 }

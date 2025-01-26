@@ -35,10 +35,12 @@ class _ImageSensorPlacingScreenState extends State<ImageSensorPlacingScreen> {
   ui.Size? _imageSize;
   final _repaintNotifier = ValueNotifier<int>(0);
   final _isListExpanded = ValueNotifier<bool>(false);
+  late final VisualiseCubit _visualiseCubit;
 
   @override
   void initState() {
     super.initState();
+    _visualiseCubit = context.read<VisualiseCubit>();
     _photoViewController.outputStateStream.listen((_) {
       _repaintNotifier.value++;
     });
@@ -270,49 +272,58 @@ Placed sensor:
     );
   }
 
-  void _handleSave() {
-    if (_selectedImage == null || _imageSize == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No image selected'),
-        ),
-      );
-      return;
-    }
-
+  Future<void> _handleSave() async {
     if (_placedSensors.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No sensors placed on the image'),
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Error'),
+          content: const Text('Please place at least one sensor on the image.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
         ),
       );
       return;
     }
 
-    // Convert placed sensors to required format with string IDs
-    final sensorsIdsAndCoordinates = _placedSensors
-        .map((sensor) => {
-              sensor.sensorId.toString(): {
-                'x': sensor.coordinateX,
-                'y': sensor.coordinateY,
-              }
-            })
-        .toList();
+    try {
+      print('Starting save process...');
+      print('Project ID: ${widget.projectId}');
+      print('Image File: ${_selectedImage!.name}');
 
-    final componentName = '2D Sensor Placement';
-    final imageName = _selectedImage!.name;
+      // Convert placed sensors to required format
+      final sensorsIdsAndCoordinates = _placedSensors.map((sensor) {
+        return {
+          sensor.sensorId.toString(): {
+            'x': sensor.coordinateX,
+            'y': sensor.coordinateY,
+          }
+        };
+      }).toList();
 
-    print('Saving image with sensor: $imageName');
-    print('Sensors IDs and coordinates: $sensorsIdsAndCoordinates');
-    print('Dashboard ID: ${widget.dashboardId}');
-    print('Component Name: $componentName');
-
-    context.read<VisualiseCubit>().saveImageWithSensor(
-          widget.dashboardId,
-          componentName,
-          imageName,
-          sensorsIdsAndCoordinates,
+      // Save image and sensors in one go
+      await _visualiseCubit.saveImageWithSensors(
+        widget.projectId,
+        widget.dashboardId,
+        "2D Sensor Placement",
+        _selectedImage!,
+        sensorsIdsAndCoordinates,
+      );
+    } catch (e) {
+      print('Error in _handleSave: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
         );
+      }
+    }
   }
 
   @override
@@ -322,15 +333,36 @@ Placed sensor:
 
     return BlocListener<VisualiseCubit, VisualiseState>(
       listener: (context, state) {
-        if (state is VisualiseSuccess) {
+        if (state is MediaLibraryLoading) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Image saved successfully')),
+            const SnackBar(content: Text('Uploading image...')),
           );
-          context.pop();
-        } else if (state is VisualiseFailure) {
+        } else if (state is MediaLibrarySuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Image uploaded successfully')),
+          );
+        } else if (state is MediaLibraryFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.message),
+              content: Text('Failed to upload image: ${state.message}'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+        } else if (state is SensorSavingLoading) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Saving sensor positions...')),
+          );
+        } else if (state is SensorSavingSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Sensor positions saved successfully')),
+          );
+          context.pop();
+        } else if (state is SensorSavingFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content:
+                  Text('Failed to save sensor positions: ${state.message}'),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );

@@ -1,8 +1,11 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/utils/shared_pref_helper.dart';
 import 'package:pulsehub/core/utils/shared_pref_keys.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/project_dashboards.dart';
+import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/data/models/get_one_dash_components.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/data/visualise_repo.dart';
 
 part 'visualise_state.dart';
@@ -12,19 +15,55 @@ class VisualiseCubit extends Cubit<VisualiseState> {
   final VisualiseRepo visualiseRepo;
   VisualiseCubit(this.visualiseRepo) : super(VisualiseInitial());
 
-  Future<void> saveImageWithSensor(
+  Future<void> saveImageWithSensors(
+      int projectId,
       int dashboardId,
       String componentName,
-      String imageName,
+      XFile imageFile,
       List<Map<String, Map<String, dynamic>>> sensorsIdsAndCoordinates) async {
-    emit(VisualiseLoading());
+    emit(MediaLibraryLoading());
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
 
-    final result = await visualiseRepo.saveImageWithSensor(
+    // First upload the image
+    final imageName = 'scaled_${imageFile.name}';
+    final mediaResult = await visualiseRepo.createMediaLibraryFile(
+        token, projectId, imageName, imageFile);
+
+    final mediaLibrarySuccess = mediaResult.fold(
+      (error) {
+        emit(MediaLibraryFailure(error));
+        return false;
+      },
+      (success) {
+        emit(MediaLibrarySuccess());
+        return true;
+      },
+    );
+
+    if (!mediaLibrarySuccess) return;
+
+    // Then save the image with sensors
+    emit(SensorSavingLoading());
+    final sensorResult = await visualiseRepo.saveImageWithSensor(
         token, dashboardId, componentName, imageName, sensorsIdsAndCoordinates);
+
+    sensorResult.fold(
+      (error) => emit(SensorSavingFailure(error)),
+      (success) => emit(SensorSavingSuccess()),
+    );
+  }
+
+  Future<void> getImageWithSensors(int dashboardId) async {
+    emit(ImageWithSensorsLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final result = await visualiseRepo.getImageWithSensors(token, dashboardId);
+
     result.fold(
-      (l) => emit(VisualiseFailure(l)),
-      (r) => emit(VisualiseSuccess()),
+      (error) => emit(ImageWithSensorsFailure(error)),
+      (success) {
+   
+        emit(ImageWithSensorsSuccess(success));
+      },
     );
   }
 }

@@ -94,7 +94,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i361.Dio>(() => dioModule.provideDio());
     gh.lazySingleton<_i87.ManageRepository>(() => const _i176.ManageRepoImpl());
     gh.lazySingleton<_i713.MyApi>(() => _i713.MyApi(gh<_i361.Dio>()));
-    gh.lazySingleton<_i827.VisualiseRepo>(
+    gh.factory<_i827.VisualiseRepo>(
         () => _i132.VisualiseRepoImpl(gh<_i713.MyApi>()));
     gh.lazySingleton<_i346.DashRepository>(
         () => _i503.DashRepoImpl(gh<_i713.MyApi>()));

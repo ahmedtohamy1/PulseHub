@@ -6,6 +6,7 @@ import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/core/theming/app_styles.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/analyse/ui/graph_sensors/section_title.dart';
+import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/cubit/visualise_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/ui/special_widgets_screen.dart';
 import 'package:pulsehub/features/project_dashboard/ui/widgets/dashboard_card.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
@@ -163,9 +164,13 @@ class _VisualiseScreenState extends State<VisualiseScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => SpecialWidgetsScreen(
-                                  projectId: widget.projectId,
-                                  dashboardId: dashboard.dashboardId,
+                                builder: (context) => BlocProvider(
+                                  create: (context) => sl<VisualiseCubit>(),
+                                  child: SpecialWidgetsScreen(
+                                    projectId: widget.projectId,
+                                    dashboardId: dashboard.dashboardId,
+                                    dashboardName: dashboard.name,
+                                  ),
                                 ),
                               ),
                             );
