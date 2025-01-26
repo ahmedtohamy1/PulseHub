@@ -133,7 +133,7 @@ class _SpecialWidgetsScreenState extends State<SpecialWidgetsScreen> {
                       }
                     }
 
-                    placement['imageUrl'] = matchingFile.file;
+                    placement['imageUrl'] = matchingFile.fileUrl;
                   }
                 }
               });
