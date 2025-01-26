@@ -102,14 +102,14 @@ class _ManageUsersTabState extends State<ManageUsersTab>
                   }
 
                   if (state is ManageUsersSuccess) {
-                    if (state.response.users == null ||
-                        state.response.users!.isEmpty) {
+                    if (state.response.results.users.isEmpty) {
                       return const Center(
                         child: Text('No users found'),
                       );
                     }
 
-                    final filteredUsers = state.response.users!.where((user) {
+                    final filteredUsers =
+                        state.response.results.users.where((user) {
                       bool matchesSearch = _searchQuery.isEmpty ||
                           (user.firstName ?? '')
                               .toLowerCase()

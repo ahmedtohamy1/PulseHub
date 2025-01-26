@@ -31,8 +31,7 @@ abstract class ManageUsersRepository {
 
   Future<Either<String, bool>> updateDics(
       String token, UpdateDicRequestModel dicServices);
-  Future<Either<String, GetAllUserLogResponse>> getAllUserLog(
-      String token);
+  Future<Either<String, GetAllUserLogResponse>> getAllUserLog(String token);
 
   Future<Either<String, int>> createUser(
     String token,

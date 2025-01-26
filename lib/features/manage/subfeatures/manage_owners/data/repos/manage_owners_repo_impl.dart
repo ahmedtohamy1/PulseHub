@@ -19,11 +19,9 @@ class ManageOwnersRepositoryImpl implements ManageOwnersRepository {
       final response =
           await myApiService.get(EndPoints.getAllOwners, token: token);
       if (response.statusCode == StatusCode.ok) {
-        final List<dynamic> data = response.data as List<dynamic>;
-        final owners = data
-            .map((json) => OwnerModel.fromJson(json as Map<String, dynamic>))
-            .toList();
-        return right(owners);
+        final data = response.data as Map<String, dynamic>;
+        final ownerModel = OwnerModel.fromJson(data);
+        return right([ownerModel]);
       } else {
         return left(response.statusCode.toString());
       }
@@ -53,9 +51,6 @@ class ManageOwnersRepositoryImpl implements ManageOwnersRepository {
       }
       if (address != null && address.isNotEmpty) {
         requestData['addresse'] = address;
-      }
-      if (city != null && city.isNotEmpty) {
-        requestData['city'] = city;
       }
       if (country != null && country.isNotEmpty) {
         requestData['country'] = country;
@@ -123,10 +118,10 @@ class ManageOwnersRepositoryImpl implements ManageOwnersRepository {
         'name': name,
       };
       FormData? formData;
- 
+
       // Add optional fields only if they are not null
       if (phone != null && phone.isNotEmpty) {
-          requestData['phone'] = phone;
+        requestData['phone'] = phone;
       }
       if (address != null && address.isNotEmpty) {
         requestData['addresse'] = address;

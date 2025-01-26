@@ -6,7 +6,7 @@ import 'package:pulsehub/features/manage/subfeatures/manage_owners/ui/edit_owner
 import 'package:pulsehub/features/manage/subfeatures/manage_projects/data/models/owner_model.dart';
 
 class OwnerCard extends StatelessWidget {
-  final OwnerModel owner;
+  final Owner owner;
 
   const OwnerCard({
     super.key,

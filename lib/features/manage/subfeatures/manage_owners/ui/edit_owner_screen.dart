@@ -7,7 +7,7 @@ import 'package:pulsehub/features/manage/subfeatures/manage_owners/cubit/manage_
 import 'package:pulsehub/features/manage/subfeatures/manage_projects/data/models/owner_model.dart';
 
 class EditOwnerScreen extends StatefulWidget {
-  final OwnerModel owner;
+  final Owner owner;
 
   const EditOwnerScreen({
     super.key,

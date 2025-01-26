@@ -12,9 +12,10 @@ class ManageOwnersInitial extends ManageOwnersState {}
 class GetAllOwnersLoading extends ManageOwnersState {}
 
 class GetAllOwnersSuccess extends ManageOwnersState {
-  final List<OwnerModel> owners;
+  final List<Owner> owners;
 
-  const GetAllOwnersSuccess(this.owners);
+  GetAllOwnersSuccess(List<OwnerModel> ownerModels)
+      : owners = ownerModels.expand((model) => model.results).toList();
 
   @override
   List<Object?> get props => [owners];
@@ -77,5 +78,7 @@ class UpdateOwnerFailure extends ManageOwnersState {
   final String error;
 
   const UpdateOwnerFailure(this.error);
+
+  @override
+  List<Object?> get props => [error];
 }
-  

@@ -3,27 +3,40 @@ import 'package:json_annotation/json_annotation.dart';
 part 'monitoring_model.g.dart';
 
 @JsonSerializable()
+class MonitoringResponseWrapper {
+  final int count;
+  final String? next;
+  final String? previous;
+  @JsonKey(name: "results")
+  final MonitoringResponse results;
+
+  MonitoringResponseWrapper({
+    required this.count,
+    this.next,
+    this.previous,
+    required this.results,
+  });
+
+  factory MonitoringResponseWrapper.fromJson(Map<String, dynamic> json) =>
+      _$MonitoringResponseWrapperFromJson(json);
+
+  Map<String, dynamic> toJson() => _$MonitoringResponseWrapperToJson(this);
+}
+
+@JsonSerializable()
 class MonitoringResponse {
   final bool success;
 
-  @JsonKey(name: 'Monitoring_list', includeIfNull: false)
-  final List<Monitoring>? monitorings;
+  @JsonKey(name: 'Monitoring_list')
+  final List<Monitoring> monitorings;
 
   MonitoringResponse({
     required this.success,
-    this.monitorings,
+    required this.monitorings,
   });
 
-  // Custom factory method to handle both "Monitoring_list" and "Monitorings" keys
-  factory MonitoringResponse.fromJson(Map<String, dynamic> json) {
-    return MonitoringResponse(
-      success: json['success'] as bool,
-      monitorings: (json['Monitoring_list'] ?? json['Monitorings'])
-          ?.map<Monitoring>((dynamic item) =>
-              Monitoring.fromJson(item as Map<String, dynamic>))
-          .toList(),
-    );
-  }
+  factory MonitoringResponse.fromJson(Map<String, dynamic> json) =>
+      _$MonitoringResponseFromJson(json);
 
   Map<String, dynamic> toJson() => _$MonitoringResponseToJson(this);
 }

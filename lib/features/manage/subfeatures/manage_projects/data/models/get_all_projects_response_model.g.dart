@@ -9,15 +9,29 @@ part of 'get_all_projects_response_model.dart';
 GetAllProjectsResponseModel _$GetAllProjectsResponseModelFromJson(
         Map<String, dynamic> json) =>
     GetAllProjectsResponseModel(
+      count: (json['count'] as num).toInt(),
+      next: json['next'] as String,
+      previous: json['previous'],
+      results: Results.fromJson(json['results'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$GetAllProjectsResponseModelToJson(
+        GetAllProjectsResponseModel instance) =>
+    <String, dynamic>{
+      'count': instance.count,
+      'next': instance.next,
+      'previous': instance.previous,
+      'results': instance.results,
+    };
+
+Results _$ResultsFromJson(Map<String, dynamic> json) => Results(
       success: json['success'] as bool,
       projects: (json['projects'] as List<dynamic>)
           .map((e) => Project.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
 
-Map<String, dynamic> _$GetAllProjectsResponseModelToJson(
-        GetAllProjectsResponseModel instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$ResultsToJson(Results instance) => <String, dynamic>{
       'success': instance.success,
       'projects': instance.projects,
     };
@@ -26,8 +40,7 @@ Project _$ProjectFromJson(Map<String, dynamic> json) => Project(
       projectId: (json['project_id'] as num).toInt(),
       warnings: (json['warnings'] as num).toInt(),
       title: json['title'] as String,
-      acronym: json['acronym'] as String?,
-      picture: json['picture'] as String?,
+      acronym: json['acronym'] as String,
       startDate: json['start_date'] == null
           ? null
           : DateTime.parse(json['start_date'] as String),
@@ -60,7 +73,6 @@ Map<String, dynamic> _$ProjectToJson(Project instance) => <String, dynamic>{
       'warnings': instance.warnings,
       'title': instance.title,
       'acronym': instance.acronym,
-      'picture': instance.picture,
       'start_date': instance.startDate?.toIso8601String(),
       'duration': instance.duration,
       'budget': instance.budget,
@@ -89,13 +101,11 @@ Map<String, dynamic> _$ProjectToJson(Project instance) => <String, dynamic>{
 Owner _$OwnerFromJson(Map<String, dynamic> json) => Owner(
       ownerId: (json['owner_id'] as num).toInt(),
       name: json['name'] as String,
-      logo: json['logo'] as String?,
       logoUrl: json['logo_url'] as String,
     );
 
 Map<String, dynamic> _$OwnerToJson(Owner instance) => <String, dynamic>{
       'owner_id': instance.ownerId,
       'name': instance.name,
-      'logo': instance.logo,
       'logo_url': instance.logoUrl,
     };

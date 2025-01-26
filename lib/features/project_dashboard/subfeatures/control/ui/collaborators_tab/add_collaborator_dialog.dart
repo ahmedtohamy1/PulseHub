@@ -128,15 +128,15 @@ class _AddCollaboratorDialogState extends State<AddCollaboratorDialog> {
                                 if (state
                                     is ProjectDashboardGetAllUsersSuccess) {
                                   final users =
-                                      state.getAllResponseModel.users ?? [];
+                                      state.getAllResponseModel.results.users ?? [];
                                   final searchTerm =
                                       searchController.text.toLowerCase();
                                   final filteredUsers = users.where((user) {
                                     final fullName =
-                                        '${user.firstName ?? ''} ${user.lastName ?? ''}'
+                                        '${user.firstName} ${user.lastName}'
                                             .toLowerCase();
                                     final email =
-                                        user.email?.toLowerCase() ?? '';
+                                        user.email.toLowerCase();
 
                                     return searchTerm.isEmpty ||
                                         fullName.contains(searchTerm) ||
@@ -202,8 +202,8 @@ class _AddCollaboratorDialogState extends State<AddCollaboratorDialog> {
 
                                             return CheckboxListTile(
                                               title: Text(
-                                                  '${user.firstName ?? ''} ${user.lastName ?? ''}'),
-                                              subtitle: Text(user.email ?? ''),
+                                                  '${user.firstName} ${user.lastName}'),
+                                              subtitle: Text(user.email),
                                               value: isSelected,
                                               onChanged: isLoadingState
                                                   ? null
@@ -312,7 +312,7 @@ class _AddCollaboratorDialogState extends State<AddCollaboratorDialog> {
                                           ? null
                                           : selectedGroups.toList(),
                                       selectedUsers
-                                          .map((u) => u.userId ?? 0)
+                                          .map((u) => u.userId)
                                           .toList(),
                                     );
                                   },

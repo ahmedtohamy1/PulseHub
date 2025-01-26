@@ -6,18 +6,37 @@ part of 'monitoring_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
+MonitoringResponseWrapper _$MonitoringResponseWrapperFromJson(
+        Map<String, dynamic> json) =>
+    MonitoringResponseWrapper(
+      count: (json['count'] as num).toInt(),
+      next: json['next'] as String?,
+      previous: json['previous'] as String?,
+      results:
+          MonitoringResponse.fromJson(json['results'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$MonitoringResponseWrapperToJson(
+        MonitoringResponseWrapper instance) =>
+    <String, dynamic>{
+      'count': instance.count,
+      'next': instance.next,
+      'previous': instance.previous,
+      'results': instance.results,
+    };
+
 MonitoringResponse _$MonitoringResponseFromJson(Map<String, dynamic> json) =>
     MonitoringResponse(
       success: json['success'] as bool,
-      monitorings: (json['Monitoring_list'] as List<dynamic>?)
-          ?.map((e) => Monitoring.fromJson(e as Map<String, dynamic>))
+      monitorings: (json['Monitoring_list'] as List<dynamic>)
+          .map((e) => Monitoring.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
 
 Map<String, dynamic> _$MonitoringResponseToJson(MonitoringResponse instance) =>
     <String, dynamic>{
       'success': instance.success,
-      if (instance.monitorings case final value?) 'Monitoring_list': value,
+      'Monitoring_list': instance.monitorings,
     };
 
 Monitoring _$MonitoringFromJson(Map<String, dynamic> json) => Monitoring(

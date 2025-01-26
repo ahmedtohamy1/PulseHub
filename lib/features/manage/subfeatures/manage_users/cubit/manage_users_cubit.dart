@@ -150,7 +150,6 @@ class ManageUsersCubit extends Cubit<ManageUsersState> {
       (l) => emit(ManageUsersCreateUserFailure(l)),
       (r) {
         emit(ManageUsersCreateUserSuccess(r));
-    
       },
     );
   }

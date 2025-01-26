@@ -24,8 +24,8 @@ class ManageMonitoringsRepoImpl extends ManageMonitoringsRepo {
 
       if ((response.statusCode == StatusCode.created ||
               response.statusCode == StatusCode.ok) &&
-          response.data['success']) {
-        return Right(MonitoringResponse.fromJson(response.data));
+          response.data['results']['success']) {
+        return Right(MonitoringResponse.fromJson(response.data['results']));
       } else {
         return Left('Failed to get monitoring: ${response.statusCode}');
       }
@@ -42,10 +42,7 @@ class ManageMonitoringsRepoImpl extends ManageMonitoringsRepo {
       int? projectId,
       int monitoringId) async {
     try {
-
-final Map<String, dynamic> data = {
-        
-      };
+      final Map<String, dynamic> data = {};
 
       if (communications != null) {
         data["communications"] = communications;
@@ -56,8 +53,6 @@ final Map<String, dynamic> data = {
       if (projectId != null) {
         data["project"] = projectId;
       }
-
-
 
       final response = await myApiService.post(
         EndPoints.getMonitoring,
@@ -101,7 +96,8 @@ final Map<String, dynamic> data = {
       return Left('Exception occurred: $error');
     }
   }
-    @override
+
+  @override
   Future<Either<String, GetProjectsResponse>> getProjects(String token) async {
     try {
       final response = await myApiService.post(

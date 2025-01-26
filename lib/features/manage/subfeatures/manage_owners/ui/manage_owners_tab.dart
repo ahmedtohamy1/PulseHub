@@ -217,7 +217,8 @@ class _ManageOwnersTabState extends State<ManageOwnersTab> {
     }
 
     if (state is GetAllOwnersSuccess) {
-      if (state.owners.isEmpty) {
+      final owners = state.owners;
+      if (owners.isEmpty) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -250,8 +251,8 @@ class _ManageOwnersTabState extends State<ManageOwnersTab> {
       }
 
       final filteredOwners = _searchQuery.isEmpty
-          ? state.owners
-          : state.owners
+          ? owners
+          : owners
               .where((owner) =>
                   owner.name.toLowerCase().contains(_searchQuery.toLowerCase()))
               .toList();

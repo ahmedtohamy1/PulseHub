@@ -1,28 +1,35 @@
-// ignore_for_file: constant_identifier_names
-
 import 'package:json_annotation/json_annotation.dart';
 
 part 'get_all_users_response_model.g.dart';
-
 @JsonSerializable()
 class GetAllResponseModel {
-  @JsonKey(name: "success")
-  bool? success;
-  @JsonKey(name: "users")
-  List<User>? users;
+  @JsonKey(name: "count")
+  int count;
+  @JsonKey(name: "next")
+  String next;
+  @JsonKey(name: "previous")
+  dynamic previous;
+  @JsonKey(name: "results")
+  Results results;
 
   GetAllResponseModel({
-    this.success,
-    this.users,
+    required this.count,
+    required this.next,
+    required this.previous,
+    required this.results,
   });
 
   GetAllResponseModel copyWith({
-    bool? success,
-    List<User>? users,
+    int? count,
+    String? next,
+    dynamic previous,
+    Results? results,
   }) =>
       GetAllResponseModel(
-        success: success ?? this.success,
-        users: users ?? this.users,
+        count: count ?? this.count,
+        next: next ?? this.next,
+        previous: previous ?? this.previous,
+        results: results ?? this.results,
       );
 
   factory GetAllResponseModel.fromJson(Map<String, dynamic> json) =>
@@ -32,87 +39,114 @@ class GetAllResponseModel {
 }
 
 @JsonSerializable()
+class Results {
+  @JsonKey(name: "success")
+  bool success;
+  @JsonKey(name: "users")
+  List<User> users;
+
+  Results({
+    required this.success,
+    required this.users,
+  });
+
+  Results copyWith({
+    bool? success,
+    List<User>? users,
+  }) =>
+      Results(
+        success: success ?? this.success,
+        users: users ?? this.users,
+      );
+
+  factory Results.fromJson(Map<String, dynamic> json) =>
+      _$ResultsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ResultsToJson(this);
+}
+
+@JsonSerializable()
 class User {
   @JsonKey(name: "user_id")
-  int? userId;
+  int userId;
   @JsonKey(name: "password")
-  Password? password;
+  String password;
   @JsonKey(name: "last_login")
-  dynamic lastLogin;
+  DateTime? lastLogin;
   @JsonKey(name: "is_superuser")
-  bool? isSuperuser;
+  bool isSuperuser;
   @JsonKey(name: "email")
-  String? email;
+  String email;
   @JsonKey(name: "first_name")
-  String? firstName;
+  String firstName;
   @JsonKey(name: "last_name")
-  String? lastName;
+  String lastName;
   @JsonKey(name: "title")
-  String? title;
-  @JsonKey(name: "picture")
-  String? picture;
+  String title;
   @JsonKey(name: "is_active")
-  bool? isActive;
+  bool isActive;
   @JsonKey(name: "is_staff")
-  bool? isStaff;
+  bool isStaff;
   @JsonKey(name: "date_joined")
-  DateTime? dateJoined;
+  DateTime dateJoined;
   @JsonKey(name: "date_updated")
-  DateTime? dateUpdated;
+  DateTime dateUpdated;
   @JsonKey(name: "secret_key")
-  SecretKey? secretKey;
+  String secretKey;
   @JsonKey(name: "temp_otp_token")
-  TempOtpToken? tempOtpToken;
+  String tempOtpToken;
   @JsonKey(name: "max_active_sessions")
-  int? maxActiveSessions;
+  int maxActiveSessions;
   @JsonKey(name: "owners_order")
-  List<int>? ownersOrder;
+  List<int> ownersOrder;
   @JsonKey(name: "mode")
-  Mode? mode;
+  String mode;
+  @JsonKey(name: "mfa")
+  bool mfa;
   @JsonKey(name: "picture_url")
-  String? pictureUrl;
+  String pictureUrl;
 
   User({
-    this.userId,
-    this.password,
-    this.lastLogin,
-    this.isSuperuser,
-    this.email,
-    this.firstName,
-    this.lastName,
-    this.title,
-    this.picture,
-    this.isActive,
-    this.isStaff,
-    this.dateJoined,
-    this.dateUpdated,
-    this.secretKey,
-    this.tempOtpToken,
-    this.maxActiveSessions,
-    this.ownersOrder,
-    this.mode,
-    this.pictureUrl,
+    required this.userId,
+    required this.password,
+    required this.lastLogin,
+    required this.isSuperuser,
+    required this.email,
+    required this.firstName,
+    required this.lastName,
+    required this.title,
+    required this.isActive,
+    required this.isStaff,
+    required this.dateJoined,
+    required this.dateUpdated,
+    required this.secretKey,
+    required this.tempOtpToken,
+    required this.maxActiveSessions,
+    required this.ownersOrder,
+    required this.mode,
+    required this.mfa,
+    required this.pictureUrl,
   });
 
   User copyWith({
     int? userId,
-    Password? password,
-    dynamic lastLogin,
+    String? password,
+    DateTime? lastLogin,
     bool? isSuperuser,
     String? email,
     String? firstName,
     String? lastName,
     String? title,
-    String? picture,
     bool? isActive,
     bool? isStaff,
     DateTime? dateJoined,
     DateTime? dateUpdated,
-    SecretKey? secretKey,
-    TempOtpToken? tempOtpToken,
+    String? secretKey,
+    String? tempOtpToken,
     int? maxActiveSessions,
     List<int>? ownersOrder,
-    Mode? mode,
+    String? mode,
+    bool? mfa,
     String? pictureUrl,
   }) =>
       User(
@@ -124,7 +158,6 @@ class User {
         firstName: firstName ?? this.firstName,
         lastName: lastName ?? this.lastName,
         title: title ?? this.title,
-        picture: picture ?? this.picture,
         isActive: isActive ?? this.isActive,
         isStaff: isStaff ?? this.isStaff,
         dateJoined: dateJoined ?? this.dateJoined,
@@ -134,30 +167,11 @@ class User {
         maxActiveSessions: maxActiveSessions ?? this.maxActiveSessions,
         ownersOrder: ownersOrder ?? this.ownersOrder,
         mode: mode ?? this.mode,
+        mfa: mfa ?? this.mfa,
         pictureUrl: pictureUrl ?? this.pictureUrl,
       );
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
   Map<String, dynamic> toJson() => _$UserToJson(this);
-}
-
-enum Mode {
-  @JsonValue("light")
-  LIGHT
-}
-
-enum Password {
-  @JsonValue("For Security Reasons You Can't View password")
-  FOR_SECURITY_REASONS_YOU_CAN_T_VIEW_PASSWORD
-}
-
-enum SecretKey {
-  @JsonValue("For Security Reasons You Can't View secret_key")
-  FOR_SECURITY_REASONS_YOU_CAN_T_VIEW_SECRET_KEY
-}
-
-enum TempOtpToken {
-  @JsonValue("For Security Reasons You Can't View temp_otp_token")
-  FOR_SECURITY_REASONS_YOU_CAN_T_VIEW_TEMP_OTP_TOKEN
 }

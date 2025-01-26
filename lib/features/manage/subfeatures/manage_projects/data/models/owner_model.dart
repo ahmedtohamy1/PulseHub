@@ -4,12 +4,47 @@ part 'owner_model.g.dart';
 
 @JsonSerializable()
 class OwnerModel {
+  @JsonKey(name: "count")
+  int count;
+  @JsonKey(name: "next")
+  dynamic next;
+  @JsonKey(name: "previous")
+  dynamic previous;
+  @JsonKey(name: "results")
+  List<Owner> results;
+
+  OwnerModel({
+    required this.count,
+    required this.next,
+    required this.previous,
+    required this.results,
+  });
+
+  OwnerModel copyWith({
+    int? count,
+    dynamic next,
+    dynamic previous,
+    List<Owner>? results,
+  }) =>
+      OwnerModel(
+        count: count ?? this.count,
+        next: next ?? this.next,
+        previous: previous ?? this.previous,
+        results: results ?? this.results,
+      );
+
+  factory OwnerModel.fromJson(Map<String, dynamic> json) =>
+      _$OwnerModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$OwnerModelToJson(this);
+}
+
+@JsonSerializable()
+class Owner {
   @JsonKey(name: "owner_id")
   int ownerId;
   @JsonKey(name: "name")
   String name;
-  @JsonKey(name: "logo")
-  String? logo;
   @JsonKey(name: "addresse")
   String? addresse;
   @JsonKey(name: "country")
@@ -21,10 +56,9 @@ class OwnerModel {
   @JsonKey(name: "logo_url")
   String logoUrl;
 
-  OwnerModel({
+  Owner({
     required this.ownerId,
     required this.name,
-    this.logo,
     this.addresse,
     this.country,
     this.phone,
@@ -32,20 +66,18 @@ class OwnerModel {
     required this.logoUrl,
   });
 
-  OwnerModel copyWith({
+  Owner copyWith({
     int? ownerId,
     String? name,
-    String? logo,
     String? addresse,
     String? country,
     String? phone,
     String? website,
     String? logoUrl,
   }) =>
-      OwnerModel(
+      Owner(
         ownerId: ownerId ?? this.ownerId,
         name: name ?? this.name,
-        logo: logo ?? this.logo,
         addresse: addresse ?? this.addresse,
         country: country ?? this.country,
         phone: phone ?? this.phone,
@@ -53,8 +85,7 @@ class OwnerModel {
         logoUrl: logoUrl ?? this.logoUrl,
       );
 
-  factory OwnerModel.fromJson(Map<String, dynamic> json) =>
-      _$OwnerModelFromJson(json);
+  factory Owner.fromJson(Map<String, dynamic> json) => _$OwnerFromJson(json);
 
-  Map<String, dynamic> toJson() => _$OwnerModelToJson(this);
+  Map<String, dynamic> toJson() => _$OwnerToJson(this);
 }

@@ -81,7 +81,7 @@ class ManageProjectsView extends StatelessWidget {
               ),
             ),
           GetAllProjectsSuccess(projects: final response) => ProjectsList(
-              projects: response.projects,
+              projects: response.results.projects,
             ),
           _ => BlocBuilder<ManageProjectsCubit, ManageProjectsState>(
               buildWhen: (previous, current) =>
@@ -89,7 +89,7 @@ class ManageProjectsView extends StatelessWidget {
               builder: (context, state) {
                 if (state is GetAllProjectsSuccess) {
                   return ProjectsList(
-                    projects: state.projects.projects,
+                    projects: state.projects.results.projects,
                   );
                 }
                 return const SizedBox();
