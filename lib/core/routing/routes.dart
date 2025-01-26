@@ -7,6 +7,7 @@ class Routes {
   static const String loginScreen = '/login';
   static const String forgotPasswordScreen = '/forgot-password';
   static const String dicScreen = '/dic';
+  static const String manageUsersScreen = '/manage-users';
   static const String otpScreen = '/otp';
   static const String homePage = '/home';
   static const String settingsPage = '/settings';

@@ -10,6 +10,7 @@ import 'package:pulsehub/features/auth/ui/screens/login_screen.dart';
 import 'package:pulsehub/features/auth/ui/screens/otp_screen.dart';
 import 'package:pulsehub/features/dics/cubit/dic_cubit.dart';
 import 'package:pulsehub/features/dics/ui/dic_screen.dart';
+import 'package:pulsehub/features/manage/subfeatures/manage_users/ui/manage_users_screen.dart';
 import 'package:pulsehub/features/manage/ui/screens/manage_screen.dart';
 import 'package:pulsehub/features/projects/cubit/projects_cubit.dart';
 import 'package:pulsehub/features/projects/ui/home_screen.dart';
@@ -86,11 +87,8 @@ final router = GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: Routes.dicScreen,
-              builder: (context, state) => BlocProvider(
-                create: (context) => sl<DicCubit>(),
-                child: const DicScreen(),
-              ),
+              path: Routes.manageUsersScreen,
+              builder: (context, state) => const ManageUsersScreen(),
             )
           ],
         ),

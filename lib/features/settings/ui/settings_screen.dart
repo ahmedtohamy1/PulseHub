@@ -133,7 +133,7 @@ class SettingsScreen extends StatelessWidget {
                       Icon(Icons.manage_history, size: 30, color: Colors.grey),
                       SizedBox(width: 16),
                       Text(
-                        'Manage Panel',
+                        'Manage CloudMate Panel',
                         style: TextStyle(fontSize: 16),
                       ),
                     ],

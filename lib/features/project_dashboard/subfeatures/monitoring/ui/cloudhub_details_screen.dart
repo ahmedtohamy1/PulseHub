@@ -654,10 +654,6 @@ class _CloudHubDetailsScreenState extends State<CloudHubDetailsScreen> {
                                               existingSensorIds
                                                   .addAll(selectedSensorIds);
 
-                                              print(
-                                                  'existingSensorIds: $existingSensorIds');
-                                              print(
-                                                  'selectedSensorIds: $selectedSensorIds');
                                               // Update all sensors at once
                                               context
                                                   .read<ProjectDashboardCubit>()

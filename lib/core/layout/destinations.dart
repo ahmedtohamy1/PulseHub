@@ -45,7 +45,7 @@ Widget _buildNotificationBadge(BuildContext context) {
 
 const destinations = [
   Destination(label: 'CloudMATE', icon: Icons.cloud),
-  Destination(label: 'DIC Services', icon: Icons.dashboard),
+  Destination(label: 'Manage Users', icon: Icons.manage_accounts_outlined),
   Destination(
     label: 'Notifications',
     icon: LucideIcons.bell,
