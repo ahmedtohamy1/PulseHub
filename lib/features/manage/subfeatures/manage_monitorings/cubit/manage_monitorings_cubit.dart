@@ -39,13 +39,15 @@ class ManageMonitoringsCubit extends Cubit<ManageMonitoringsState> {
     );
   }
 
-  Future<void> createMonitoring(String name, int projectId, String? communications) async {
+  Future<void> createMonitoring(
+      String name, int projectId, String? communications) async {
     emit(ManageMonitoringsCreateLoading(
       monitoringResponse: _cachedMonitorings,
       projectsResponse: _cachedProjects,
     ));
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
-    final result = await _repo.createMonitoring(token, communications, name, projectId);
+    final result =
+        await _repo.createMonitoring(token, communications, name, projectId);
     result.fold(
       (l) => emit(ManageMonitoringsCreateFailure(l,
           monitoringResponse: _cachedMonitorings,
@@ -73,7 +75,7 @@ class ManageMonitoringsCubit extends Cubit<ManageMonitoringsState> {
         // Update the cached monitoring if edit was successful
         if (_cachedMonitorings != null) {
           final updatedMonitorings =
-              _cachedMonitorings!.monitorings.map((monitoring) {
+              _cachedMonitorings!.monitorings!.map((monitoring) {
             if (monitoring.monitoringId == monitoringId) {
               return Monitoring(
                 monitoringId: monitoringId,
