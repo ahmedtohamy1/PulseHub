@@ -26,7 +26,7 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: UserManager().user?.userId != null
-      ? Routes.dicScreen
+      ? Routes.homePage
       : Routes.loginScreen,
   routes: [
     GoRoute(
