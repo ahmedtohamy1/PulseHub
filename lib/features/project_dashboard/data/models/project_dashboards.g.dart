@@ -23,7 +23,7 @@ Map<String, dynamic> _$ProjectDashboardsToJson(ProjectDashboards instance) =>
 Dashboard _$DashboardFromJson(Map<String, dynamic> json) => Dashboard(
       dashboardId: (json['dashboard_id'] as num).toInt(),
       name: json['name'] as String,
-      description: json['description'] as String,
+      description: json['description'] as String?,
       createdBy: json['created_by'] as String?,
       lastEdition: json['last_edition'] as String,
       sites: json['sites'] as String?,

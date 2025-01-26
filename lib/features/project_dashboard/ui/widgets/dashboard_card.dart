@@ -24,7 +24,8 @@ class DashboardCard extends StatelessWidget {
 
   void _showEditModal(BuildContext context) {
     final titleController = TextEditingController(text: dashboard.name);
-    final descController = TextEditingController(text: dashboard.description);
+    final descController =
+        TextEditingController(text: dashboard.description ?? '');
 
     WoltModalSheet.show(
       modalDecorator: (child) {
@@ -231,8 +232,9 @@ class DashboardCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 8.0),
                 Text(
-                  dashboard.description.isNotEmpty
-                      ? dashboard.description
+                  dashboard.description != null &&
+                          dashboard.description!.isNotEmpty
+                      ? dashboard.description!
                       : 'No description provided',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),

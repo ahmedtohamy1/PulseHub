@@ -23,7 +23,7 @@ class Dashboard {
   @JsonKey(name: 'dashboard_id')
   final int dashboardId;
   final String name;
-  final String description;
+  final String? description;
   @JsonKey(name: 'created_by')
   final String? createdBy;
   @JsonKey(name: 'last_edition')
