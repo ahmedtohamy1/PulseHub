@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:pulsehub/core/routing/routes.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/ui/special_widgets/chart_container.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/ui/special_widgets/chart_data_editor.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/ui/special_widgets/chart_types.dart';
@@ -11,7 +13,8 @@ import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/ui/spe
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class SpecialWidgetsScreen extends StatefulWidget {
-  const SpecialWidgetsScreen({super.key});
+  final int projectId;
+  const SpecialWidgetsScreen({super.key, required this.projectId});
 
   @override
   State<SpecialWidgetsScreen> createState() => _SpecialWidgetsScreenState();
@@ -251,6 +254,11 @@ class _SpecialWidgetsScreenState extends State<SpecialWidgetsScreen> {
                   setState(() {
                     _tables.add(_getDefaultTableData());
                   });
+                } else if (type == 'image_sensor') {
+                  // Navigate to image sensor placing screen
+                  context.push(Routes.imageSensorPlacing,
+                      extra: widget.projectId);
+                  Navigator.pop(context); // Close the modal sheet
                 }
               },
             ),

@@ -175,7 +175,7 @@ class MyApi {
         options: dioOptions,
       );
 
-  /*     // Log cookies for debugging
+      /*     // Log cookies for debugging
       final cookies = await _cookieJar
           .loadForRequest(Uri.parse(EndPoints.apiUrl + endpoint)); */
 

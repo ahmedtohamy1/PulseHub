@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/core/layout/main_layout.dart';
 import 'package:pulsehub/core/routing/routes.dart';
+import 'package:pulsehub/core/routing/unauthorized_screen.dart';
 import 'package:pulsehub/core/utils/user_manager.dart';
 import 'package:pulsehub/features/auth/cubit/auth_cubit.dart';
 import 'package:pulsehub/features/auth/ui/screens/login_screen.dart';
@@ -12,6 +13,8 @@ import 'package:pulsehub/features/dics/cubit/dic_cubit.dart';
 import 'package:pulsehub/features/dics/ui/dic_screen.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_users/ui/manage_users_screen.dart';
 import 'package:pulsehub/features/manage/ui/screens/manage_screen.dart';
+import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
+import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/ui/screens/image_sensor_placing_screen.dart';
 import 'package:pulsehub/features/projects/cubit/projects_cubit.dart';
 import 'package:pulsehub/features/projects/ui/home_screen.dart';
 import 'package:pulsehub/features/projects/ui/project_details_screen.dart';
@@ -25,9 +28,8 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: UserManager().user?.userId != null
-      ? Routes.homePage
-      : Routes.loginScreen,
+  initialLocation:
+      UserManager().user?.userId != null ? Routes.homePage : Routes.loginScreen,
   routes: [
     GoRoute(
       path: Routes.loginScreen,
@@ -49,6 +51,24 @@ final router = GoRouter(
         create: (context) => sl<DicCubit>(),
         child: const DicScreen(),
       ),
+    ),
+    GoRoute(
+      path: Routes.imageSensorPlacing,
+      builder: (context, state) {
+        final isStaffOrSuperuser = UserManager().user?.isStaff == true ||
+            UserManager().user?.isSuperuser == true;
+        if (!isStaffOrSuperuser) {
+          return const UnauthorizedScreen();
+        }
+
+        final projectId = state.extra;
+
+        return BlocProvider(
+          create: (context) => sl<ProjectDashboardCubit>(),
+          child: ImageSensorPlacingScreen(
+              projectId: int.parse(projectId.toString())),
+        );
+      },
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {

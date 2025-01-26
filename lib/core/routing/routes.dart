@@ -16,6 +16,7 @@ class Routes {
   static const String sessionManagerPage = '/settings/session-manager';
   static const String projectDetailsPage = '/home/project-details/';
   static const String managePage = '/settings/manage';
+  static const String imageSensorPlacing = '/image-sensor-placing';
 
   static Widget errorWidget(BuildContext context, GoRouterState state) =>
       const NotFoundScreen();
