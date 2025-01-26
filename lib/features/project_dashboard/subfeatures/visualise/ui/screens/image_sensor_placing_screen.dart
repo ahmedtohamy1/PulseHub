@@ -132,20 +132,25 @@ class _ImageSensorPlacingScreenState extends State<ImageSensorPlacingScreen> {
     // Calculate the position relative to the center of the viewport
     final relativePosition = localPosition - viewportCenter;
 
-    // Adjust for the current position offset
-    final adjustedPosition = relativePosition - position;
+    // Adjust for the current position offset and scale
+    final adjustedX = (relativePosition.dx - position.dx) / scale;
+    final adjustedY = (relativePosition.dy - position.dy) / scale;
 
-    // Convert to image coordinates
-    final imageX = (adjustedPosition.dx / scale) + (_imageSize!.width / 2);
-    final imageY = (adjustedPosition.dy / scale) + (_imageSize!.height / 2);
+    // Convert to image coordinates (0,0 is bottom-left corner)
+    final imageX = adjustedX + (_imageSize!.width / 2);
+    final imageY = _imageSize!.height - (adjustedY + (_imageSize!.height / 2));
 
     // Validate coordinates
     if (imageX < 0 ||
         imageX > _imageSize!.width ||
         imageY < 0 ||
         imageY > _imageSize!.height) {
+      debugPrint(
+          'Invalid coordinates: ($imageX, $imageY) - outside image bounds');
       return;
     }
+
+    debugPrint('Tap coordinates on image: ($imageX, $imageY)');
 
     // Check if too close to existing sensors
     if (_isTooCloseToExistingSensor(imageX, imageY)) {
@@ -264,6 +269,35 @@ Placed sensor:
     );
   }
 
+  void _handleSave() {
+    if (_selectedImage == null || _imageSize == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No image selected'),
+        ),
+      );
+      return;
+    }
+
+    if (_placedSensors.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No sensors placed on the image'),
+        ),
+      );
+      return;
+    }
+
+    // Print sensor IDs
+    debugPrint('\nPlaced Sensors Information:');
+    debugPrint('Sensor IDs: ${_placedSensors.map((s) => s.sensorId).toList()}');
+    debugPrint('\nCoordinate Ranges:');
+    debugPrint(
+        'X-axis: starts from 0.00 to ${_imageSize!.width.toStringAsFixed(2)}');
+    debugPrint(
+        'Y-axis: starts from 0.00 to ${_imageSize!.height.toStringAsFixed(2)}\n');
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -301,9 +335,7 @@ Placed sensor:
                 },
               ),
               IconButton(
-                onPressed: () {
-                  // TODO: Implement save functionality
-                },
+                onPressed: _handleSave,
                 icon: const Icon(Icons.save),
               ),
             ],
@@ -424,13 +456,18 @@ class SensorOverlayPainter extends CustomPainter {
     );
 
     for (final sensor in sensors) {
-      // Convert image coordinates to screen coordinates
+      // Convert image coordinates (from bottom-left) to screen coordinates
       final screenX = viewportCenter.dx +
           ((sensor.coordinateX! - imageSize.width / 2) * scale) +
           position.dx;
+      // Invert Y coordinate since sensor coordinates are from bottom-left
       final screenY = viewportCenter.dy +
-          ((sensor.coordinateY! - imageSize.height / 2) * scale) +
+          ((imageSize.height - sensor.coordinateY! - imageSize.height / 2) *
+              scale) +
           position.dy;
+
+      debugPrint(
+          'Drawing sensor at screen coordinates: ($screenX, $screenY) from image coordinates: (${sensor.coordinateX}, ${sensor.coordinateY})');
 
       // Draw sensor indicator
       final paint = Paint()
@@ -484,7 +521,7 @@ class SensorOverlayPainter extends CustomPainter {
       case 'maintenance':
         return Colors.orange;
       default:
-        return Colors.green.shade400;
+        return Colors.grey;
     }
   }
 }
