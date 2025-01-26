@@ -28,7 +28,6 @@ class ImageSensorPlacingScreen extends StatefulWidget {
 class _ImageSensorPlacingScreenState extends State<ImageSensorPlacingScreen> {
   final _imagePicker = ImagePicker();
   XFile? _selectedImage;
-  final List<Sensor> _sensors = [];
   final List<Sensor> _placedSensors = [];
   final _photoViewController = PhotoViewController();
   ui.Size? _imageSize;
@@ -288,9 +287,13 @@ Placed sensor:
       return;
     }
 
-    // Print sensor IDs
+    // Print sensor IDs and coordinates
     debugPrint('\nPlaced Sensors Information:');
-    debugPrint('Sensor IDs: ${_placedSensors.map((s) => s.sensorId).toList()}');
+    for (final sensor in _placedSensors) {
+      debugPrint(
+          'Sensor ${sensor.sensorId}: (${sensor.coordinateX?.toStringAsFixed(2)}, ${sensor.coordinateY?.toStringAsFixed(2)})');
+    }
+
     debugPrint('\nCoordinate Ranges:');
     debugPrint(
         'X-axis: starts from 0.00 to ${_imageSize!.width.toStringAsFixed(2)}');
@@ -444,6 +447,31 @@ class SensorOverlayPainter extends CustomPainter {
     required this.imageSize,
   });
 
+  IconData _getSensorIcon(String? typeId) {
+    switch (typeId?.toLowerCase()) {
+      case 'temperature':
+      case 'temp':
+        return Icons.thermostat;
+      case 'accelerometer':
+      case 'accel':
+        return Icons.speed;
+      case 'humidity':
+        return Icons.water_drop;
+      case 'pressure':
+        return Icons.compress;
+      case 'light':
+        return Icons.light_mode;
+      case 'sound':
+        return Icons.volume_up;
+      case 'motion':
+        return Icons.motion_photos_on;
+      case 'vibration':
+        return Icons.vibration;
+      default:
+        return Icons.sensors;
+    }
+  }
+
   @override
   void paint(Canvas canvas, Size viewportSize) {
     final scale = controllerValue.scale ?? 1.0;
@@ -466,29 +494,58 @@ class SensorOverlayPainter extends CustomPainter {
               scale) +
           position.dy;
 
-      debugPrint(
-          'Drawing sensor at screen coordinates: ($screenX, $screenY) from image coordinates: (${sensor.coordinateX}, ${sensor.coordinateY})');
-
-      // Draw sensor indicator
-      final paint = Paint()
-        ..color = _sensorColor(sensor.status)
+      // Draw sensor background circle
+      final bgPaint = Paint()
+        ..color = _sensorColor(sensor.status).withOpacity(0.2)
         ..style = PaintingStyle.fill;
 
-      // Draw main circle
+      final borderPaint = Paint()
+        ..color = _sensorColor(sensor.status)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2 * scale.clamp(0.5, 2.0);
+
+      final circleRadius = 7 * scale.clamp(0.5, 2.0);
       canvas.drawCircle(
         Offset(screenX, screenY),
-        8 * scale.clamp(0.5, 2.0),
-        paint,
+        circleRadius,
+        bgPaint,
+      );
+      canvas.drawCircle(
+        Offset(screenX, screenY),
+        circleRadius,
+        borderPaint,
       );
 
-      // Draw coordinate text
+      // Draw sensor icon
+      final iconPainter = TextPainter(
+        text: TextSpan(
+          text: String.fromCharCode(_getSensorIcon(sensor.typeId).codePoint),
+          style: TextStyle(
+            fontSize: 10 * scale.clamp(0.5, 2.0),
+            fontFamily: _getSensorIcon(sensor.typeId).fontFamily,
+            package: _getSensorIcon(sensor.typeId).fontPackage,
+            color: _sensorColor(sensor.status),
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+
+      iconPainter.paint(
+        canvas,
+        Offset(
+          screenX - iconPainter.width / 2,
+          screenY - iconPainter.height / 2,
+        ),
+      );
+
+      // Draw coordinate text below the icon
       final textPainter = TextPainter(
         text: TextSpan(
           text:
               '(${sensor.coordinateX?.toStringAsFixed(0) ?? '0'}, ${sensor.coordinateY?.toStringAsFixed(0) ?? '0'})',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 12 * scale.clamp(0.5, 1.5),
+            fontSize: 10 * scale.clamp(0.5, 1.5),
             shadows: [Shadow(blurRadius: 2 * scale, color: Colors.black)],
           ),
         ),
@@ -499,7 +556,7 @@ class SensorOverlayPainter extends CustomPainter {
         canvas,
         Offset(
           screenX - textPainter.width / 2,
-          screenY + 10 * scale.clamp(0.5, 1.5),
+          screenY + circleRadius + 3 * scale.clamp(0.5, 1.5),
         ),
       );
     }
@@ -521,7 +578,7 @@ class SensorOverlayPainter extends CustomPainter {
       case 'maintenance':
         return Colors.orange;
       default:
-        return Colors.grey;
+        return Colors.green.shade400;
     }
   }
 }
