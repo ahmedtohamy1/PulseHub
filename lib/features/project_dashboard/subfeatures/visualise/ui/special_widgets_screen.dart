@@ -4,9 +4,12 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/core/routing/routes.dart';
+import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_medial_library_response_model.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/cubit/visualise_cubit.dart';
+import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/ui/screens/component_image_sensor_screen.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/ui/special_widgets/chart_container.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/ui/special_widgets/chart_data_editor.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/ui/special_widgets/chart_types.dart';
@@ -178,110 +181,146 @@ class _SpecialWidgetsScreenState extends State<SpecialWidgetsScreen> {
                           margin: const EdgeInsets.symmetric(
                               vertical: 8, horizontal: 4),
                           clipBehavior: Clip.antiAlias,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (placement['imageUrl'] != null) ...[
-                                Stack(
-                                  children: [
-                                    Image.network(
-                                      placement['imageUrl']!,
-                                      height: 200,
-                                      width: double.infinity,
-                                      fit: BoxFit.cover,
+                          child: InkWell(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => MultiBlocProvider(
+                                  providers: [
+                                    BlocProvider(
+                                      create: (context) => sl<VisualiseCubit>(),
                                     ),
-                                    Positioned(
-                                      top: 0,
-                                      left: 0,
-                                      right: 0,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            begin: Alignment.topCenter,
-                                            end: Alignment.bottomCenter,
-                                            colors: [
-                                              Colors.black.withOpacity(0.7),
-                                              Colors.transparent,
-                                            ],
+                                    BlocProvider(
+                                      create: (context) =>
+                                          sl<ProjectDashboardCubit>(),
+                                    ),
+                                  ],
+                                  child: ComponentImageSensorScreen(
+                                    projectId: widget.projectId,
+                                    dashboardId: widget.dashboardId,
+                                    componentId: placement['id'],
+                                    imageUrl: placement['imageUrl'],
+                                    imageName: placement['pictureName'],
+                                    existingSensors: placement['sensors'],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (placement['imageUrl'] != null) ...[
+                                  Stack(
+                                    children: [
+                                      Image.network(
+                                        placement['imageUrl']!,
+                                        height: 200,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                      ),
+                                      Positioned(
+                                        top: 0,
+                                        left: 0,
+                                        right: 0,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              begin: Alignment.topCenter,
+                                              end: Alignment.bottomCenter,
+                                              colors: [
+                                                Colors.black.withOpacity(0.7),
+                                                Colors.transparent,
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                        padding: const EdgeInsets.all(16),
-                                        child: Text(
-                                          placement['pictureName'],
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
+                                          padding: const EdgeInsets.all(16),
+                                          child: Text(
+                                            placement['pictureName'],
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                              ],
-                              Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 6,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .primaryContainer,
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(
-                                                Icons.sensors,
-                                                size: 18,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .onPrimaryContainer,
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                '${(placement['sensors'] as Map).length} Sensors',
-                                                style: TextStyle(
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                ],
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 6,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primaryContainer,
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  Icons.sensors,
+                                                  size: 18,
                                                   color: Theme.of(context)
                                                       .colorScheme
                                                       .onPrimaryContainer,
-                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  '${(placement['sensors'] as Map).length} Sensors',
+                                                  style: TextStyle(
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onPrimaryContainer,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                          FilledButton.tonalIcon(
+                                            onPressed: () => Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    ComponentImageSensorScreen(
+                                                  projectId: widget.projectId,
+                                                  dashboardId:
+                                                      widget.dashboardId,
+                                                  componentId: placement['id'],
+                                                  imageUrl:
+                                                      placement['imageUrl'],
+                                                  imageName:
+                                                      placement['pictureName'],
+                                                  existingSensors:
+                                                      placement['sensors'],
                                                 ),
                                               ),
-                                            ],
+                                            ),
+                                            icon: const Icon(Icons.edit),
+                                            label: const Text('Edit'),
                                           ),
-                                        ),
-                                        const Spacer(),
-                                        FilledButton.tonalIcon(
-                                          onPressed: () {
-                                            context.push(
-                                              Routes.imageSensorPlacing,
-                                              extra: [
-                                                widget.projectId,
-                                                widget.dashboardId
-                                              ],
-                                            );
-                                          },
-                                          icon: const Icon(Icons.edit),
-                                          label: const Text('Edit'),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         )),
                   ],
