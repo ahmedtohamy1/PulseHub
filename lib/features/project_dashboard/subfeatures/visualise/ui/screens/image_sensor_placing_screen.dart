@@ -7,17 +7,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_view/photo_view.dart';
-import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_model.dart';
+import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/cubit/visualise_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/ui/widgets/sensor_selection_dialog.dart';
 
 class ImageSensorPlacingScreen extends StatefulWidget {
   final int projectId;
+  final int dashboardId;
 
   const ImageSensorPlacingScreen({
     super.key,
     required this.projectId,
+    required this.dashboardId,
   });
 
   @override
@@ -287,18 +289,30 @@ Placed sensor:
       return;
     }
 
-    // Print sensor IDs and coordinates
-    debugPrint('\nPlaced Sensors Information:');
-    for (final sensor in _placedSensors) {
-      debugPrint(
-          'Sensor ${sensor.sensorId}: (${sensor.coordinateX?.toStringAsFixed(2)}, ${sensor.coordinateY?.toStringAsFixed(2)})');
-    }
+    // Convert placed sensors to required format with string IDs
+    final sensorsIdsAndCoordinates = _placedSensors
+        .map((sensor) => {
+              sensor.sensorId.toString(): {
+                'x': sensor.coordinateX,
+                'y': sensor.coordinateY,
+              }
+            })
+        .toList();
 
-    debugPrint('\nCoordinate Ranges:');
-    debugPrint(
-        'X-axis: starts from 0.00 to ${_imageSize!.width.toStringAsFixed(2)}');
-    debugPrint(
-        'Y-axis: starts from 0.00 to ${_imageSize!.height.toStringAsFixed(2)}\n');
+    final componentName = '2D Sensor Placement';
+    final imageName = _selectedImage!.name;
+
+    print('Saving image with sensor: $imageName');
+    print('Sensors IDs and coordinates: $sensorsIdsAndCoordinates');
+    print('Dashboard ID: ${widget.dashboardId}');
+    print('Component Name: $componentName');
+
+    context.read<VisualiseCubit>().saveImageWithSensor(
+          widget.dashboardId,
+          componentName,
+          imageName,
+          sensorsIdsAndCoordinates,
+        );
   }
 
   @override
@@ -306,9 +320,22 @@ Placed sensor:
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return BlocProvider(
-      create: (context) =>
-          sl<ProjectDashboardCubit>()..getMonitoring(widget.projectId),
+    return BlocListener<VisualiseCubit, VisualiseState>(
+      listener: (context, state) {
+        if (state is VisualiseSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Image saved successfully')),
+          );
+          context.pop();
+        } else if (state is VisualiseFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+        }
+      },
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(

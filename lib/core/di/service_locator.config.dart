@@ -62,6 +62,8 @@ import '../../features/project_dashboard/cubit/ticket_messages_cubit.dart'
 import '../../features/project_dashboard/data/repos/dash_repo.dart' as _i346;
 import '../../features/project_dashboard/data/repos/dash_repo_impl.dart'
     as _i503;
+import '../../features/project_dashboard/subfeatures/visualise/cubit/visualise_cubit.dart'
+    as _i804;
 import '../../features/project_dashboard/subfeatures/visualise/data/visualise_repo.dart'
     as _i827;
 import '../../features/project_dashboard/subfeatures/visualise/data/visualise_repo_impl.dart'
@@ -91,8 +93,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.singleton<_i0.EnvConfig>(() => _i0.EnvConfig());
     gh.lazySingleton<_i361.Dio>(() => dioModule.provideDio());
     gh.lazySingleton<_i87.ManageRepository>(() => const _i176.ManageRepoImpl());
-    gh.lazySingleton<_i827.VisualiseRepo>(() => _i132.VisualiseRepoImpl());
     gh.lazySingleton<_i713.MyApi>(() => _i713.MyApi(gh<_i361.Dio>()));
+    gh.lazySingleton<_i827.VisualiseRepo>(
+        () => _i132.VisualiseRepoImpl(gh<_i713.MyApi>()));
     gh.lazySingleton<_i346.DashRepository>(
         () => _i503.DashRepoImpl(gh<_i713.MyApi>()));
     gh.lazySingleton<_i90.DicRepository>(
@@ -105,6 +108,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i696.TicketMessagesCubit(gh<_i346.DashRepository>()));
     gh.factory<_i133.ManageOwnersRepository>(
         () => _i1045.ManageOwnersRepositoryImpl(gh<_i713.MyApi>()));
+    gh.factory<_i804.VisualiseCubit>(
+        () => _i804.VisualiseCubit(gh<_i827.VisualiseRepo>()));
     gh.factory<_i423.ManageProjectsRepository>(
         () => _i320.ManageProjectsRepositoryImpl(gh<_i713.MyApi>()));
     gh.factory<_i1047.ManageSensorsRepository>(

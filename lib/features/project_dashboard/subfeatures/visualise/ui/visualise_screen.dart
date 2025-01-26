@@ -165,6 +165,7 @@ class _VisualiseScreenState extends State<VisualiseScreen> {
                               MaterialPageRoute(
                                 builder: (context) => SpecialWidgetsScreen(
                                   projectId: widget.projectId,
+                                  dashboardId: dashboard.dashboardId,
                                 ),
                               ),
                             );

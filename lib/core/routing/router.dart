@@ -14,6 +14,7 @@ import 'package:pulsehub/features/dics/ui/dic_screen.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_users/ui/manage_users_screen.dart';
 import 'package:pulsehub/features/manage/ui/screens/manage_screen.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
+import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/cubit/visualise_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/ui/screens/image_sensor_placing_screen.dart';
 import 'package:pulsehub/features/projects/cubit/projects_cubit.dart';
 import 'package:pulsehub/features/projects/ui/home_screen.dart';
@@ -60,13 +61,23 @@ final router = GoRouter(
         if (!isStaffOrSuperuser) {
           return const UnauthorizedScreen();
         }
+        final extra = state.extra as List;
+        final projectId = extra[0];
+        final dashboardId = extra[1];
 
-        final projectId = state.extra;
-
-        return BlocProvider(
-          create: (context) => sl<ProjectDashboardCubit>(),
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => sl<ProjectDashboardCubit>()
+                ..getMonitoring(int.parse(projectId.toString())),
+            ),
+            BlocProvider(
+              create: (context) => sl<VisualiseCubit>(),
+            ),
+          ],
           child: ImageSensorPlacingScreen(
-              projectId: int.parse(projectId.toString())),
+              projectId: int.parse(projectId.toString()),
+              dashboardId: int.parse(dashboardId.toString())),
         );
       },
     ),

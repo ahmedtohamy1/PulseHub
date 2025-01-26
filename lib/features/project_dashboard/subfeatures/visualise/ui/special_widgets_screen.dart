@@ -14,7 +14,12 @@ import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class SpecialWidgetsScreen extends StatefulWidget {
   final int projectId;
-  const SpecialWidgetsScreen({super.key, required this.projectId});
+  final int dashboardId;
+  const SpecialWidgetsScreen({
+    super.key,
+    required this.projectId,
+    required this.dashboardId,
+  });
 
   @override
   State<SpecialWidgetsScreen> createState() => _SpecialWidgetsScreenState();
@@ -257,7 +262,7 @@ class _SpecialWidgetsScreenState extends State<SpecialWidgetsScreen> {
                 } else if (type == 'image_sensor') {
                   // Navigate to image sensor placing screen
                   context.push(Routes.imageSensorPlacing,
-                      extra: widget.projectId);
+                      extra: [widget.projectId, widget.dashboardId]);
                   Navigator.pop(context); // Close the modal sheet
                 }
               },
