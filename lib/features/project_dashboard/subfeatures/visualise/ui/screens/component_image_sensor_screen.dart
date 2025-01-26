@@ -7,8 +7,40 @@ import 'package:go_router/go_router.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/monitoring_model.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/sensor_data_model.dart'
+    as sensor_data;
+import 'package:pulsehub/features/project_dashboard/subfeatures/monitoring/ui/sensor_details_screen.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/cubit/visualise_cubit.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/ui/widgets/sensor_selection_dialog.dart';
+
+// Convert from monitoring_model.Sensor to sensor_data_model.Sensor
+sensor_data.Sensor convertToSensorData(Sensor sensor) {
+  return sensor_data.Sensor(
+    sensorId: sensor.sensorId,
+    name: sensor.name,
+    uuid: sensor.uuid,
+    usedSensor: sensor.usedSensor,
+    cloudHub: sensor.cloudHub,
+    installDate: sensor.installDate,
+    typeId: sensor.typeId,
+    dataSource: sensor.dataSource,
+    readingsPerDay: sensor.readingsPerDay,
+    active: sensor.active,
+    coordinateX: sensor.coordinateX,
+    coordinateY: sensor.coordinateY,
+    coordinateZ: sensor.coordinateZ,
+    longitude: sensor.longitude,
+    latitude: sensor.latitude,
+    calibrated: sensor.calibrated,
+    calibrationDate: sensor.calibrationDate,
+    calibrationComments: sensor.calibrationComments,
+    event: sensor.event ?? '',
+    eventLastStatus: sensor.eventLastStatus ?? '',
+    status: sensor.status,
+    cloudHubTime: sensor.cloudHubTime,
+    sendTime: sensor.sendTime,
+  );
+}
 
 class ComponentImageSensorScreen extends StatefulWidget {
   final int projectId;
@@ -626,28 +658,68 @@ class _PlacedSensorsList extends StatelessWidget {
                     return ListTile(
                       dense: true,
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      leading: Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: _sensorColor(sensor.status).withOpacity(0.2),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: _sensorColor(sensor.status),
-                            width: 2,
-                          ),
-                        ),
+                        horizontal: 8,
+                        vertical: 0,
                       ),
                       title: Text(
-                        '${sensor.name} (${sensor.coordinateX?.toStringAsFixed(1) ?? '0'}, '
-                        '${sensor.coordinateY?.toStringAsFixed(1) ?? '0'})',
-                        style: const TextStyle(fontWeight: FontWeight.w500),
+                        sensor.name,
+                        style: theme.textTheme.bodyMedium,
                       ),
-                      subtitle: Text(sensor.typeId ?? ''),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline, size: 20),
-                        onPressed: () => onRemove(index),
+                      subtitle: Text(
+                        'ID: ${sensor.sensorId}',
+                        style: theme.textTheme.bodySmall,
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.info_outline),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => SensorDetailsScreen(
+                                    sensor: sensor_data.Sensor(
+                                      sensorId: sensor.sensorId,
+                                      name: sensor.name,
+                                      uuid: sensor.uuid,
+                                      usedSensor: sensor.usedSensor,
+                                      cloudHub: sensor.cloudHub,
+                                      installDate: sensor.installDate,
+                                      typeId: sensor.typeId,
+                                      dataSource: sensor.dataSource,
+                                      readingsPerDay: sensor.readingsPerDay,
+                                      active: sensor.active,
+                                      coordinateX: sensor.coordinateX,
+                                      coordinateY: sensor.coordinateY,
+                                      coordinateZ: sensor.coordinateZ,
+                                      longitude: sensor.longitude,
+                                      latitude: sensor.latitude,
+                                      calibrated: sensor.calibrated,
+                                      calibrationDate: sensor.calibrationDate,
+                                      calibrationComments:
+                                          sensor.calibrationComments,
+                                      event: sensor.event ?? '',
+                                      eventLastStatus:
+                                          sensor.eventLastStatus ?? '',
+                                      status: sensor.status,
+                                      cloudHubTime: sensor.cloudHubTime,
+                                      sendTime: sensor.sendTime,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                            tooltip: 'View Details',
+                            visualDensity: VisualDensity.compact,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline),
+                            onPressed: () => onRemove(index),
+                            tooltip: 'Remove Sensor',
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        ],
                       ),
                     );
                   },
@@ -658,18 +730,5 @@ class _PlacedSensorsList extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Color _sensorColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return Colors.green;
-      case 'inactive':
-        return Colors.red;
-      case 'maintenance':
-        return Colors.orange;
-      default:
-        return Colors.grey;
-    }
   }
 }
