@@ -68,7 +68,7 @@ class MainLayout extends StatelessWidget {
           ),
           Container(
             color: colorScheme.surfaceContainerHighest,
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.only(bottom: 25),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: destinations.map((destination) {
