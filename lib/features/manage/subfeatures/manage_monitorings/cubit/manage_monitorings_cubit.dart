@@ -1,5 +1,5 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/utils/shared_pref_helper.dart';
 import 'package:pulsehub/core/utils/shared_pref_keys.dart';
@@ -39,6 +39,23 @@ class ManageMonitoringsCubit extends Cubit<ManageMonitoringsState> {
     );
   }
 
+  Future<void> createMonitoring(String name, int projectId, String? communications) async {
+    emit(ManageMonitoringsCreateLoading(
+      monitoringResponse: _cachedMonitorings,
+      projectsResponse: _cachedProjects,
+    ));
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final result = await _repo.createMonitoring(token, communications, name, projectId);
+    result.fold(
+      (l) => emit(ManageMonitoringsCreateFailure(l,
+          monitoringResponse: _cachedMonitorings,
+          projectsResponse: _cachedProjects)),
+      (r) => emit(ManageMonitoringsCreateSuccess(r,
+          monitoringResponse: _cachedMonitorings,
+          projectsResponse: _cachedProjects)),
+    );
+  }
+
   Future<void> editMonitoring(String? communications, String? name,
       int? projectId, int monitoringId) async {
     emit(ManageMonitoringsEditLoading(
@@ -54,10 +71,9 @@ class ManageMonitoringsCubit extends Cubit<ManageMonitoringsState> {
           projectsResponse: _cachedProjects)),
       (r) {
         // Update the cached monitoring if edit was successful
-        if (_cachedMonitorings != null &&
-            _cachedMonitorings!.monitorings != null) {
+        if (_cachedMonitorings != null) {
           final updatedMonitorings =
-              _cachedMonitorings!.monitorings!.map((monitoring) {
+              _cachedMonitorings!.monitorings.map((monitoring) {
             if (monitoring.monitoringId == monitoringId) {
               return Monitoring(
                 monitoringId: monitoringId,
