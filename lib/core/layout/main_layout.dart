@@ -1,10 +1,11 @@
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
+import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pulsehub/core/layout/destinations.dart';
 import 'package:pulsehub/core/routing/routes.dart';
 
-class MainLayout extends StatelessWidget {
+class MainLayout extends StatefulWidget {
   const MainLayout({
     required this.navigationShell,
     Key? key,
@@ -12,13 +13,22 @@ class MainLayout extends StatelessWidget {
 
   final StatefulNavigationShell navigationShell;
 
-  void _onDestinationSelected(BuildContext context, int index) {
+  @override
+  State<MainLayout> createState() => _MainLayoutState();
+}
+
+class _MainLayoutState extends State<MainLayout> {
+  // Key for controlling the CurvedNavigationBar state
+  final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
+
+  // Handle navigation when a tab is tapped
+  void _onDestinationSelected(int index) {
     if (index == 0) {
-      // CloudMATE button - always navigate to projects screen
+      // CloudMATE button - always navigate to the home page
       context.go(Routes.homePage);
     } else {
       // Other buttons - use normal branch navigation
-      navigationShell.goBranch(index);
+      widget.navigationShell.goBranch(index);
     }
   }
 
@@ -26,81 +36,36 @@ class MainLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      body: Stack(
-        children: [
-          SafeArea(
-            bottom: false,
-            child: navigationShell,
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: bottomPadding,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CurvedNavigationBar(
-                  key: const ValueKey<String>('CurvedNavigationBar'),
-                  index: navigationShell.currentIndex,
-                  height: 50,
-                  backgroundColor: colorScheme.surface,
-                  color: colorScheme.surfaceContainerHighest,
-                  buttonBackgroundColor: colorScheme.primary,
-                  animationDuration: const Duration(milliseconds: 300),
-                  animationCurve: Curves.easeInOut,
-                  items: destinations.map((destination) {
-                    final isSelected = destinations.indexOf(destination) ==
-                        navigationShell.currentIndex;
-                    return Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Icon(
-                          destination.icon,
-                          size: 24,
-                          color: isSelected
-                              ? colorScheme.onPrimary
-                              : colorScheme.onSurfaceVariant,
-                        ),
-                        if (destination.badgeBuilder != null)
-                          Positioned(
-                            top: -8,
-                            right: -8,
-                            child: destination.badgeBuilder!(context),
-                          ),
-                      ],
-                    );
-                  }).toList(),
-                  onTap: (index) => _onDestinationSelected(context, index),
-                ),
-                Container(
-                  color: colorScheme.surfaceContainerHighest,
-                  padding: const EdgeInsets.only(bottom: 25),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: destinations.map((destination) {
-                      final isSelected = destinations.indexOf(destination) ==
-                          navigationShell.currentIndex;
-                      return Text(
-                        destination.label,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: isSelected
-                              ? colorScheme.primary
-                              : colorScheme.onSurfaceVariant,
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.normal,
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+      body: SafeArea(child: widget.navigationShell),
+      bottomNavigationBar: SafeArea(
+        bottom: true,
+        top: false,
+        child: CurvedNavigationBar(
+          key: _bottomNavigationKey,
+          index: widget.navigationShell.currentIndex,
+          backgroundColor: colorScheme.surface,
+          color: colorScheme.surfaceContainerHighest,
+          buttonBackgroundColor: colorScheme.secondaryContainer,
+          animationDuration: const Duration(milliseconds: 300),
+          animationCurve: Curves.easeInOut,
+          items: destinations.map((destination) {
+            return CurvedNavigationBarItem(
+              child: Icon(
+                destination.icon,
+                size: 24,
+                color: colorScheme.onSurfaceVariant,
+              ),
+              label: destination.label,
+              labelStyle: theme.textTheme.labelSmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            );
+          }).toList(),
+          onTap: _onDestinationSelected,
+        ),
       ),
     );
   }
