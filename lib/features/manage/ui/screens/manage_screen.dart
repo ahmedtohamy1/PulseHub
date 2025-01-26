@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pulsehub/core/di/service_locator.dart';
+import 'package:pulsehub/features/manage/subfeatures/manage_monitorings/cubit/manage_monitorings_cubit.dart';
+import 'package:pulsehub/features/manage/subfeatures/manage_monitorings/ui/manage_monitoring.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_owners/cubit/manage_owners_cubit.dart';
-
-import '../../subfeatures/manage_owners/ui/manage_owners_tab.dart';
-import '../../subfeatures/manage_projects/ui/manage_projects_tab.dart';
-import '../../subfeatures/manage_sensors/ui/manage_sensors_tab.dart';
-import '../../subfeatures/manage_users/ui/manage_users_tab.dart';
+import 'package:pulsehub/features/manage/subfeatures/manage_owners/ui/manage_owners_tab.dart';
+import 'package:pulsehub/features/manage/subfeatures/manage_projects/ui/manage_projects_tab.dart';
+import 'package:pulsehub/features/manage/subfeatures/manage_sensors/ui/manage_sensors_tab.dart';
+import 'package:pulsehub/features/manage/subfeatures/manage_users/ui/manage_users_tab.dart';
 
 class ManageScreen extends StatelessWidget {
   const ManageScreen({super.key});
@@ -16,7 +17,7 @@ class ManageScreen extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -108,11 +109,22 @@ class ManageScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+                  Tooltip(
+                    message: 'Monitorings',
+                    child: Tab(
+                      height: 32,
+                      icon: Icon(
+                        Icons.monitor_outlined,
+                        size: 24,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
             Expanded(
               child: TabBarView(
+                physics: const NeverScrollableScrollPhysics(),
                 children: [
                   ManageProjectsTab(),
                   BlocProvider(
@@ -122,6 +134,11 @@ class ManageScreen extends StatelessWidget {
                   ),
                   ManageUsersTab(),
                   ManageSensorsTab(),
+                  BlocProvider(
+                    create: (context) =>
+                        sl<ManageMonitoringsCubit>()..getMonitorings(),
+                    child: ManageMonitoringsTab(),
+                  ),
                 ],
               ),
             ),

@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:json_annotation/json_annotation.dart';
 
 part 'monitoring_model.g.dart';
@@ -6,7 +7,7 @@ part 'monitoring_model.g.dart';
 class MonitoringResponse {
   final bool success;
 
-  @JsonKey(name: 'Monitorings')
+  @JsonKey(name: 'Monitoring_list', includeIfNull: false)
   final List<Monitoring>? monitorings;
 
   MonitoringResponse({
@@ -14,8 +15,16 @@ class MonitoringResponse {
     this.monitorings,
   });
 
-  factory MonitoringResponse.fromJson(Map<String, dynamic> json) =>
-      _$MonitoringResponseFromJson(json);
+  // Custom factory method to handle both "Monitoring_list" and "Monitorings" keys
+  factory MonitoringResponse.fromJson(Map<String, dynamic> json) {
+    return MonitoringResponse(
+      success: json['success'] as bool,
+      monitorings: (json['Monitoring_list'] ?? json['Monitorings'])
+          ?.map<Monitoring>((dynamic item) =>
+              Monitoring.fromJson(item as Map<String, dynamic>))
+          .toList(),
+    );
+  }
 
   Map<String, dynamic> toJson() => _$MonitoringResponseToJson(this);
 }
@@ -163,4 +172,56 @@ class Sensor {
   factory Sensor.fromJson(Map<String, dynamic> json) => _$SensorFromJson(json);
 
   Map<String, dynamic> toJson() => _$SensorToJson(this);
+
+  Sensor copyWith({
+    int? sensorId,
+    String? name,
+    String? uuid,
+    int? usedSensor,
+    dynamic? cloudHub,
+    dynamic? installDate,
+    dynamic? typeId,
+    dynamic? dataSource,
+    dynamic? readingsPerDay,
+    bool? active,
+    dynamic? coordinateX,
+    dynamic? coordinateY,
+    dynamic? coordinateZ,
+    dynamic? longitude,
+    dynamic? latitude,
+    bool? calibrated,
+    dynamic? calibrationDate,
+    dynamic? calibrationComments,
+    String? event,
+    String? eventLastStatus,
+    String? status,
+    dynamic? cloudHubTime,
+    dynamic? sendTime,
+  }) {
+    return Sensor(
+      sensorId: sensorId ?? this.sensorId,
+      name: name ?? this.name,
+      uuid: uuid ?? this.uuid,
+      usedSensor: usedSensor ?? this.usedSensor,
+      cloudHub: cloudHub ?? this.cloudHub,
+      installDate: installDate ?? this.installDate,
+      typeId: typeId ?? this.typeId,
+      dataSource: dataSource ?? this.dataSource,
+      readingsPerDay: readingsPerDay ?? this.readingsPerDay,
+      active: active ?? this.active,
+      coordinateX: coordinateX ?? this.coordinateX,
+      coordinateY: coordinateY ?? this.coordinateY,
+      coordinateZ: coordinateZ ?? this.coordinateZ,
+      longitude: longitude ?? this.longitude,
+      latitude: latitude ?? this.latitude,
+      calibrated: calibrated ?? this.calibrated,
+      calibrationDate: calibrationDate ?? this.calibrationDate,
+      calibrationComments: calibrationComments ?? this.calibrationComments,
+      event: event ?? this.event,
+      eventLastStatus: eventLastStatus ?? this.eventLastStatus,
+      status: status ?? this.status,
+      cloudHubTime: cloudHubTime ?? this.cloudHubTime,
+      sendTime: sendTime ?? this.sendTime,
+    );
+  }
 }

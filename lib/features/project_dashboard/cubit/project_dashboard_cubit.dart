@@ -30,6 +30,13 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
 
   ProjectDashboardCubit(this._repository) : super(ProjectDashboardInitial());
 
+  // Cache for analysis results
+  AiAnalyzeDataModel? _cachedAnalyzeResult;
+  AiQ2ResponseModel? _cachedExpertResult;
+
+  AiAnalyzeDataModel? get cachedAnalyzeResult => _cachedAnalyzeResult;
+  AiQ2ResponseModel? get cachedExpertResult => _cachedExpertResult;
+
   getDashs(int projectId) async {
     emit(ProjectDashboardFetchLoading());
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
@@ -85,7 +92,10 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
         await _repository.analyzeSensorData(token, queryParams, projectId);
     res.fold(
       (failure) => emit(ProjectDashboardAnalyzeSensorDataFailure(failure)),
-      (response) => emit(ProjectDashboardAnalyzeSensorDataSuccess(response)),
+      (response) {
+        _cachedAnalyzeResult = response;
+        emit(ProjectDashboardAnalyzeSensorDataSuccess(response));
+      },
     );
   }
 
@@ -575,13 +585,29 @@ class ProjectDashboardCubit extends Cubit<ProjectDashboardState> {
     );
   }
 
+  Future<void> updateCloudhubSensors(
+      int cloudhubId, List<int> sensorIds) async {
+    emit(ProjectDashboardUpdateCloudhubSensorsLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final res =
+        await _repository.updateCloudhubSensors(token, cloudhubId, sensorIds);
+    res.fold(
+      (failure) => emit(ProjectDashboardUpdateCloudhubSensorsFailure(failure)),
+      (response) =>
+          emit(ProjectDashboardUpdateCloudhubSensorsSuccess(response)),
+    );
+  }
+
   Future<void> analyzeSensorDataQ2(String projectId) async {
     emit(ProjectDashboardAnalyzeSensorDataQ2Loading());
     final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
     final res = await _repository.analyzeSensorDataQ2(token, projectId);
     res.fold(
       (failure) => emit(ProjectDashboardAnalyzeSensorDataQ2Failure(failure)),
-      (response) => emit(ProjectDashboardAnalyzeSensorDataQ2Success(response)),
+      (response) {
+        _cachedExpertResult = response;
+        emit(ProjectDashboardAnalyzeSensorDataQ2Success(response));
+      },
     );
   }
 }

@@ -75,7 +75,7 @@ class _ManageOwnersTabState extends State<ManageOwnersTab> {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: colorScheme.shadow.withOpacity(0.1),
+                        color: colorScheme.shadow.withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -113,7 +113,7 @@ class _ManageOwnersTabState extends State<ManageOwnersTab> {
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
-                          color: colorScheme.outline.withOpacity(0.5),
+                          color: colorScheme.outline.withValues(alpha: 0.5),
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(

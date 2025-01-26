@@ -22,7 +22,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
   final _titleController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _maxActiveSessionsController = TextEditingController(text: '5');
+  final _maxActiveSessionsController = TextEditingController(text: '1');
 
   bool _isActive = true;
   bool _isStaff = false;
@@ -359,7 +359,8 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                   const SizedBox(height: 16),
                   Card(
                     elevation: 0,
-                    color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                    color: colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.3),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -513,7 +514,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: colorScheme.primary.withOpacity(0.1),
+              color: colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(

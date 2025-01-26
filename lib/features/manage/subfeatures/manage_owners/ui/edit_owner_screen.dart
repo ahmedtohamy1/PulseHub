@@ -185,7 +185,7 @@ class _EditOwnerScreenState extends State<EditOwnerScreen> {
                     color: colorScheme.secondaryContainer,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: colorScheme.outline.withOpacity(0.5),
+                      color: colorScheme.outline.withValues(alpha: 0.5),
                     ),
                   ),
                   child: newLogo != null

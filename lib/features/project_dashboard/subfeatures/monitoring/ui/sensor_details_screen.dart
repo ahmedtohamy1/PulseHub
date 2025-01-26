@@ -171,90 +171,125 @@ class _SensorDetailsScreenState extends State<SensorDetailsScreen>
             return const Center(child: Text('No activity log data available'));
           }
 
-          int globalIndex = 0;
-
           return SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: DataTable(
-                  showCheckboxColumn: false,
-                  headingRowColor: WidgetStateColor.resolveWith(
-                      (states) => Theme.of(context).colorScheme.primary),
-                  columns: const [
-                    DataColumn(
-                        label: Text('Event',
-                            style: TextStyle(color: Colors.white))),
-                    DataColumn(
-                        label: Text('Date',
-                            style: TextStyle(color: Colors.white))),
-                    DataColumn(
-                        label: Text('Description',
-                            style: TextStyle(color: Colors.white))),
-                    DataColumn(
-                        label: Text('Status',
-                            style: TextStyle(color: Colors.white))),
-                    DataColumn(
-                        label: Text('Actions',
-                            style: TextStyle(color: Colors.white))),
-                  ],
-                  rows: tickets.map((ticket) {
-                    final DateTime createdAt =
-                        DateTime.parse(ticket.createdAt ?? '');
-                    final String formattedDate =
-                        '${createdAt.month}/${createdAt.day}/${createdAt.year}, ${createdAt.hour}:${createdAt.minute.toString().padLeft(2, '0')}:${createdAt.second.toString().padLeft(2, '0')} ${createdAt.hour >= 12 ? 'PM' : 'AM'}';
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 600,
+                  mainAxisExtent: 180,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                ),
+                itemCount: tickets.length,
+                itemBuilder: (context, index) {
+                  final ticket = tickets[index];
+                  final DateTime createdAt =
+                      DateTime.parse(ticket.createdAt ?? '');
+                  final String formattedDate =
+                      '${createdAt.month}/${createdAt.day}/${createdAt.year}, ${createdAt.hour}:${createdAt.minute.toString().padLeft(2, '0')}:${createdAt.second.toString().padLeft(2, '0')} ${createdAt.hour >= 12 ? 'PM' : 'AM'}';
 
-                    final rowColor = globalIndex % 2 == 0
-                        ? Theme.of(context).colorScheme.secondaryContainer
-                        : Theme.of(context).colorScheme.surface;
-
-                    globalIndex++;
-
-                    return DataRow(
-                      color: WidgetStateColor.resolveWith((states) => rowColor),
-                      cells: [
-                        DataCell(Text(ticket.name ?? 'Unknown')),
-                        DataCell(Text(formattedDate)),
-                        DataCell(
-                          SizedBox(
-                            width: 300,
-                            child: Text(
-                              ticket.description ?? 'No description available',
-                              softWrap: true,
-                            ),
-                          ),
-                        ),
-                        DataCell(
+                  return Card(
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Title Row
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Icon(
-                                ticket.open == true
-                                    ? Icons.warning
-                                    : Icons.check_circle,
-                                color: ticket.open == true
-                                    ? Colors.orange
-                                    : Colors.green,
+                              Expanded(
+                                child: Text(
+                                  ticket.name ?? 'Unknown Event',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                ticket.open == true ? 'Open' : 'Closed',
-                                style: TextStyle(
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
                                   color: ticket.open == true
-                                      ? Colors.orange
-                                      : Colors.green,
+                                      ? Colors.red.withOpacity(0.1)
+                                      : Colors.green.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      ticket.open == true
+                                          ? Icons.warning
+                                          : Icons.check_circle,
+                                      size: 14,
+                                      color: ticket.open == true
+                                          ? Colors.red
+                                          : Colors.green,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      ticket.open == true ? 'Open' : 'Closed',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: ticket.open == true
+                                            ? Colors.red
+                                            : Colors.green,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                        DataCell(
+                          const SizedBox(height: 8),
+
+                          // Date Row
                           Row(
-                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.calendar_today,
+                                  size: 14, color: Colors.green),
+                              const SizedBox(width: 8),
+                              Text(
+                                formattedDate,
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Description
+                          Expanded(
+                            child: Text(
+                              ticket.description ?? 'No description available',
+                              style: const TextStyle(fontSize: 12),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+
+                          // Actions Row
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               IconButton.filled(
                                 icon: const Icon(Icons.message, size: 20),
+                                style: IconButton.styleFrom(
+                                  backgroundColor:
+                                      Colors.green.withOpacity(0.1),
+                                  foregroundColor: Colors.green,
+                                ),
                                 onPressed: () {
                                   Navigator.push(
                                     context,
@@ -287,17 +322,22 @@ class _SensorDetailsScreenState extends State<SensorDetailsScreen>
                               const SizedBox(width: 8),
                               IconButton.filled(
                                 icon: const Icon(Icons.edit, size: 20),
+                                style: IconButton.styleFrom(
+                                  backgroundColor:
+                                      Colors.green.withOpacity(0.1),
+                                  foregroundColor: Colors.green,
+                                ),
                                 onPressed: () {
                                   // Edit functionality will be implemented later
                                 },
                               ),
                             ],
                           ),
-                        ),
-                      ],
-                    );
-                  }).toList(),
-                ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           );

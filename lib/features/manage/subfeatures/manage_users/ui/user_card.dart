@@ -133,10 +133,10 @@ class _UserCardState extends State<UserCard> {
                     child: Container(
                       decoration: BoxDecoration(
                         color: widget.user.isSuperuser == true
-                            ? colorScheme.primary.withOpacity(0.05)
+                            ? colorScheme.primary.withValues(alpha: 0.05)
                             : widget.user.isStaff == true
-                                ? colorScheme.tertiary.withOpacity(0.05)
-                                : colorScheme.primary.withOpacity(0.1),
+                                ? colorScheme.tertiary.withValues(alpha: 0.05)
+                                : colorScheme.primary.withValues(alpha: 0.1),
                       ),
                       child: widget.user.pictureUrl?.isNotEmpty == true
                           ? Image.network(
@@ -148,12 +148,13 @@ class _UserCardState extends State<UserCard> {
                                   Icons.person,
                                   size: 64,
                                   color: widget.user.isSuperuser == true
-                                      ? colorScheme.primary.withOpacity(0.5)
+                                      ? colorScheme.primary
+                                          .withValues(alpha: 0.5)
                                       : widget.user.isStaff == true
                                           ? colorScheme.tertiary
-                                              .withOpacity(0.5)
+                                              .withValues(alpha: 0.5)
                                           : colorScheme.primary
-                                              .withOpacity(0.5),
+                                              .withValues(alpha: 0.5),
                                 ),
                               ),
                             )
@@ -162,10 +163,12 @@ class _UserCardState extends State<UserCard> {
                                 Icons.person,
                                 size: 64,
                                 color: widget.user.isSuperuser == true
-                                    ? colorScheme.primary.withOpacity(0.5)
+                                    ? colorScheme.primary.withValues(alpha: 0.5)
                                     : widget.user.isStaff == true
-                                        ? colorScheme.tertiary.withOpacity(0.5)
-                                        : colorScheme.primary.withOpacity(0.5),
+                                        ? colorScheme.tertiary
+                                            .withValues(alpha: 0.5)
+                                        : colorScheme.primary
+                                            .withValues(alpha: 0.5),
                               ),
                             ),
                     ),
@@ -178,8 +181,8 @@ class _UserCardState extends State<UserCard> {
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
                           colors: [
-                            Colors.black.withOpacity(0.8),
-                            Colors.black.withOpacity(0.0),
+                            Colors.black.withValues(alpha: 0.8),
+                            Colors.black.withValues(alpha: 0.0),
                           ],
                         ),
                       ),
@@ -199,11 +202,11 @@ class _UserCardState extends State<UserCard> {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: colorScheme.primary.withOpacity(0.9),
+                              color: colorScheme.primary.withValues(alpha: 0.9),
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
+                                  color: Colors.black.withValues(alpha: 0.2),
                                   spreadRadius: 1,
                                   blurRadius: 5,
                                   offset: const Offset(0, 2),
@@ -238,11 +241,12 @@ class _UserCardState extends State<UserCard> {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: colorScheme.tertiary.withOpacity(0.9),
+                              color:
+                                  colorScheme.tertiary.withValues(alpha: 0.9),
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
+                                  color: Colors.black.withValues(alpha: 0.2),
                                   spreadRadius: 1,
                                   blurRadius: 5,
                                   offset: const Offset(0, 2),
@@ -281,7 +285,7 @@ class _UserCardState extends State<UserCard> {
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
+                                color: Colors.black.withValues(alpha: 0.2),
                                 spreadRadius: 1,
                                 blurRadius: 5,
                                 offset: const Offset(0, 2),
@@ -325,7 +329,7 @@ class _UserCardState extends State<UserCard> {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             spreadRadius: 1,
                             blurRadius: 5,
                             offset: const Offset(0, 2),
@@ -370,7 +374,7 @@ class _UserCardState extends State<UserCard> {
                               ? widget.user.email!
                               : 'N/A',
                           style: theme.textTheme.titleMedium?.copyWith(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -468,7 +472,7 @@ class _UserCardState extends State<UserCard> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: colorScheme.primary.withOpacity(0.1),
+            color: colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(

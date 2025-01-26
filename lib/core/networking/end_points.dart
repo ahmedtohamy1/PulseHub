@@ -49,10 +49,13 @@ class EndPoints {
   static const String removeUserFromCollaboratorsGroup = "/user/groups-remove/";
   static const String getAllUsers = "/user/manage/";
   static const String markMessageAsSeen = "/project/message-seen/";
+  static const String getUnseenMessages = "/project/unseen-messages/";
   static const String getNotifications = "/project/notifications/";
   static const String getAllOwners = "/owner/";
   static const String updateDeleteOwner = "/owner/update/";
   static const String getAllSensorTypes = "/utilities/sensor-type/";
+  static const String getAllUserLog = "/user/log/";
+  static const String saveImageWithSensor = "/project/dashboard-component/";
 
   // imgs
   static String imageUrl(String path) => '$baseUrl$path';

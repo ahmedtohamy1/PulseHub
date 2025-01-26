@@ -6,12 +6,12 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+
 import 'package:pulsehub/features/project_dashboard/data/models/timedb_response.dart';
 import 'package:pulsehub/features/project_dashboard/data/repos/dash_repo_impl.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/analyse/ui/graph_sensors/components/analysis_parameters_dialog.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/analyse/ui/graph_sensors/components/fl_dot_triangle_painter.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class TimeSeriesChart extends StatefulWidget {
   final SensorDataResponse data;
@@ -55,11 +55,11 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
     _initializeMaps();
   }
 
-  // get theme from shared preferences
+/*   // get theme from shared preferences
   Future<bool> _isDarkMode() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool('isDarkMode') ?? false;
-  }
+  } */
 
   @override
   void didUpdateWidget(TimeSeriesChart oldWidget) {
@@ -134,7 +134,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
           imageHeight + titlePainter.height + 32; // 32 for padding
       final recorder = ui.PictureRecorder();
       final canvas = Canvas(recorder);
-      final paint = Paint()..color = Colors.white;
+ /*      final paint = Paint()..color = Colors.white; */
 
       // Draw white background for entire image
       canvas.drawRect(
@@ -582,11 +582,17 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
               horizontalInterval: yInterval,
               verticalInterval: xInterval,
               getDrawingHorizontalLine: (value) => FlLine(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.1),
                 strokeWidth: 0.5,
               ),
               getDrawingVerticalLine: (value) => FlLine(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.1),
                 strokeWidth: 0.5,
               ),
             ),
@@ -659,13 +665,16 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
             borderData: FlBorderData(
               show: true,
               border: Border.all(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.2),
                 width: 1,
               ),
             ),
             clipData: const FlClipData.all(),
             backgroundColor:
-                Theme.of(context).colorScheme.surface.withOpacity(0.5),
+                Theme.of(context).colorScheme.surface.withValues(alpha: 0.5),
             lineTouchData: LineTouchData(
               enabled: true,
               touchTooltipData: LineTouchTooltipData(
@@ -844,7 +853,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
           show: showPoints,
           getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
             radius: pointSize,
-            color: color.withOpacity(0.7),
+            color: color.withValues(alpha: 0.7),
             strokeWidth: 1,
             strokeColor: Theme.of(context).colorScheme.surface,
           ),
@@ -905,13 +914,13 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                     FlSpot(startTime, minY - (maxY - minY) * 0.1),
                   ],
                   isCurved: false,
-                  color: colorScheme.error.withOpacity(0.1),
+                  color: colorScheme.error.withValues(alpha: 0.1),
                   barWidth: 0,
                   isStrokeCapRound: true,
                   dotData: const FlDotData(show: false),
                   belowBarData: BarAreaData(
                     show: true,
-                    color: colorScheme.error.withOpacity(0.1),
+                    color: colorScheme.error.withValues(alpha: 0.1),
                   ),
                 ),
               );
@@ -921,7 +930,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                 LineChartBarData(
                   spots: anomalySpots,
                   isCurved: false,
-                  color: colorScheme.error.withOpacity(0.5),
+                  color: colorScheme.error.withValues(alpha: 0.5),
                   barWidth: 2,
                   isStrokeCapRound: true,
                   dotData: FlDotData(
@@ -929,7 +938,7 @@ class _TimeSeriesChartState extends State<TimeSeriesChart> {
                     getDotPainter: (spot, percent, barData, index) =>
                         FlDotCirclePainter(
                       radius: pointSize + 1,
-                      color: colorScheme.error.withOpacity(0.5),
+                      color: colorScheme.error.withValues(alpha: 0.5),
                       strokeWidth: 1,
                       strokeColor: Theme.of(context).colorScheme.surface,
                     ),

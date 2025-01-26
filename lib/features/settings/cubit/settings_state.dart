@@ -82,3 +82,15 @@ final class GetNotificationsError extends SettingsState {
   final String message;
   const GetNotificationsError(this.message);
 }
+
+final class GetUnseenMessagesLoading extends SettingsState {}
+
+final class GetUnseenMessagesSuccess extends SettingsState {
+  final int unseenMessages;
+  const GetUnseenMessagesSuccess(this.unseenMessages);
+}
+
+final class GetUnseenMessagesError extends SettingsState {
+  final String message;
+  const GetUnseenMessagesError(this.message);
+}

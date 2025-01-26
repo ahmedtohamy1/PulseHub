@@ -109,3 +109,23 @@ final class ManageUsersCreateUserFailure extends ManageUsersState {
 
   const ManageUsersCreateUserFailure(this.error);
 }
+
+final class ManageUsersGetAllUserLogLoading extends ManageUsersState {}
+
+final class ManageUsersGetAllUserLogSuccess extends ManageUsersState {
+  final GetAllUserLogResponse response;
+
+  const ManageUsersGetAllUserLogSuccess(this.response);
+
+  @override
+  List<Object> get props => [response];
+}
+
+final class ManageUsersGetAllUserLogFailure extends ManageUsersState {
+  final String error;
+
+  const ManageUsersGetAllUserLogFailure(this.error);
+
+  @override
+  List<Object> get props => [error];
+}

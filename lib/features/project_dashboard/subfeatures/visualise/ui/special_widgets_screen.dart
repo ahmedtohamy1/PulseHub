@@ -2,6 +2,15 @@ import 'dart:math';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:pulsehub/core/di/service_locator.dart';
+import 'package:pulsehub/core/routing/routes.dart';
+import 'package:pulsehub/core/utils/user_manager.dart';
+import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
+import 'package:pulsehub/features/project_dashboard/data/models/get_medial_library_response_model.dart';
+import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/cubit/visualise_cubit.dart';
+import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/ui/screens/component_image_sensor_screen.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/ui/special_widgets/chart_container.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/ui/special_widgets/chart_data_editor.dart';
 import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/ui/special_widgets/chart_types.dart';
@@ -11,7 +20,15 @@ import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/ui/spe
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 
 class SpecialWidgetsScreen extends StatefulWidget {
-  const SpecialWidgetsScreen({super.key});
+  final int projectId;
+  final int dashboardId;
+  final String dashboardName;
+  const SpecialWidgetsScreen({
+    super.key,
+    required this.projectId,
+    required this.dashboardId,
+    required this.dashboardName,
+  });
 
   @override
   State<SpecialWidgetsScreen> createState() => _SpecialWidgetsScreenState();
@@ -21,58 +38,339 @@ class _SpecialWidgetsScreenState extends State<SpecialWidgetsScreen> {
   // List to store the selected charts and their data
   final List<Map<String, dynamic>> _charts = [];
   final List<List<List<String>>> _tables = [];
+  final List<Map<String, dynamic>> _sensorPlacements = [];
+  late final VisualiseCubit _visualiseCubit;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    // Start with a default line chart
-    _charts.add({
-      'type': 'line',
-      'data': _getDefaultDataForType('line'),
-    });
+    _visualiseCubit = context.read<VisualiseCubit>();
+    _loadDashboardComponents();
+  }
+
+  Future<void> _loadDashboardComponents() async {
+    await _visualiseCubit.getImageWithSensors(widget.dashboardId);
+    // After getting components, fetch media library
+    await _visualiseCubit.getMediaLibrary(widget.projectId);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    IconButton.filled(
-                      icon: const Icon(Icons.arrow_back_ios_new_outlined),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ],
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<VisualiseCubit, VisualiseState>(
+          listener: (context, state) {
+            if (state is ImageWithSensorsLoading) {
+              setState(() => _isLoading = true);
+            } else if (state is ImageWithSensorsSuccess) {
+              setState(() {
+                // Clear existing components
+                _charts.clear();
+                _tables.clear();
+                _sensorPlacements.clear();
+
+                // Add components from the response
+                final dashComponents = state.components;
+                final components = dashComponents.dashboard.components;
+
+                for (final component in components) {
+                  if (component.name == "2D Sensor Placement" &&
+                      component.content != null) {
+                    // Add sensor placement component
+                    _sensorPlacements.add({
+                      'id': component.componentId,
+                      'pictureName': component.content!.pictureName,
+                      'sensors': component.content!.sensors,
+                      'imageUrl':
+                          null, // Will be populated when media library loads
+                    });
+                  } else if (component.content != null) {
+                    // Add other components based on their type
+                    _charts.add({
+                      'type': 'line', // Default type, adjust based on content
+                      'data': component.content,
+                    });
+                  }
+                }
+              });
+            } else if (state is ImageWithSensorsFailure) {
+              setState(() => _isLoading = false);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to load components: ${state.message}'),
+                  backgroundColor: Theme.of(context).colorScheme.error,
                 ),
-                ..._charts.map((chart) => ChartContainer(
-                      type: chart['type'],
-                      data: chart['data'],
-                      onEdit: () => _showEditOptions(chart),
-                      onDelete: () => _removeChart(_charts.indexOf(chart)),
-                    )),
-                ..._tables.asMap().entries.map((entry) => TableContainer(
-                      data: entry.value,
-                      onEdit: () => _editTableData(entry.key),
-                      onDelete: () => _removeTable(entry.key),
-                    )),
-              ],
-            ),
-          ),
+              );
+            }
+          },
         ),
-        Positioned(
-          right: 16,
-          bottom: 16,
-          child: FloatingActionButton(
-            onPressed: () => _openWidgetSelector(context),
-            child: const Icon(Icons.add),
-          ),
+        BlocListener<VisualiseCubit, VisualiseState>(
+          listener: (context, state) {
+            if (state is GetMediaLibrarySuccess) {
+              setState(() {
+                _isLoading = false;
+                // Match media library files with sensor placements
+                final mediaFiles = state.mediaLibraries.mediaLibraries ?? [];
+
+                if (mediaFiles.isNotEmpty) {
+                  for (var placement in _sensorPlacements) {
+                    final pictureName = placement['pictureName'] as String;
+                    MediaLibrary? matchingFile;
+
+                    // First try exact match
+                    try {
+                      matchingFile = mediaFiles.firstWhere(
+                        (file) => file.fileName == pictureName,
+                      );
+                    } catch (_) {
+                      // Then try without 'scaled_' prefix
+                      try {
+                        matchingFile = mediaFiles.firstWhere(
+                          (file) =>
+                              file.fileName ==
+                              pictureName.replaceAll('scaled_', ''),
+                        );
+                      } catch (_) {
+                        // If no match found, use first file
+                        matchingFile = mediaFiles.first;
+                      }
+                    }
+
+                    placement['imageUrl'] = matchingFile.fileUrl;
+                  }
+                }
+              });
+            } else if (state is GetMediaLibraryFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to load media: ${state.message}'),
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                ),
+              );
+            }
+          },
         ),
       ],
+      child: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      IconButton.filled(
+                        icon: const Icon(Icons.arrow_back_ios_new_outlined),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(widget.dashboardName,
+                          style: Theme.of(context).textTheme.titleLarge),
+                    ],
+                  ),
+                  if (_sensorPlacements.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      '2D Sensor Placements',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    ..._sensorPlacements.map((placement) => Card(
+                          elevation: 4,
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 8, horizontal: 4),
+                          clipBehavior: Clip.antiAlias,
+                          child: InkWell(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => MultiBlocProvider(
+                                  providers: [
+                                    BlocProvider(
+                                      create: (context) => sl<VisualiseCubit>(),
+                                    ),
+                                    BlocProvider(
+                                      create: (context) =>
+                                          sl<ProjectDashboardCubit>(),
+                                    ),
+                                  ],
+                                  child: ComponentImageSensorScreen(
+                                    projectId: widget.projectId,
+                                    dashboardId: widget.dashboardId,
+                                    componentId: placement['id'],
+                                    imageUrl: placement['imageUrl'],
+                                    imageName: placement['pictureName'],
+                                    existingSensors: placement['sensors'],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (placement['imageUrl'] != null) ...[
+                                  Stack(
+                                    children: [
+                                      Image.network(
+                                        placement['imageUrl']!,
+                                        height: 200,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                      ),
+                                      Positioned(
+                                        top: 0,
+                                        left: 0,
+                                        right: 0,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              begin: Alignment.topCenter,
+                                              end: Alignment.bottomCenter,
+                                              colors: [
+                                                Colors.black.withOpacity(0.7),
+                                                Colors.transparent,
+                                              ],
+                                            ),
+                                          ),
+                                          padding: const EdgeInsets.all(16),
+                                          child: Text(
+                                            placement['pictureName'],
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                ],
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 6,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primaryContainer,
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  Icons.sensors,
+                                                  size: 18,
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .onPrimaryContainer,
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  '${(placement['sensors'] as Map).length} Sensors',
+                                                  style: TextStyle(
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onPrimaryContainer,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                          FilledButton.tonalIcon(
+                                            onPressed: () => Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    ComponentImageSensorScreen(
+                                                  projectId: widget.projectId,
+                                                  dashboardId:
+                                                      widget.dashboardId,
+                                                  componentId: placement['id'],
+                                                  imageUrl:
+                                                      placement['imageUrl'],
+                                                  imageName:
+                                                      placement['pictureName'],
+                                                  existingSensors:
+                                                      placement['sensors'],
+                                                ),
+                                              ),
+                                            ),
+                                            icon: const Icon(Icons.edit),
+                                            label: const Text('Edit'),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )),
+                  ],
+                  if (_charts.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      'Charts',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    ..._charts.map((chart) => ChartContainer(
+                          type: chart['type'],
+                          data: chart['data'],
+                          onEdit: () => _showEditOptions(chart),
+                          onDelete: () => _removeChart(_charts.indexOf(chart)),
+                        )),
+                  ],
+                  if (_tables.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      'Tables',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    ..._tables.asMap().entries.map((entry) => TableContainer(
+                          data: entry.value,
+                          onEdit: () => _editTableData(entry.key),
+                          onDelete: () => _removeTable(entry.key),
+                        )),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          if (_isLoading)
+            const Center(
+              child: CircularProgressIndicator(),
+            ),
+          if (UserManager().user!.isStaff || UserManager().user!.isSuperuser)
+            Positioned(
+              right: 16,
+              bottom: 16,
+              child: FloatingActionButton(
+                onPressed: () => _openWidgetSelector(context),
+                child: const Icon(Icons.add),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -251,6 +549,11 @@ class _SpecialWidgetsScreenState extends State<SpecialWidgetsScreen> {
                   setState(() {
                     _tables.add(_getDefaultTableData());
                   });
+                } else if (type == 'image_sensor') {
+                  // Navigate to image sensor placing screen
+                  context.push(Routes.imageSensorPlacing,
+                      extra: [widget.projectId, widget.dashboardId]);
+                  Navigator.pop(context); // Close the modal sheet
                 }
               },
             ),

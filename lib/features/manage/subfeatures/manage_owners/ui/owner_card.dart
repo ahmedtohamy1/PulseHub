@@ -172,23 +172,25 @@ class OwnerCard extends StatelessWidget {
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) =>
                                 Container(
-                              color: colorScheme.primary.withOpacity(0.1),
+                              color: colorScheme.primary.withValues(alpha: 0.1),
                               child: Center(
                                 child: Icon(
                                   Icons.business,
                                   size: 64,
-                                  color: colorScheme.primary.withOpacity(0.5),
+                                  color: colorScheme.primary
+                                      .withValues(alpha: 0.5),
                                 ),
                               ),
                             ),
                           )
                         : Container(
-                            color: colorScheme.primary.withOpacity(0.1),
+                            color: colorScheme.primary.withValues(alpha: 0.1),
                             child: Center(
                               child: Icon(
                                 Icons.business,
                                 size: 64,
-                                color: colorScheme.primary.withOpacity(0.5),
+                                color:
+                                    colorScheme.primary.withValues(alpha: 0.5),
                               ),
                             ),
                           ),
@@ -201,8 +203,8 @@ class OwnerCard extends StatelessWidget {
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
                           colors: [
-                            Colors.black.withOpacity(0.8),
-                            Colors.black.withOpacity(0.0),
+                            Colors.black.withValues(alpha: 0.8),
+                            Colors.black.withValues(alpha: 0.0),
                           ],
                         ),
                       ),
@@ -212,93 +214,93 @@ class OwnerCard extends StatelessWidget {
                   Positioned(
                     top: 16,
                     right: 16,
-                    child: Row(
-                      children: [
-                        // Edit Button
-                        Container(
-                          margin: const EdgeInsets.only(right: 8),
-                          decoration: BoxDecoration(
-                            color: colorScheme.primary,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                spreadRadius: 1,
-                                blurRadius: 5,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            spreadRadius: 1,
+                            blurRadius: 5,
+                            offset: const Offset(0, 2),
                           ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => BlocProvider(
-                                    create: (context) =>
-                                        sl<ManageOwnersCubit>(),
-                                    child: EditOwnerScreen(owner: owner),
+                        ],
+                      ),
+                      child: state is DeleteOwnerLoading
+                          ? const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            )
+                          : PopupMenuButton<String>(
+                              padding: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              icon: Icon(
+                                Icons.more_vert,
+                                color: colorScheme.onSurface,
+                              ),
+                              itemBuilder: (context) => [
+                                PopupMenuItem(
+                                  value: 'edit',
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.edit_outlined,
+                                        size: 20,
+                                        color: colorScheme.onSurface,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text('Edit Owner'),
+                                    ],
                                   ),
                                 ),
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Icon(
-                                  Icons.edit_outlined,
-                                  color: colorScheme.onPrimary,
-                                  size: 20,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        // Delete Button
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.red.shade600,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                spreadRadius: 1,
-                                blurRadius: 5,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: state is DeleteOwnerLoading
-                                  ? null
-                                  : () =>
-                                      _showDeleteConfirmationDialog(context),
-                              borderRadius: BorderRadius.circular(12),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: state is DeleteOwnerLoading
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                            Colors.white,
-                                          ),
-                                        ),
-                                      )
-                                    : const Icon(
+                                PopupMenuItem(
+                                  value: 'delete',
+                                  child: Row(
+                                    children: [
+                                      Icon(
                                         Icons.delete_outline,
-                                        color: Colors.white,
                                         size: 20,
+                                        color: Colors.red,
                                       ),
-                              ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        'Delete Owner',
+                                        style: TextStyle(
+                                          color: Colors.red,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              onSelected: (value) {
+                                switch (value) {
+                                  case 'edit':
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) => BlocProvider(
+                                          create: (context) =>
+                                              sl<ManageOwnersCubit>(),
+                                          child: EditOwnerScreen(owner: owner),
+                                        ),
+                                      ),
+                                    );
+                                    break;
+                                  case 'delete':
+                                    _showDeleteConfirmationDialog(context);
+                                    break;
+                                }
+                              },
                             ),
-                          ),
-                        ),
-                      ],
                     ),
                   ),
                   // Owner Name
@@ -393,7 +395,7 @@ class OwnerCard extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: colorScheme.primary.withOpacity(0.1),
+            color: colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(

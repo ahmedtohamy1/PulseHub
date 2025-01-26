@@ -102,7 +102,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
                 if (state is AuthSuccess) {
                   authenticate().then((authenticated) {
                     if (authenticated) {
-                      context.go(Routes.dicScreen);
+                      context.go(Routes.homePage);
                     }
                   });
                 }

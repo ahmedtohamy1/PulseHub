@@ -4,13 +4,18 @@ import 'package:go_router/go_router.dart';
 import 'package:pulsehub/core/di/service_locator.dart';
 import 'package:pulsehub/core/layout/main_layout.dart';
 import 'package:pulsehub/core/routing/routes.dart';
+import 'package:pulsehub/core/routing/unauthorized_screen.dart';
 import 'package:pulsehub/core/utils/user_manager.dart';
 import 'package:pulsehub/features/auth/cubit/auth_cubit.dart';
 import 'package:pulsehub/features/auth/ui/screens/login_screen.dart';
 import 'package:pulsehub/features/auth/ui/screens/otp_screen.dart';
 import 'package:pulsehub/features/dics/cubit/dic_cubit.dart';
 import 'package:pulsehub/features/dics/ui/dic_screen.dart';
+import 'package:pulsehub/features/manage/subfeatures/manage_users/ui/manage_users_screen.dart';
 import 'package:pulsehub/features/manage/ui/screens/manage_screen.dart';
+import 'package:pulsehub/features/project_dashboard/cubit/project_dashboard_cubit.dart';
+import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/cubit/visualise_cubit.dart';
+import 'package:pulsehub/features/project_dashboard/subfeatures/visualise/ui/screens/image_sensor_placing_screen.dart';
 import 'package:pulsehub/features/projects/cubit/projects_cubit.dart';
 import 'package:pulsehub/features/projects/ui/home_screen.dart';
 import 'package:pulsehub/features/projects/ui/project_details_screen.dart';
@@ -24,9 +29,8 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: UserManager().user?.userId != null
-      ? Routes.dicScreen
-      : Routes.loginScreen,
+  initialLocation:
+      UserManager().user?.userId != null ? Routes.homePage : Routes.loginScreen,
   routes: [
     GoRoute(
       path: Routes.loginScreen,
@@ -49,13 +53,43 @@ final router = GoRouter(
         child: const DicScreen(),
       ),
     ),
+    GoRoute(
+      path: Routes.imageSensorPlacing,
+      builder: (context, state) {
+        final isStaffOrSuperuser = UserManager().user?.isStaff == true ||
+            UserManager().user?.isSuperuser == true;
+        if (!isStaffOrSuperuser) {
+          return const UnauthorizedScreen();
+        }
+        final extra = state.extra as List;
+        final projectId = extra[0];
+        final dashboardId = extra[1];
+
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => sl<ProjectDashboardCubit>()
+                ..getMonitoring(int.parse(projectId.toString())),
+            ),
+            BlocProvider(
+              create: (context) => sl<VisualiseCubit>(),
+            ),
+          ],
+          child: ImageSensorPlacingScreen(
+              projectId: int.parse(projectId.toString()),
+              dashboardId: int.parse(dashboardId.toString())),
+        );
+      },
+    ),
     StatefulShellRoute.indexedStack(
-      builder: (context, state, navigationShell) => BlocProvider(
-        create: (context) => sl<SettingsCubit>()..getNotifications(),
-        child: MainLayout(
-          navigationShell: navigationShell,
-        ),
-      ),
+      builder: (context, state, navigationShell) {
+        return BlocProvider(
+          create: (context) => sl<SettingsCubit>()..getUnseenMessages(),
+          child: MainLayout(
+            navigationShell: navigationShell,
+          ),
+        );
+      },
       branches: [
         StatefulShellBranch(
           routes: [
@@ -84,11 +118,8 @@ final router = GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: Routes.dicScreen,
-              builder: (context, state) => BlocProvider(
-                create: (context) => sl<DicCubit>(),
-                child: const DicScreen(),
-              ),
+              path: Routes.manageUsersScreen,
+              builder: (context, state) => const ManageUsersScreen(),
             )
           ],
         ),
@@ -113,19 +144,18 @@ final router = GoRouter(
               ),
               routes: [
                 GoRoute(
-                  path: 'profile', // Use relative path for nested routes
+                  path: 'profile',
                   builder: (context, state) => const ProfileScreen(),
                 ),
                 GoRoute(
-                  path:
-                      'session-manager', // Use relative path for nested routes
+                  path: 'session-manager',
                   builder: (context, state) => BlocProvider(
                     create: (context) => sl<SettingsCubit>(),
                     child: const SessionScreen(),
                   ),
                 ),
                 GoRoute(
-                  path: 'manage', // Use relative path for nested routes
+                  path: 'manage',
                   builder: (context, state) => const ManageScreen(),
                 ),
               ],

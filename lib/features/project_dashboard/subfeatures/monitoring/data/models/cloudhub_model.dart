@@ -2,7 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'cloudhub_model.g.dart';
 
-@JsonSerializable(nullable: true)
+@JsonSerializable()
 class CloudHubResponse {
   final bool? success;
   final List<Bucket>? buckets;
@@ -15,7 +15,7 @@ class CloudHubResponse {
   Map<String, dynamic> toJson() => _$CloudHubResponseToJson(this);
 }
 
-@JsonSerializable(nullable: true)
+@JsonSerializable()
 class Bucket {
   final String? name;
   final List<Measurement>? measurements;
@@ -27,7 +27,7 @@ class Bucket {
   Map<String, dynamic> toJson() => _$BucketToJson(this);
 }
 
-@JsonSerializable(nullable: true)
+@JsonSerializable()
 class Measurement {
   final String? name;
   final List<Topic>? topics;
@@ -40,7 +40,7 @@ class Measurement {
   Map<String, dynamic> toJson() => _$MeasurementToJson(this);
 }
 
-@JsonSerializable(nullable: true)
+@JsonSerializable()
 class Topic {
   final String? name;
   final List<Field>? fields;
@@ -52,7 +52,7 @@ class Topic {
   Map<String, dynamic> toJson() => _$TopicToJson(this);
 }
 
-@JsonSerializable(nullable: true)
+@JsonSerializable()
 class Field {
   final String? name;
 

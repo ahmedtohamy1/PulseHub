@@ -18,31 +18,8 @@ class Destination {
 Widget _buildNotificationBadge(BuildContext context) {
   return BlocBuilder<SettingsCubit, SettingsState>(
     builder: (context, state) {
-      if (state is GetNotificationsSuccess) {
-        final notifications = state.response.notifications
-                ?.where((notification) =>
-                    notification.warnings?.any((warning) =>
-                        warning.ticketsDetails?.isNotEmpty == true) ==
-                    true)
-                .toList() ??
-            [];
-
-        if (notifications.isEmpty) return const SizedBox.shrink();
-
-        // Calculate total unseen messages
-        int totalUnseen = 0;
-        for (final notification in notifications) {
-          for (final warning in notification.warnings ?? []) {
-            for (final ticket in warning.ticketsDetails ?? []) {
-              if (ticket.unseenMessages != null) {
-                totalUnseen =
-                    totalUnseen + int.parse(ticket.unseenMessages!.toString());
-              }
-            }
-          }
-        }
-
-        if (totalUnseen == 0) return const SizedBox.shrink();
+      if (state is GetUnseenMessagesSuccess) {
+        if (state.unseenMessages == 0) return const SizedBox.shrink();
 
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -52,7 +29,7 @@ Widget _buildNotificationBadge(BuildContext context) {
           ),
           constraints: const BoxConstraints(minWidth: 20),
           child: Text(
-            totalUnseen > 99 ? '99+' : totalUnseen.toString(),
+            state.unseenMessages > 99 ? '99+' : state.unseenMessages.toString(),
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: Theme.of(context).colorScheme.onError,
                   fontWeight: FontWeight.bold,
@@ -67,12 +44,12 @@ Widget _buildNotificationBadge(BuildContext context) {
 }
 
 const destinations = [
-  Destination(label: 'CloudMATE', icon: Icons.cloud),
-  Destination(label: 'DIC Services', icon: Icons.dashboard),
+  Destination(label: 'Projects', icon: LucideIcons.building2),
+  Destination(label: 'Manage Users', icon: Icons.manage_accounts_outlined),
   Destination(
     label: 'Notifications',
     icon: LucideIcons.bell,
     badgeBuilder: _buildNotificationBadge,
   ),
-  Destination(label: 'More', icon: Icons.menu),
+  Destination(label: 'Profile', icon: Icons.person),
 ];

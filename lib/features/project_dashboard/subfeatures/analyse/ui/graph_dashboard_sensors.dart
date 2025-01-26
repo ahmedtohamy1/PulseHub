@@ -384,14 +384,14 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                                           color: Theme.of(context)
                                               .colorScheme
                                               .primaryContainer
-                                              .withOpacity(0.1),
+                                              .withValues(alpha: 0.1),
                                           borderRadius:
                                               BorderRadius.circular(8),
                                           border: Border.all(
                                             color: Theme.of(context)
                                                 .colorScheme
                                                 .primaryContainer
-                                                .withOpacity(0.3),
+                                                .withValues(alpha: 0.3),
                                           ),
                                         ),
                                         child: Column(
@@ -427,14 +427,14 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                                                 color: Theme.of(context)
                                                     .colorScheme
                                                     .primary
-                                                    .withOpacity(0.1),
+                                                    .withValues(alpha: 0.1),
                                                 borderRadius:
                                                     BorderRadius.circular(6),
                                                 border: Border.all(
                                                   color: Theme.of(context)
                                                       .colorScheme
                                                       .primary
-                                                      .withOpacity(0.3),
+                                                      .withValues(alpha: 0.3),
                                                 ),
                                               ),
                                               child: Text.rich(
@@ -462,7 +462,8 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                                                         color: Theme.of(context)
                                                             .colorScheme
                                                             .primary
-                                                            .withOpacity(0.8),
+                                                            .withValues(
+                                                                alpha: 0.8),
                                                       ),
                                                     ),
                                                   ],
@@ -479,14 +480,14 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                                                 color: Theme.of(context)
                                                     .colorScheme
                                                     .tertiary
-                                                    .withOpacity(0.1),
+                                                    .withValues(alpha: 0.1),
                                                 borderRadius:
                                                     BorderRadius.circular(6),
                                                 border: Border.all(
                                                   color: Theme.of(context)
                                                       .colorScheme
                                                       .tertiary
-                                                      .withOpacity(0.3),
+                                                      .withValues(alpha: 0.3),
                                                 ),
                                               ),
                                               child: Text.rich(
@@ -514,7 +515,8 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                                                         color: Theme.of(context)
                                                             .colorScheme
                                                             .tertiary
-                                                            .withOpacity(0.8),
+                                                            .withValues(
+                                                                alpha: 0.8),
                                                       ),
                                                     ),
                                                   ],
@@ -672,18 +674,13 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Analysis Buttons
+                    // Analysis Button
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         SubmitButton(
                           onPressed: _submitAnalyze,
                           isAnalyze: true,
-                        ),
-                        const SizedBox(width: 16),
-                        SubmitButton(
-                          onPressed: _submitExpert,
-                          isExpert: true,
                         ),
                       ],
                     ),
@@ -692,6 +689,9 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                     // Analysis Results
                     BlocBuilder<ProjectDashboardCubit, ProjectDashboardState>(
                       builder: (context, state) {
+                        final cubit = context.read<ProjectDashboardCubit>();
+
+                        // Show loading state if either analysis is loading
                         if (state is ProjectDashboardAnalyzeSensorDataLoading ||
                             state
                                 is ProjectDashboardAnalyzeSensorDataQ2Loading) {
@@ -709,8 +709,8 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
 
                         return Column(
                           children: [
-                            if (state
-                                is ProjectDashboardAnalyzeSensorDataSuccess)
+                            // Show analyze data result if it exists
+                            if (cubit.cachedAnalyzeResult != null) ...[
                               Container(
                                 margin: const EdgeInsets.only(bottom: 16),
                                 padding: const EdgeInsets.all(16),
@@ -718,13 +718,13 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                                   color: Theme.of(context)
                                       .colorScheme
                                       .primaryContainer
-                                      .withOpacity(0.05),
+                                      .withValues(alpha: 0.05),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: Theme.of(context)
                                         .colorScheme
                                         .primaryContainer
-                                        .withOpacity(0.2),
+                                        .withValues(alpha: 0.2),
                                   ),
                                 ),
                                 child: Column(
@@ -754,7 +754,7 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                                     ),
                                     const SizedBox(height: 12),
                                     MarkdownBody(
-                                      data: state.aiAnalyzeDataModel.message,
+                                      data: cubit.cachedAnalyzeResult!.message,
                                       styleSheet: MarkdownStyleSheet(
                                         p: TextStyle(
                                           color: Theme.of(context)
@@ -803,8 +803,20 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                                   ],
                                 ),
                               ),
-                            if (state
-                                is ProjectDashboardAnalyzeSensorDataQ2Success)
+                              // Expert Button after analysis results
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SubmitButton(
+                                    onPressed: _submitExpert,
+                                    isExpert: true,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+                            // Show expert analysis result if it exists
+                            if (cubit.cachedExpertResult != null)
                               Container(
                                 margin: const EdgeInsets.only(bottom: 16),
                                 padding: const EdgeInsets.all(16),
@@ -812,13 +824,13 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                                   color: Theme.of(context)
                                       .colorScheme
                                       .secondaryContainer
-                                      .withOpacity(0.05),
+                                      .withValues(alpha: 0.05),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: Theme.of(context)
                                         .colorScheme
                                         .secondaryContainer
-                                        .withOpacity(0.2),
+                                        .withValues(alpha: 0.2),
                                   ),
                                 ),
                                 child: Column(
@@ -848,8 +860,8 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                                     ),
                                     const SizedBox(height: 12),
                                     MarkdownBody(
-                                      data: state
-                                          .aiQ2ResponseModel.response.message,
+                                      data: cubit
+                                          .cachedExpertResult!.response.message,
                                       styleSheet: MarkdownStyleSheet(
                                         p: TextStyle(
                                           color: Theme.of(context)
@@ -898,6 +910,7 @@ class _GraphDashboardSensorsState extends State<GraphDashboardSensors> {
                                   ],
                                 ),
                               ),
+                            // Show error states
                             if (state
                                     is ProjectDashboardAnalyzeSensorDataFailure ||
                                 state

@@ -9,7 +9,7 @@ part of 'monitoring_model.dart';
 MonitoringResponse _$MonitoringResponseFromJson(Map<String, dynamic> json) =>
     MonitoringResponse(
       success: json['success'] as bool,
-      monitorings: (json['Monitorings'] as List<dynamic>?)
+      monitorings: (json['Monitoring_list'] as List<dynamic>?)
           ?.map((e) => Monitoring.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
@@ -17,7 +17,7 @@ MonitoringResponse _$MonitoringResponseFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$MonitoringResponseToJson(MonitoringResponse instance) =>
     <String, dynamic>{
       'success': instance.success,
-      'Monitorings': instance.monitorings,
+      if (instance.monitorings case final value?) 'Monitoring_list': value,
     };
 
 Monitoring _$MonitoringFromJson(Map<String, dynamic> json) => Monitoring(

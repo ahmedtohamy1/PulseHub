@@ -1,3 +1,4 @@
+// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 // **************************************************************************
@@ -22,9 +23,14 @@ import '../../features/auth/data/repositories/auth_repository_impl.dart'
 import '../../features/dics/cubit/dic_cubit.dart' as _i819;
 import '../../features/dics/data/repos/dic_repo.dart' as _i90;
 import '../../features/dics/data/repos/dic_repo_impl.dart' as _i1046;
-import '../../features/manage/cubit/manage_cubit.dart' as _i526;
 import '../../features/manage/data/repos/manage_repo.dart' as _i87;
 import '../../features/manage/data/repos/manage_repo_impl.dart' as _i176;
+import '../../features/manage/subfeatures/manage_monitorings/cubit/manage_monitorings_cubit.dart'
+    as _i503;
+import '../../features/manage/subfeatures/manage_monitorings/data/manage_monitroings_repo.dart'
+    as _i103;
+import '../../features/manage/subfeatures/manage_monitorings/data/manage_monitroings_repo_impl.dart'
+    as _i86;
 import '../../features/manage/subfeatures/manage_owners/cubit/manage_owners_cubit.dart'
     as _i694;
 import '../../features/manage/subfeatures/manage_owners/data/repos/manage_owners_repo.dart'
@@ -56,6 +62,12 @@ import '../../features/project_dashboard/cubit/ticket_messages_cubit.dart'
 import '../../features/project_dashboard/data/repos/dash_repo.dart' as _i346;
 import '../../features/project_dashboard/data/repos/dash_repo_impl.dart'
     as _i503;
+import '../../features/project_dashboard/subfeatures/visualise/cubit/visualise_cubit.dart'
+    as _i804;
+import '../../features/project_dashboard/subfeatures/visualise/data/visualise_repo.dart'
+    as _i827;
+import '../../features/project_dashboard/subfeatures/visualise/data/visualise_repo_impl.dart'
+    as _i132;
 import '../../features/projects/cubit/projects_cubit.dart' as _i438;
 import '../../features/projects/data/repos/projects_repo.dart' as _i234;
 import '../../features/projects/data/repos/projects_repo_impl.dart' as _i296;
@@ -82,6 +94,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i361.Dio>(() => dioModule.provideDio());
     gh.lazySingleton<_i87.ManageRepository>(() => const _i176.ManageRepoImpl());
     gh.lazySingleton<_i713.MyApi>(() => _i713.MyApi(gh<_i361.Dio>()));
+    gh.factory<_i827.VisualiseRepo>(
+        () => _i132.VisualiseRepoImpl(gh<_i713.MyApi>()));
     gh.lazySingleton<_i346.DashRepository>(
         () => _i503.DashRepoImpl(gh<_i713.MyApi>()));
     gh.lazySingleton<_i90.DicRepository>(
@@ -94,10 +108,14 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i696.TicketMessagesCubit(gh<_i346.DashRepository>()));
     gh.factory<_i133.ManageOwnersRepository>(
         () => _i1045.ManageOwnersRepositoryImpl(gh<_i713.MyApi>()));
+    gh.factory<_i804.VisualiseCubit>(
+        () => _i804.VisualiseCubit(gh<_i827.VisualiseRepo>()));
     gh.factory<_i423.ManageProjectsRepository>(
         () => _i320.ManageProjectsRepositoryImpl(gh<_i713.MyApi>()));
     gh.factory<_i1047.ManageSensorsRepository>(
         () => _i62.ManageSensorsRepositoryImpl(gh<_i713.MyApi>()));
+    gh.factory<_i103.ManageMonitoringsRepo>(
+        () => _i86.ManageMonitoringsRepoImpl(gh<_i713.MyApi>()));
     gh.lazySingleton<_i573.AuthRepository>(
         () => _i153.AuthRepositoryImpl(gh<_i713.MyApi>()));
     gh.factory<_i818.ManageUsersRepository>(
@@ -108,8 +126,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i438.ProjectsCubit(gh<_i234.ProjectsRepository>()));
     gh.lazySingleton<_i767.AiReportRepository>(
         () => _i1064.AiReportRepositoryImpl(gh<_i713.MyApi>()));
-    gh.factory<_i526.ManageCubit>(
-        () => _i526.ManageCubit(gh<_i87.ManageRepository>()));
     gh.lazySingleton<_i878.SettingsRepository>(
         () => _i181.SettingsRepoImpl(gh<_i713.MyApi>()));
     gh.factory<_i988.ManageSensorsCubit>(
@@ -124,6 +140,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i446.ManageProjectsCubit(gh<_i423.ManageProjectsRepository>()));
     gh.factory<_i698.AuthCubit>(
         () => _i698.AuthCubit(gh<_i573.AuthRepository>()));
+    gh.factory<_i503.ManageMonitoringsCubit>(
+        () => _i503.ManageMonitoringsCubit(gh<_i103.ManageMonitoringsRepo>()));
     gh.factory<_i819.DicCubit>(() => _i819.DicCubit(
           gh<_i90.DicRepository>(),
           gh<_i878.SettingsRepository>(),

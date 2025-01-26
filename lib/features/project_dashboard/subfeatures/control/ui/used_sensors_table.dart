@@ -324,8 +324,10 @@ class UsedSensorsTable extends StatelessWidget {
                         : null,
                     style: FilledButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.error,
-                      disabledBackgroundColor:
-                          Theme.of(context).colorScheme.error.withOpacity(0.3),
+                      disabledBackgroundColor: Theme.of(context)
+                          .colorScheme
+                          .error
+                          .withValues(alpha: 0.3),
                     ),
                     child: const Text('Delete'),
                   ),
@@ -653,7 +655,7 @@ class UsedSensorsTable extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: colorScheme.primary.withOpacity(0.1),
+                color: colorScheme.primary.withValues(alpha: 0.1),
                 border: Border(
                   left: BorderSide(
                     color: colorScheme.primary,
@@ -728,26 +730,60 @@ class UsedSensorsTable extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.edit, size: 18),
-                    style: IconButton.styleFrom(
-                      backgroundColor: colorScheme.primary,
-                      foregroundColor: colorScheme.onPrimary,
-                      padding: const EdgeInsets.all(8),
-                      minimumSize: const Size(36, 36),
+                  PopupMenuButton<String>(
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    onPressed: () => _showEditDialog(context, sensor),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: const Icon(Icons.delete_forever, size: 18),
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.red.shade700,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.all(8),
-                      minimumSize: const Size(36, 36),
+                    icon: Icon(
+                      Icons.more_vert,
+                      color: colorScheme.onSurfaceVariant,
                     ),
-                    onPressed: () => _showDeleteDialog(context, sensor),
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.edit_outlined,
+                              size: 20,
+                              color: colorScheme.onSurface,
+                            ),
+                            const SizedBox(width: 12),
+                            Text('Edit Sensor'),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.delete_outline,
+                              size: 20,
+                              color: Colors.red,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              'Delete Sensor',
+                              style: TextStyle(
+                                color: Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    onSelected: (value) {
+                      switch (value) {
+                        case 'edit':
+                          _showEditDialog(context, sensor);
+                          break;
+                        case 'delete':
+                          _showDeleteDialog(context, sensor);
+                          break;
+                      }
+                    },
                   ),
                 ],
               ),

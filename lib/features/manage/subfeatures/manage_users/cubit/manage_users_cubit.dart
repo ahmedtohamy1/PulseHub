@@ -5,6 +5,7 @@ import 'package:injectable/injectable.dart';
 import 'package:pulsehub/core/utils/shared_pref_helper.dart';
 import 'package:pulsehub/core/utils/shared_pref_keys.dart';
 import 'package:pulsehub/features/dics/data/models/dic_services_model.dart';
+import 'package:pulsehub/features/manage/subfeatures/manage_users/models/get_all_users_log_response.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_users/models/get_user_projects.dart';
 import 'package:pulsehub/features/manage/subfeatures/manage_users/models/update_dic_request_model.dart';
 import 'package:pulsehub/features/project_dashboard/data/models/get_all_users_response_model.dart';
@@ -103,6 +104,16 @@ class ManageUsersCubit extends Cubit<ManageUsersState> {
     response.fold(
       (l) => emit(ManageUsersUpdateDicsFailure(l)),
       (r) => emit(ManageUsersUpdateDicsSuccess(r)),
+    );
+  }
+
+  Future<void> getAllUserLog() async {
+    emit(ManageUsersGetAllUserLogLoading());
+    final token = await SharedPrefHelper.getSecuredString(SharedPrefKeys.token);
+    final response = await _repository.getAllUserLog(token);
+    response.fold(
+      (l) => emit(ManageUsersGetAllUserLogFailure(l)),
+      (r) => emit(ManageUsersGetAllUserLogSuccess(r)),
     );
   }
 

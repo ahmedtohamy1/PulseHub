@@ -58,13 +58,13 @@ class CollaboratorsTable extends StatelessWidget {
                   height: 200,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: colorScheme.primary.withOpacity(0.1),
+                      color: colorScheme.primary.withValues(alpha: 0.1),
                     ),
                     child: Center(
                       child: Icon(
                         Icons.person,
                         size: 64,
-                        color: colorScheme.primary.withOpacity(0.5),
+                        color: colorScheme.primary.withValues(alpha: 0.5),
                       ),
                     ),
                   ),
@@ -77,8 +77,8 @@ class CollaboratorsTable extends StatelessWidget {
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                         colors: [
-                          Colors.black.withOpacity(0.8),
-                          Colors.black.withOpacity(0.0),
+                          Colors.black.withValues(alpha: 0.8),
+                          Colors.black.withValues(alpha: 0.0),
                         ],
                       ),
                     ),
@@ -94,7 +94,7 @@ class CollaboratorsTable extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withValues(alpha: 0.2),
                           spreadRadius: 1,
                           blurRadius: 5,
                           offset: const Offset(0, 2),
@@ -129,11 +129,11 @@ class CollaboratorsTable extends StatelessWidget {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: colorScheme.primary.withOpacity(0.9),
+                        color: colorScheme.primary.withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             spreadRadius: 1,
                             blurRadius: 5,
                             offset: const Offset(0, 2),
@@ -250,7 +250,7 @@ class CollaboratorsTable extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: colorScheme.primary.withOpacity(0.1),
+            color: colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(

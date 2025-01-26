@@ -116,7 +116,7 @@ class _DeleteConfirmationDialogState extends State<DeleteConfirmationDialog> {
                         disabledBackgroundColor: Theme.of(context)
                             .colorScheme
                             .error
-                            .withOpacity(0.3),
+                            .withValues(alpha: 0.3),
                       ),
                       child: Text(widget.confirmButtonText),
                     ),

@@ -208,7 +208,7 @@ class _OverviewTabState extends State<OverviewTab> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: colorScheme.primary.withOpacity(0.1),
+              color: colorScheme.primary.withValues(alpha: 0.1),
               border: Border(
                 left: BorderSide(
                   color: colorScheme.primary,
@@ -221,7 +221,7 @@ class _OverviewTabState extends State<OverviewTab> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.1),
+                    color: colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
@@ -299,49 +299,123 @@ class _OverviewTabState extends State<OverviewTab> {
                   children: [
                     // Actions Row
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        FilledButton.icon(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: Colors.red.shade700,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
+                        Text(
+                          '${widget.project.title}',
+                          style: TextStyle(
+                            fontSize: 29,
+                            fontWeight: FontWeight.bold,
                           ),
-                          onPressed: isLoading ? null : _handleDelete,
-                          icon: const Icon(Icons.delete_forever, size: 20),
-                          label: const Text('Delete'),
                         ),
-                        const SizedBox(width: 8),
-                        if (!widget.isEditing)
-                          FilledButton.icon(
-                            onPressed: isLoading ? null : widget.onEdit,
-                            icon: const Icon(Icons.edit, size: 20),
-                            label: const Text('Edit'),
-                          )
-                        else
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              OutlinedButton.icon(
-                                onPressed: isLoading ? null : widget.onCancel,
-                                icon: const Icon(Icons.cancel, size: 20),
-                                label: const Text('Cancel'),
+                        const Spacer(),
+                        PopupMenuButton<String>(
+                          padding: EdgeInsets.zero,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          icon: Icon(
+                            Icons.more_vert,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                          itemBuilder: (context) => [
+                            if (!widget.isEditing)
+                              PopupMenuItem(
+                                value: 'edit',
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.edit_outlined,
+                                      size: 20,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text('Edit'),
+                                  ],
+                                ),
                               ),
-                              const SizedBox(width: 8),
-                              FilledButton.icon(
-                                onPressed: isLoading ? null : _handleSave,
-                                icon: isLoading
-                                    ? const SizedBox(
+                            if (widget.isEditing) ...[
+                              PopupMenuItem(
+                                value: 'save',
+                                child: Row(
+                                  children: [
+                                    if (isLoading)
+                                      const SizedBox(
                                         width: 20,
                                         height: 20,
                                         child: CircularProgressIndicator(
                                             strokeWidth: 2),
                                       )
-                                    : const Icon(Icons.save, size: 20),
-                                label: Text(isLoading ? 'Saving' : 'Save'),
+                                    else
+                                      Icon(
+                                        Icons.save_outlined,
+                                        size: 20,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface,
+                                      ),
+                                    const SizedBox(width: 12),
+                                    Text(isLoading ? 'Saving...' : 'Save'),
+                                  ],
+                                ),
+                              ),
+                              PopupMenuItem(
+                                value: 'cancel',
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.cancel_outlined,
+                                      size: 20,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text('Cancel'),
+                                  ],
+                                ),
                               ),
                             ],
-                          ),
+                            PopupMenuItem(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.delete_outline,
+                                    size: 20,
+                                    color: Colors.red,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'Delete',
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                          onSelected: (value) {
+                            switch (value) {
+                              case 'edit':
+                                if (!isLoading) widget.onEdit.call();
+                                break;
+                              case 'save':
+                                if (!isLoading) _handleSave();
+                                break;
+                              case 'cancel':
+                                if (!isLoading) widget.onCancel.call();
+                                break;
+                              case 'delete':
+                                if (!isLoading) _handleDelete();
+                                break;
+                            }
+                          },
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),

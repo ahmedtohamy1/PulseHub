@@ -1,3 +1,4 @@
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pulsehub/core/layout/destinations.dart';
@@ -22,20 +23,48 @@ class MainLayout extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        body: SafeArea(child: navigationShell),
-        bottomNavigationBar: NavigationBar(
-          height: 70,
-          selectedIndex: navigationShell.currentIndex,
-          onDestinationSelected: (index) =>
-              _onDestinationSelected(context, index),
-          indicatorColor: Theme.of(context).primaryColor,
-          destinations: destinations
-              .map((destination) => NavigationDestination(
-                    icon: Stack(
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
+
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+      body: Stack(
+        children: [
+          SafeArea(
+            bottom: false,
+            child: navigationShell,
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: bottomPadding,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CurvedNavigationBar(
+                  key: const ValueKey<String>('CurvedNavigationBar'),
+                  index: navigationShell.currentIndex,
+                  height: 50,
+                  backgroundColor: colorScheme.surface,
+                  color: colorScheme.surfaceContainerHighest,
+                  buttonBackgroundColor: colorScheme.primary,
+                  animationDuration: const Duration(milliseconds: 300),
+                  animationCurve: Curves.easeInOut,
+                  items: destinations.map((destination) {
+                    final isSelected = destinations.indexOf(destination) ==
+                        navigationShell.currentIndex;
+                    return Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        Icon(destination.icon),
+                        Icon(
+                          destination.icon,
+                          size: 24,
+                          color: isSelected
+                              ? colorScheme.onPrimary
+                              : colorScheme.onSurfaceVariant,
+                        ),
                         if (destination.badgeBuilder != null)
                           Positioned(
                             top: -8,
@@ -43,22 +72,36 @@ class MainLayout extends StatelessWidget {
                             child: destination.badgeBuilder!(context),
                           ),
                       ],
-                    ),
-                    label: destination.label,
-                    selectedIcon: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Icon(destination.icon, color: Colors.white),
-                        if (destination.badgeBuilder != null)
-                          Positioned(
-                            top: -8,
-                            right: -8,
-                            child: destination.badgeBuilder!(context),
-                          ),
-                      ],
-                    ),
-                  ))
-              .toList(),
-        ),
-      );
+                    );
+                  }).toList(),
+                  onTap: (index) => _onDestinationSelected(context, index),
+                ),
+                Container(
+                  color: colorScheme.surfaceContainerHighest,
+                  padding: const EdgeInsets.only(bottom: 25),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: destinations.map((destination) {
+                      final isSelected = destinations.indexOf(destination) ==
+                          navigationShell.currentIndex;
+                      return Text(
+                        destination.label,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: isSelected
+                              ? colorScheme.primary
+                              : colorScheme.onSurfaceVariant,
+                          fontWeight:
+                              isSelected ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

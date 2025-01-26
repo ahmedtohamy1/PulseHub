@@ -106,4 +106,7 @@ abstract class DashRepository {
   Future<Either<String, bool>> markMessageAsSeen(String token, int messageId);
   Future<Either<String, bool>> assignCloudhubSensor(
       String token, int? cloudhubId, int sensorId);
+
+  Future<Either<String, bool>> updateCloudhubSensors(
+      String token, int cloudhubId, List<int> sensorIds);
 }
